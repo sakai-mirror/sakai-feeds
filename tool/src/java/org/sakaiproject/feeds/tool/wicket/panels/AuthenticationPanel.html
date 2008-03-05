@@ -1,0 +1,38 @@
+<html xmlns:wicket>
+<wicket:panel>
+
+	<!--<div wicket:id="divAuthPanelWrapper" class="authPanelWrapper">-->
+	<div wicket:id="divAuthPanel" class="authPanel">
+		
+		<p class="alertMessage">
+			<wicket:message key="provide.auth.details" >[auth.details]</wicket:message>
+		</p>
+	
+		<form wicket:id="form">
+				<table>
+					<tr>
+						<td><wicket:message key="username">[username]</wicket:message></td>
+						<td><span class="shorttext"><input type="text" wicket:id="username" size="21" /></span></td>
+					</tr>
+					<tr>
+						<td><wicket:message key="password">[password]</wicket:message></td>
+						<td><span class="shorttext"><input type="password" wicket:id="password" size="22" /></span></td>
+					</tr>
+					<tr>
+						<td></td>
+						<td><span class="shorttext"><input wicket:id="rememberMe" type="checkbox" /><wicket:message key="rememberme">[rememberme]</wicket:message></span></td>
+					</tr>
+					<tr>
+						<td>&nbsp;</td>
+						<td style="text-align: center">
+							<input type="submit" wicket:id="ok" wicket:message="value:ok" class="active" style="width: 80px; margin: 0.4em 1em;"/>
+						</td>
+					</tr>
+				</table>
+		</form>
+	</div>
+	<!--</div>-->
+	
+</wicket:panel>
+</html>
+  

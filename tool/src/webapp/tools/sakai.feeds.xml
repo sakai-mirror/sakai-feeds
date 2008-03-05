@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<registration>
+	<tool id="sakai.feeds" title="News Feeds"
+		description="A news feeds reader.">
+		<!-- <category name="myworkspace" />
+    	<category name="course" />
+		<category name="project" /> -->
+	</tool>
+</registration>

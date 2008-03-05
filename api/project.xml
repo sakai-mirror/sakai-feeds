@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+	<pomVersion>3</pomVersion>
+	<extend>../../master/project.xml</extend>
+	<groupId>org.sakaiproject</groupId>
+	<id>sakai-feeds-api</id>
+	<name>sakai-feeds-api</name>
+	<currentVersion>${sakai.version}</currentVersion>
+
+	<organization>
+		<name>Universidade Fernando Pessoa</name>
+		<url>http://www.ufp.pt</url>
+	</organization>
+	<inceptionYear>2008</inceptionYear>
+
+	<properties>
+		<deploy.type>jar</deploy.type>
+		<deploy.target>shared</deploy.target>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>sakaiproject</groupId>
+			<artifactId>sakai-tool-api</artifactId>
+			<version>${sakai.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>sakaiproject</groupId>
+			<artifactId>sakai-util-api</artifactId>
+			<version>${sakai.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>sakaiproject</groupId>
+			<artifactId>sakai-entity-api</artifactId>
+			<version>${sakai.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>sakaiproject</groupId>
+			<artifactId>sakai-user-api</artifactId>
+			<version>${sakai.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>sakaiproject</groupId>
+			<artifactId>sakai-site-api</artifactId>
+			<version>${sakai.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>sakaiproject</groupId>
+			<artifactId>sakai-entitybroker-api</artifactId>
+			<version>${sakai.version}</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<sourceDirectory>src/java</sourceDirectory>
+		<resources>
+			<resource>
+				<directory>${basedir}/src/bundle</directory>
+				<includes>
+					<include>**/*.properties</include>
+				</includes>
+			</resource>
+		</resources>
+	</build>
+</project>

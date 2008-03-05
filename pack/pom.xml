@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<parent>
+		<artifactId>sakai-feeds</artifactId>
+		<groupId>org.sakaiproject</groupId>
+		<version>SNAPSHOT</version>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+	<name>sakai-feeds-pack</name>
+	<groupId>org.sakaiproject</groupId>
+	<artifactId>sakai-feeds-pack</artifactId>
+
+	<organization>
+		<name>Universidade Fernando Pessoa</name>
+		<url>http://www.ufp.pt</url>
+	</organization>
+	<inceptionYear>2008</inceptionYear>
+
+	<packaging>sakai-component</packaging>
+	<properties>
+		<deploy.target>components</deploy.target>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.sakaiproject</groupId>
+			<artifactId>sakai-feeds-api</artifactId>
+			<version>${sakai.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.sakaiproject</groupId>
+			<artifactId>sakai-feeds-impl</artifactId>
+			<version>${sakai.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.sakaiproject</groupId>
+					<artifactId>sakai-feeds-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<resources>
+			<resource>
+				<directory>src/webapp</directory>
+				<includes>
+					<include>**/*.xml</include>
+					<include>**/*.properties</include>
+				</includes>
+				<excludes>
+					<exclude>**/web.xml</exclude>
+				</excludes>
+			</resource>
+		</resources>
+	</build>
+</project>

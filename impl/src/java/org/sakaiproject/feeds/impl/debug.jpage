@@ -1,0 +1,59 @@
+
+//String feedUrl = "http://clix.expresso.pt/gen.pl?p=rss";
+String feedUrl = "feed://www.publico.clix.pt/rss.ashx";
+String reference = null;
+
+boolean isInternalFeed = false;
+String internalFeedUrlPrefix = "http://sakaitest.ufp.pt:8080/direct";
+if(feedUrl.startsWith(internalFeedUrlPrefix)){
+	isInternalFeed = true;
+}else{
+	isInternalFeed = false;
+}
+
+if(!isInternalFeed){
+	int index = feedUrl.indexOf("external-feed");
+	if(index >= 0)
+		reference = feedUrl.substring(feedUrl.indexOf("external-feed") - 1);
+	else
+		reference = "/external-feed/" + "sduihfiuwdhf90w784y9ys";
+}else
+	reference = feedUrl.substring(feedUrl.indexOf("feed") - 1);
+
+System.out.println("getEntityReference(): "+reference);
+
+//---------------------------------
+
+String proxyHost = System.getProperty("http.proxyHost");
+int proxyPort = Integer.parseInt(System.getProperty("http.proxyPort"));
+org.apache.commons.httpclient.HttpClient client = new org.apache.commons.httpclient.HttpClient(new org.apache.commons.httpclient.MultiThreadedHttpConnectionManager());
+client.getHttpConnectionManager().getParams().setConnectionTimeout(30000);
+client.getHostConfiguration().setProxy(proxyHost,proxyPort);
+
+org.apache.commons.httpclient.HttpMethod method = new org.apache.commons.httpclient.methods.GetMethod("http://sakaitest.ufp.pt/test-feeds/");
+try{
+	method.addRequestHeader("Accept-Encoding", "gzip");
+
+    method.setFollowRedirects(true);			
+	System.out.println("...");
+	int statusCode = client.executeMethod(method);			
+	System.out.println("...");
+	String body = method.getResponseBodyAsString();
+	System.out.println("BODY: "+body);
+} finally {
+	method.releaseConnection();
+}
+
+//---------------------------------
+
+String str = new String("ola");
+char[] chars = org.apache.commons.codec.binary.Hex.encodeHex(str.getBytes());
+String enc = new String(chars);
+System.out.println("Encoded: "+enc);
+
+byte[] decoded = org.apache.commons.codec.binary.Hex.decodeHex(enc.toCharArray());
+String dec = new String(decoded);
+System.out.println("Decoded: "+dec);
+
+
+

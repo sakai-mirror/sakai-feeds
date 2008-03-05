@@ -1,0 +1,67 @@
+<html  
+      xmlns="http://www.w3.org/1999/xhtml"  
+      xmlns:wicket="http://wicket.sourceforge.net/"  
+      xml:lang="en"  
+      lang="en">
+<body>
+<wicket:head></wicket:head>
+<wicket:extend>
+
+	<h4>
+		<wicket:message key="title">[title]</wicket:message>
+	</h4>
+	<p/>
+	
+	<form wicket:id="options" class="indnt1">
+	
+	
+	<!-- View options -->
+	<h4><wicket:message key="view.title">[view.title]</wicket:message></h4>
+	<p class="instruction">
+			<wicket:message key="view.instr">[view.instr]</wicket:message>
+	</p>
+	<table class="listHier nolines" style="width: auto" cellspacing="0">
+		<tr style="vertical-align:bottom;">
+			<td>
+				<wicket:message key="view.field">[view.field]</wicket:message>
+			</td>
+			<td>
+				<select wicket:id="viewFilter" class="viewFilter"></select>
+			</td>
+			<td>
+				<select wicket:id="viewDetail" class="viewDetail"></select>
+			</td>
+		</tr>
+	</table>
+	
+	
+	<!-- Subscriptions order -->
+	<h4><wicket:message key="order.title">[order.title]</wicket:message></h4>
+	<p class="instruction">
+			<wicket:message key="order.instr">[order.instr]</wicket:message>
+	</p>
+	<div wicket:id="container" style="position:relative;">
+		<div wicket:id="subscriptionsList" class="drag"  style="position:relative;'">
+			<table class="listHier lines nolines" style="width: 100%; margin: 0px;" cellspacing="0">
+				<tr style="vertical-align:bottom;">
+					<td style="width: 100%;">
+						<img wicket:id="iconUrl" style="margin-right:0px; border:0px; width:auto; height:16px" border="0"/>
+						&nbsp;<span wicket:id="title">[title]</span>
+					</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+	
+
+	<!-- BUTTONS -->
+	<p class="act">
+		<input type="submit" wicket:id="save" wicket:message="value:save" class="active"/>
+		<input type="submit" wicket:id="cancel" wicket:message="value:cancel"/>
+	</p>
+	
+	</form>
+		
+</wicket:extend>
+</body>
+</html>

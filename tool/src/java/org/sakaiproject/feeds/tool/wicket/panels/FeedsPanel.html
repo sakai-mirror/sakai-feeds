@@ -1,0 +1,56 @@
+<html xmlns:wicket>
+<wicket:panel>
+	
+	<table style="width: 100%">
+		<tr>
+			<td><h3><wicket:message key="title">[title]</wicket:message></h3></td>
+			<td wicket:id="viewOptions" style="width:100%; text-align: right; vertical-align:bottom;">
+				<wicket:message key="view">[view]</wicket:message>
+				<select wicket:id="viewFilter" class="viewFilter"></select>
+				<img wicket:id="viewFilterIndicator"/>
+				<select wicket:id="viewDetail" class="viewDetail"></select>
+				<img wicket:id="viewDetailIndicator"/>
+			</td>
+		</tr>
+	</table>
+	
+	
+	<div wicket:id="feed" class="hierItemBlockWrapper feedTitle">
+		<table style="width: 100%" cellpadding="0">
+			<tr>
+				<td style="width: auto;">
+					<img wicket:id="iconUrl" style="margin-right:0px; border:0px; width:auto; height:16px; vertical-align: bottom" border="0"/>
+				</td>
+				<td style="width: 100%">
+					<h4 style="margin: 0px ! important;">
+						<a wicket:id="title" class="feedTitle">
+							<img wicket:id="titleLinkExpandImg" style="vertical-align:bottom"/><span wicket:id="titleLinkLabel"></span>
+						</a>
+						<span wicket:id="feedCount" class="feedCount"></span>
+					</h4>
+				</td>
+				<td style="text-align:right; width:100%; white-space:nowrap">
+					<span wicket:id="publishedDate" class="feedPublishedDate" style="display:none">[publishedDate]</span>
+					<small><a wicket:id="sourceLink" class="feedTitle external" target="_blank">[title]</a></small>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="3">
+					<span wicket:id="descriptionWrapper">
+						<span wicket:id="description" class="feedDescription">[description]</span>
+					</span>
+				</td>				
+			</tr>
+		</table>	    
+		<span wicket:id="entriesWrapper" class="entriesWrapper">
+	    	<span wicket:id="entries">[entries]</span>
+	    </span>
+	</div>
+	
+	<p wicket:id="noSubscriptions" class="instruction">
+		<wicket:message key="no.subscriptions">[no.subscriptions]</wicket:message>
+	</p>
+	
+</wicket:panel>
+</html>
+  

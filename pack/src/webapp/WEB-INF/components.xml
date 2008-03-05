@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>		
+	
+	<!-- Load HBM related beans -->
+	<!-- <import resource="dataSource.xml" /> -->
+
+	<!-- FeedsService ______________________________________________________________________________ -->
+	<bean id="org.sakaiproject.feeds.api.FeedsService"
+		class="org.sakaiproject.feeds.impl.FeedsServiceImpl"
+		singleton="true"
+		init-method="init" destroy-method="destroy">
+		
+		<!-- OPTIONS: -->				
+			<!-- Show bar charts item labels by default? (default: false) -->
+			<!-- <property name="itemLabelsVisible" value="true" /> -->
+		<!-- /OPTIONS -->
+		
+		<!-- Data source -->
+		<!-- <property name="dataSource" ref="gepDataSource"/> -->
+		
+		<!-- Sakai services -->
+		<property name="siteService" ref="org.sakaiproject.site.api.SiteService"/>	
+		<property name="preferencesService" ref="org.sakaiproject.user.api.PreferencesService"/>		
+		<property name="sessionManager" ref="org.sakaiproject.tool.api.SessionManager"/>	
+		<property name="entityBroker" ref="org.sakaiproject.entitybroker.EntityBroker"/>
+		<property name="userDirectoryService" ref="org.sakaiproject.user.api.UserDirectoryService"/>
+		<property name="serverConfigurationService" ref="org.sakaiproject.component.api.ServerConfigurationService"/>
+		<property name="idManager" ref="org.sakaiproject.id.api.IdManager"/>
+	</bean>
+	
+	<!-- FeedStorage ______________________________________________________________________________ -->
+	<!-- Either: DBFeedStorage or WebServiceFeedStorage -->
+	<bean id="org.sakaiproject.feeds.api.provider.InternalFeedStorageProvider" class="org.sakaiproject.feeds.impl.provider.DBFeedsStorageImpl">
+		<!-- <property name="feedsService" ref="org.sakaiproject.feeds.api.FeedsService"/> -->		
+	</bean>
+	
+	<!-- EntityProviders ______________________________________________________________________________ -->
+	<bean id="org.sakaiproject.feeds.api.entity.InternalFeedEntityProvider" class="org.sakaiproject.feeds.impl.entity.InternalFeedEntityProviderImpl">
+		<property name="feedsService" ref="org.sakaiproject.feeds.api.FeedsService"/>		
+	</bean>
+	<bean id="org.sakaiproject.feeds.api.entity.ExternalFeedEntityProvider" class="org.sakaiproject.feeds.impl.entity.ExternalFeedEntityProviderImpl">
+		<property name="feedsService" ref="org.sakaiproject.feeds.api.FeedsService"/>		
+	</bean>
+	
+	<!-- HttpServletAccessProvider ______________________________________________________________________________ -->
+	<bean id="org.sakaiproject.feeds.api.provider.FeedsAccessProvider" class="org.sakaiproject.feeds.impl.provider.FeedsAccessProvider"
+		singleton="true"
+		init-method="init" destroy-method="destroy">
+		<property name="feedsService" ref="org.sakaiproject.feeds.api.FeedsService"/>
+		<property name="httpServletAccessProviderManager" ref="org.sakaiproject.entitybroker.access.HttpServletAccessProviderManager" />	
+	</bean>
+</beans>

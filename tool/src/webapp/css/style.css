@@ -1,0 +1,172 @@
+/* Hidden iframe */
+iframe {
+	margin: 0px !important;
+	padding: 0px !important;
+	border: 0px;
+}
+
+
+/* Positioning */
+.mainContent {
+}
+.left {
+	text-align: left;
+	float: left;
+	width: 80%
+}
+.right {
+	text-align: right;
+	float: right;
+	width: 20%;
+}
+
+
+/* Links */
+a.external { 
+	background: url(/sakai-feeds-tool/img/external.png) right center no-repeat; 
+	padding-right: 12px; 
+}
+
+   
+/* ...but not to absolute links in this domain: */ 
+/*a[href^=\"http://www.programmabilities.org\"] { 
+	background: transparent; 
+	padding-right: 0px; 
+} */
+
+
+/* Feed channel */
+.feedTitle {
+	/*padding-top: 5px;*/
+	background-color: #F3F3E5;
+	margin-left: 5px;
+	margin-right: 5px;
+}
+h4 a.feedTitle img {
+	text-decoration: none !important;
+	background-color: #F3F3E5 !important;
+}
+.feedCount {
+	/*color: #555555;*/
+	font-weight: bold;
+	/*font-size: 0.8em;*/
+}
+
+.feedDescription {
+	color: #555555;
+	line-height: 1.3em;
+	margin: 0.5em 0pt;
+}
+
+.feedPublishedDate {
+	color: black;
+}
+
+
+/* Feed entry */
+.feedEntry {
+	width: 100%;
+	background: #FFFFFF none repeat scroll 0%;
+	border: 1px solid silver;
+	margin-bottom: 0.5em;
+	margin-top: 0.5em;
+	padding: 0pt 0.5em 0.5em;
+}
+td.feedEntry h5 {
+	margin: 0.6em 0pt 0pt;
+}
+
+
+/* Feed entry details */
+.feedTitleWrapper {
+	margin: 0.6em 0pt 0pt;
+	font-family: Arial,Helvetica,sans-serif;
+}
+a.feedEntryTitle {
+	font-size:100%;
+	font-weight: bold;
+}
+a.feedEntryTitle img {
+	text-decoration: none !important;
+	background-color: white !important;
+}
+.feedEntryDate { /*color:#555555;*/
+	color: black;
+	font-size: 0.8em;
+}
+.feedEntryBody {
+	color: #555555;
+	line-height: 1.3em;
+	margin: 0.5em 0pt;
+}
+.readMore {
+	color:#555555;
+	/*color: black;*/
+	font-size: 0.8em;
+}
+.readExternal {
+	color:#555555;
+	/*color: black;*/
+	font-size: 0.8em;
+}
+
+
+/* Feed entry enclosure styling */
+td.feedEntry ul {
+	list-style-type: none;
+	padding-left: 0px;
+}
+td.feedEntry ul li {
+	display: inline;
+	padding-right: 12px;
+}
+a.audio {
+	background: transparent url(/library/image/silk/sound.png) no-repeat left;
+	padding-left: 22px;
+}
+a.video {
+	background: transparent url(/library/image/silk/film.png) no-repeat left;
+	padding-left: 22px;
+}
+a.image {
+	background: transparent url(/library/image/silk/image.png) no-repeatleft;
+	padding-left: 22px;
+}
+a.other {
+	background: transparent url(/library/image/silk/attach.png) no-repeat left;
+	padding-left: 22px;
+}
+
+
+/* Authentication box */
+.authPanel{
+	background: #F4F4F4 none repeat scroll 0%;
+	border: 1px solid silver;
+	margin-bottom: 0.5em;
+	margin-top: 0.5em;
+	padding: 0pt 0.5em 0.5em;
+}
+
+
+/* Dnd Dojo style */
+.drag {
+        background : #eee;
+        border : 1px solid white;
+        width: 75%;
+        cursor: move;
+}
+
+
+/* DnD JQuery - Unused*/
+/*.container {
+	width: 75%;
+}
+.dndItem {
+	background : #eee;
+	border : 1px solid white;
+	height: 24px;
+	cursor: move;
+}
+.dndItem:hover{
+	background-color: #ffc;
+}*/

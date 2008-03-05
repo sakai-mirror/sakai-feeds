@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>base</artifactId>
+		<groupId>org.sakaiproject</groupId>
+		<version>SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<organization>
+		<name>Universidade Fernando Pessoa</name>
+		<url>http://www.ufp.pt</url>
+	</organization>
+	<inceptionYear>2008</inceptionYear>
+
+	<name>Sakai Feeds</name>
+	<groupId>org.sakaiproject</groupId>
+	<artifactId>sakai-feeds</artifactId>
+
+	<packaging>pom</packaging>
+	<modules>
+		<module>api</module>
+		<module>impl</module>
+		<module>pack</module>
+		<module>tool</module>
+	</modules>
+</project>

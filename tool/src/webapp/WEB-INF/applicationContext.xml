@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+
+	<!-- Here's our 'facade' bean that we can inject a reference with -->
+	<bean id="org.sakaiproject.feeds.tool.facade.SakaiFacade"
+		class="org.sakaiproject.feeds.tool.facade.SakaiFacadeImpl">
+		<!-- <lookup-method name="feedsService" bean="org.sakaiproject.feeds.api.FeedsService" />-->
+		<property name="feedsService" ref="org.sakaiproject.feeds.api.FeedsService" />
+		<property name="sessionManager" ref="org.sakaiproject.tool.api.SessionManager" />
+	</bean>
+
+	<!-- The id of this bean needs to match the param 'applicationBean' under your web.xml -->
+	<bean id="feedsApplication" class="org.sakaiproject.feeds.tool.wicket.FeedsApplication">
+    	<property name="facade">
+			<ref bean="org.sakaiproject.feeds.tool.facade.SakaiFacade"/>
+		</property>
+    </bean>
+    
+</beans>
