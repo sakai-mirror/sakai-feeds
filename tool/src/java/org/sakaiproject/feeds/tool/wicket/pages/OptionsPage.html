@@ -37,7 +37,7 @@
 	
 	<!-- Subscriptions order -->
 	<h4><wicket:message key="order.title">[order.title]</wicket:message></h4>
-	<p class="instruction">
+	<p wicket:id="orderInstruction" class="instruction">
 			<wicket:message key="order.instr">[order.instr]</wicket:message>
 	</p>
 	<div wicket:id="container" style="position:relative;">
@@ -52,6 +52,9 @@
 			</table>
 		</div>
 	</div>
+	<p wicket:id="noSubscriptions" class="instruction">
+		<wicket:message key="no.subscriptions">[no.subscriptions]</wicket:message>
+	</p>
 	
 
 	<!-- BUTTONS -->

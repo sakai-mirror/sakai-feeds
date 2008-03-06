@@ -691,7 +691,12 @@ public class FeedsServiceImpl implements FeedsService {
 
 	public boolean allowSubscribeFeeds() {
 		try{
-			return SecurityService.unlock(AUTH_SUBSCRIBE, m_siteService.siteReference(ToolManager.getCurrentPlacement().getContext()));
+			// do not require subscribe permission when tool is on My Workspace
+			String siteId = ToolManager.getCurrentPlacement().getContext();
+			if(m_siteService.isUserSite(siteId))
+				return true;
+			else
+				return SecurityService.unlock(AUTH_SUBSCRIBE, m_siteService.siteReference(siteId));
 		}catch(Exception e){
 			LOG.warn("allowSubscribeFeeds()", e);
 			return false;
