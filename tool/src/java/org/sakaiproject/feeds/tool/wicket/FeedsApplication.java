@@ -40,6 +40,11 @@ public class FeedsApplication extends SakaiWebApplication {
 	protected ISessionStore newSessionStore() {
 		return new HttpSessionStore(this);
 	}
+
+	@Override
+	public void sessionDestroyed(String sessionId) {
+		//super.sessionDestroyed(sessionId);
+	}
 	
 }
 

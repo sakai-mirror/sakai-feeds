@@ -22,7 +22,7 @@ public class MainPage extends BasePage {
 		this(null);
 	}
 	
-	public MainPage(PageParameters params) {		
+	public MainPage(PageParameters params) {
 		setupClientCookies();
 		
 		Menu menu = new Menu("menu");	
