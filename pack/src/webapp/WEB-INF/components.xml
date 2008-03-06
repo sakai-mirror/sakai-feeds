@@ -1,23 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>		
-	
-	<!-- Load HBM related beans -->
-	<!-- <import resource="dataSource.xml" /> -->
 
 	<!-- FeedsService ______________________________________________________________________________ -->
 	<bean id="org.sakaiproject.feeds.api.FeedsService"
 		class="org.sakaiproject.feeds.impl.FeedsServiceImpl"
+		lazy-init="true"
 		singleton="true"
 		init-method="init" destroy-method="destroy">
 		
-		<!-- OPTIONS: -->				
-			<!-- Show bar charts item labels by default? (default: false) -->
-			<!-- <property name="itemLabelsVisible" value="true" /> -->
-		<!-- /OPTIONS -->
-		
-		<!-- Data source -->
-		<!-- <property name="dataSource" ref="gepDataSource"/> -->
+		<!-- InstitutionalFeedProvider -->
+		<!-- <property name="institutionalFeedProvider" ref="my.package.MyInstitutionalFeedProviderImpl"/> -->
 		
 		<!-- Sakai services -->
 		<property name="siteService" ref="org.sakaiproject.site.api.SiteService"/>	
@@ -45,6 +38,7 @@
 	
 	<!-- HttpServletAccessProvider ______________________________________________________________________________ -->
 	<bean id="org.sakaiproject.feeds.api.provider.FeedsAccessProvider" class="org.sakaiproject.feeds.impl.provider.FeedsAccessProvider"
+		lazy-init="true"
 		singleton="true"
 		init-method="init" destroy-method="destroy">
 		<property name="feedsService" ref="org.sakaiproject.feeds.api.FeedsService"/>

@@ -25,6 +25,7 @@ import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.authz.cover.FunctionManager;
 import org.sakaiproject.authz.cover.SecurityService;
 import org.sakaiproject.component.api.ServerConfigurationService;
+import org.sakaiproject.component.cover.ComponentManager;
 import org.sakaiproject.entity.api.ResourceProperties;
 import org.sakaiproject.entity.api.ResourcePropertiesEdit;
 import org.sakaiproject.entitybroker.EntityBroker;
@@ -60,6 +61,7 @@ import org.sakaiproject.user.api.Preferences;
 import org.sakaiproject.user.api.PreferencesEdit;
 import org.sakaiproject.user.api.PreferencesService;
 import org.sakaiproject.user.api.User;
+import org.sakaiproject.user.api.UserDirectoryProvider;
 import org.sakaiproject.user.api.UserDirectoryService;
 import org.sakaiproject.util.commonscodec.CommonsCodecBase64;
 
@@ -135,8 +137,6 @@ public class FeedsServiceImpl implements FeedsService {
 	}
 
 	public void init() {
-		LOG.info("init()");
-		
 		// initialize feed fetcher
 		initFeedFetcher();
 
@@ -152,6 +152,13 @@ public class FeedsServiceImpl implements FeedsService {
 			FunctionManager.registerFunction(AUTH_EDIT);
 			FunctionManager.registerFunction(AUTH_DELETE);
 		}
+		
+		// if no provider was set, see if we can find one
+		if(m_institutionalFeedProvider == null){
+			m_institutionalFeedProvider = (InstitutionalFeedProvider) ComponentManager.get(InstitutionalFeedProvider.class);			
+		}
+		
+		LOG.info("init(): provider: " + ((m_institutionalFeedProvider == null) ? "none" : m_institutionalFeedProvider.getClass().getName()));
 	}
 	
 	public void destroy() {
