@@ -92,7 +92,7 @@ public class FeedEntriesPanel extends Panel {
 					@Override
 					protected void onComponentTagBody(MarkupStream markupStream, ComponentTag openTag) {
 						String str = getModelObjectAsString();
-						str += "<script type=\"text/javascript\">$(\"#"+getMarkupId()+"\").find(\"a\").not(\".readMore\").not(\".audio\").not(\".video\").not(\".image\").not(\".other\").attr(\"class\",\"external\");</script>";
+						str += getLinkChangeJs(getMarkupId());
 						replaceComponentTagBody(markupStream, openTag, str);
 					}										
 				};
@@ -105,7 +105,7 @@ public class FeedEntriesPanel extends Panel {
 					@Override
 					protected void onComponentTagBody(MarkupStream markupStream, ComponentTag openTag) {
 						String str = getModelObjectAsString();
-						str += "<script type=\"text/javascript\">$(\"#"+getMarkupId()+"\").find(\"a\").not(\".readMore\").not(\".audio\").not(\".video\").not(\".image\").not(\".other\").attr(\"class\",\"external\");</script>";
+						str += getLinkChangeJs(getMarkupId());
 						replaceComponentTagBody(markupStream, openTag, str);
 					}										
 				};
@@ -299,6 +299,25 @@ public class FeedEntriesPanel extends Panel {
 		js.append("setMainFrameHeightNoScroll(window.name);");
 		
 		return js.toString();
+	}
+	
+	public String getLinkChangeJs(String markupId) {
+		return "<script type=\"text/javascript\">" +
+						/* Add class '.external' to external links */
+						"$(\"#"+markupId+"\").find(\"a\")" +
+								".not(\".readMore\").not(\".audio\").not(\".video\").not(\".image\").not(\".other\")" +
+								".filter(function(index){" +
+									"return $(this).attr(\"href\") != undefined;" +
+								"})" +
+								".addClass(\"external\");" +
+						/* Open external links in new window */
+						"$(\"#"+markupId+"\").find(\"a\")" +
+								".not(\".readMore\").not(\".audio\").not(\".video\").not(\".image\").not(\".other\")" +
+								".filter(function(index){" +
+									"return $(this).attr(\"href\") != undefined;" +
+								"})" +
+								".attr(\"target\",\"_blank\");" +						
+				"</script>";
 	}
 
 	public FeedDataProvider getFeedDataProvider() {
