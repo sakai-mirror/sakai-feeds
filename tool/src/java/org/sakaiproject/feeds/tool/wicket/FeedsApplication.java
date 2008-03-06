@@ -13,7 +13,6 @@ public class FeedsApplication extends SakaiWebApplication {
 	
 	protected void init() {
 		super.init();
-		//getResourceSettings().setDisableGZipCompression(true);
 		
 		// Home page
 		mountBookmarkablePage("/home", MainPage.class);
@@ -40,11 +39,5 @@ public class FeedsApplication extends SakaiWebApplication {
 	protected ISessionStore newSessionStore() {
 		return new HttpSessionStore(this);
 	}
-
-	@Override
-	public void sessionDestroyed(String sessionId) {
-		//super.sessionDestroyed(sessionId);
-	}
-	
 }
 

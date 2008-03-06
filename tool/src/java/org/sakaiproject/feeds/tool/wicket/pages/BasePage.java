@@ -1,5 +1,6 @@
 package org.sakaiproject.feeds.tool.wicket.pages;
 
+import org.apache.wicket.Session;
 import org.apache.wicket.markup.html.IHeaderResponse;
 import org.sakaiproject.util.ResourceLoader;
 import org.sakaiproject.wicket.markup.html.SakaiPortletWebPage;
@@ -18,5 +19,12 @@ public class BasePage extends SakaiPortletWebPage {
 		// Set Sakai Locale
 		ResourceLoader rl = new ResourceLoader();
 		getSession().setLocale(rl.getLocale());
+	}
+
+	@Override
+	protected void onBeforeRender() {
+		// prevent wicket session expiration
+		Session.findOrCreate();
+		super.onBeforeRender();
 	}
 }
