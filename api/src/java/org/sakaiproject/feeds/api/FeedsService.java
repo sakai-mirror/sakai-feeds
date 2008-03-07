@@ -13,39 +13,40 @@ import org.sakaiproject.feeds.api.exception.InvalidFeedException;
 
 
 public interface FeedsService {
-	public static final String	TOOL_ID							= "sakai.feeds";
+	public static final String	TOOL_ID									= "sakai.feeds";
 
-	public static final String	TC_PROP_SUBCRIPTIONS			= "feedSubscriptions";
-	public static final String	TC_PROP_LEVEL1_DELIMITER		= "_,_";
-	public static final String	TC_PROP_LEVEL2_DELIMITER		= "_:_";
-	public static final String	TC_PROP_SUBCRIPTIONS_ESC		= "__.__";
-	public static final String	TC_PROP_CREDENTIALS				= "feedCredentials";
+	public static final String	TC_PROP_SUBCRIPTIONS					= "feedSubscriptions";
+	public static final String	TC_PROP_LEVEL1_DELIMITER				= "_,_";
+	public static final String	TC_PROP_LEVEL2_DELIMITER				= "_:_";
+	public static final String	TC_PROP_SUBCRIPTIONS_ESC				= "__.__";
+	public static final String	TC_PROP_CREDENTIALS						= "feedCredentials";
 
-	public static final String	PREFS_VIEWOPTIONS				= "viewOptions";
-	public static final String	PREFS_PROP_VIEWFILTER			= "viewFilter";
-	public static final String	PREFS_PROP_VIEWDETAIL			= "viewDetail";
-	public static final String	PREFS_SUBSCRIPTIONSORDER		= "subscriptionsOrder";
-	public static final String	PREFS_PROP_SUBSCRIPTIONSORDER	= "subscriptionsOrder";
+	public static final String	PREFS_VIEWOPTIONS						= "viewOptions";
+	public static final String	PREFS_PROP_VIEWFILTER					= "viewFilter";
+	public static final String	PREFS_PROP_VIEWDETAIL					= "viewDetail";
+	public static final String	PREFS_SUBSCRIPTIONSORDER				= "subscriptionsOrder";
+	public static final String	PREFS_PROP_SUBSCRIPTIONSORDER			= "subscriptionsOrder";
 
-	public static final String	SAK_PROP_IGNORECERTERR			= "feeds.ignoreCertificateErrors";
-	public static final String	SAK_PROP_INSTSUBSCRIPTIONS		= "feeds.institutional";
-	public static final String	SAK_PROP_SECRETKEY				= "feeds.secret.key";
-	public static final String	DEFAULT_SECRETKEY				= "a24896181a2a6bfac91b7e1b9b23018e";
+	public static final String	SAK_PROP_IGNORECERTERR					= "feeds.ignoreCertificateErrors";
+	public static final String	SAK_PROP_INSTSUBSCRIPTIONS				= "feeds.institutional";
+	public static final String	SAK_PROP_SECRETKEY						= "feeds.secret.key";
+	public static final String	DEFAULT_SECRETKEY						= "a24896181a2a6bfac91b7e1b9b23018e";
+	public static final String	SAK_PROP_MAXCACHEDFEEDS					= "feeds.maxCachedFeeds";
 
-	public static final String	SESSION_ATTR_CREDENTIALS		= "feedCredentials";
-	public static final String	SESSION_ATTR_HTTPSTATE			= "httpState";
-	public static final String	SESSION_ATTR_VIEWOPTIONS		= "viewOptions";
+	public static final String	SESSION_ATTR_CREDENTIALS				= "feedCredentials";
+	public static final String	SESSION_ATTR_HTTPSTATE					= "httpState";
+	public static final String	SESSION_ATTR_VIEWOPTIONS				= "viewOptions";
 
 	/** Permission for subscribing feeds. */
-	public static final String	AUTH_SUBSCRIBE					= "feeds.subscribe";
+	public static final String	AUTH_SUBSCRIBE							= "feeds.subscribe";
 	/** Permission for creating new (internal) feeds. */
-	public static final String	AUTH_NEW						= "feeds.new";
+	public static final String	AUTH_NEW								= "feeds.new";
 	/** Permission for adding entries to (internal) feeds. */
-	public static final String	AUTH_ADD						= "feeds.add";
+	public static final String	AUTH_ADD								= "feeds.add";
 	/** Permission for editing entries on (internal) feeds. */
-	public static final String	AUTH_EDIT						= "feeds.edit";
+	public static final String	AUTH_EDIT								= "feeds.edit";
 	/** Permission for deleting entries on (internal) feeds. */
-	public static final String	AUTH_DELETE						= "feeds.delete";
+	public static final String	AUTH_DELETE								= "feeds.delete";
 
 	/** Check if user is allowed to subscribe feeds. */
 	public boolean allowSubscribeFeeds();
