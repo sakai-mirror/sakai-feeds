@@ -3,7 +3,6 @@ package org.sakaiproject.feeds.tool.wicket.pages;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -231,7 +230,6 @@ public class SubscriptionsPage extends BasePage {
 			return null;
 		FeedSubscription feedSubscription = null;
 		try{
-			url = URLDecoder.decode(url, "UTF-8");			
 			URL _url = new URL(url);
 			if(username != null && !username.trim().equals("")){
 				facade.getFeedsService().addCredentials(_url, authenticationRealm, username, password);
