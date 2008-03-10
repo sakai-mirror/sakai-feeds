@@ -32,6 +32,12 @@ public interface FeedsService {
 	public static final String	SAK_PROP_SECRETKEY						= "feeds.secret.key";
 	public static final String	DEFAULT_SECRETKEY						= "a24896181a2a6bfac91b7e1b9b23018e";
 	public static final String	SAK_PROP_MAXCACHEDFEEDS					= "feeds.maxCachedFeeds";
+	public static final String	SAK_PROP_MIGRATE						= "feeds.migrate";
+	public static final String	SAK_PROP_MIGRATE_GETONLINEINFO			= "feeds.migrate.getOnlineFeedInfo";
+	public static final String	SAK_PROP_MIGRATE_ALWAYSCREATETOOL		= "feeds.migrate.alwaysCreateTool";
+	public static final String	SAK_PROP_MIGRATE_ADDPERMISSION			= "feeds.migrate.addPermission";
+	public static final String	SAK_PROP_MIGRATE_DEFAULTFEEDURL			= "feeds.migrate.defaultFeedUrl";
+	public static final String	MIGRATE_DEFAULTFEEDURL					= "http://www.sakaiproject.org/cms/index2.php?option=com_rss&amp;feed=RSS2.0&amp;no_html=1";
 
 	public static final String	SESSION_ATTR_CREDENTIALS				= "feedCredentials";
 	public static final String	SESSION_ATTR_HTTPSTATE					= "httpState";
@@ -118,7 +124,7 @@ public interface FeedsService {
 	public boolean saveFeed(Feed feed);
 
 	/** Build a FeedSubscription object from a Feed URL. */
-	public FeedSubscription getFeedSubscriptionFromFeedUrl(String feedUrl) throws IllegalArgumentException, MalformedURLException, IOException, InvalidFeedException, FetcherException, FeedAuthenticationException;
+	public FeedSubscription getFeedSubscriptionFromFeedUrl(String feedUrl, boolean getOnlineInfo) throws IllegalArgumentException, MalformedURLException, IOException, InvalidFeedException, FetcherException, FeedAuthenticationException;
 	
 	/** Build an entity reference based on feed uri. */
 	public EntityReference getEntityReference(String feedUrl);

@@ -187,7 +187,7 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 		if(feedInfoCache instanceof SakaiFeedFetcherCache) {
 			SakaiFeedFetcherCache cache = (SakaiFeedFetcherCache) feedInfoCache;
 			if(!forceExternalCheck && cache.isRecent(feedUrl)){
-				LOG.info("Feed was recently cached - returning feed from cache: "+feedUrl.toString());
+				//LOG.info("Feed was recently cached - returning feed from cache: "+feedUrl.toString());
 				return cache.getFeedInfo(feedUrl).getSyndFeed();
 			}
 		}		
@@ -289,8 +289,11 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 		}
 		method.getParams().setCookiePolicy(CookiePolicy.BROWSER_COMPATIBILITY);
 		Cookie[] cookies = client.getState().getCookies();
-		for(int i=0; i<cookies.length; i++)
-			method.addRequestHeader("Cookie", cookies[i].toString());
+		for(int i=0; i<cookies.length; i++){
+			if(cookies[i].getDomain().equals(feedUrl.getHost())){
+				method.addRequestHeader("Cookie", cookies[i].toString());
+			}
+		}
 		statusCode = client.executeMethod(method);
 		AuthState authState = method.getHostAuthState();
 

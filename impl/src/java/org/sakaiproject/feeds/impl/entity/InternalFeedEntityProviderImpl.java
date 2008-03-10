@@ -5,7 +5,7 @@ import org.sakaiproject.entitybroker.entityprovider.capabilities.AutoRegisterEnt
 import org.sakaiproject.feeds.api.FeedsService;
 import org.sakaiproject.feeds.api.entity.InternalFeedEntityProvider;
 
-public class InternalFeedEntityProviderImpl implements InternalFeedEntityProvider, CoreEntityProvider, AutoRegisterEntityProvider  {
+public class InternalFeedEntityProviderImpl implements InternalFeedEntityProvider, CoreEntityProvider/*, AutoRegisterEntityProvider*/ {
 
 	private FeedsService feedsService;
 	public void setFeedsService(FeedsService feedsService) {

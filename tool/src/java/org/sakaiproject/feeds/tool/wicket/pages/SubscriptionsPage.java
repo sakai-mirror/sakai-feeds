@@ -234,7 +234,7 @@ public class SubscriptionsPage extends BasePage {
 			if(username != null && !username.trim().equals("")){
 				facade.getFeedsService().addCredentials(_url, authenticationRealm, username, password);
 			}
-			feedSubscription = facade.getFeedsService().getFeedSubscriptionFromFeedUrl(url);
+			feedSubscription = facade.getFeedsService().getFeedSubscriptionFromFeedUrl(url, true);
 			if(isRememberMe() && username != null && !username.trim().equals("")){
 				SavedCredentials newCrd = facade.getFeedsService().newSavedCredentials(_url, authenticationRealm, username, password);
 				// remove overrided credentials

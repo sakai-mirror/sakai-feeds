@@ -3,6 +3,9 @@ package org.sakaiproject.feeds.impl;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,11 +29,13 @@ import org.sakaiproject.authz.cover.FunctionManager;
 import org.sakaiproject.authz.cover.SecurityService;
 import org.sakaiproject.component.api.ServerConfigurationService;
 import org.sakaiproject.component.cover.ComponentManager;
+import org.sakaiproject.db.cover.SqlService;
 import org.sakaiproject.entity.api.ResourceProperties;
 import org.sakaiproject.entity.api.ResourcePropertiesEdit;
 import org.sakaiproject.entitybroker.EntityBroker;
 import org.sakaiproject.entitybroker.EntityReference;
 import org.sakaiproject.entitybroker.IdEntityReference;
+import org.sakaiproject.entitybroker.entityprovider.EntityProviderManager;
 import org.sakaiproject.exception.IdUnusedException;
 import org.sakaiproject.exception.InUseException;
 import org.sakaiproject.exception.PermissionException;
@@ -50,12 +55,14 @@ import org.sakaiproject.feeds.api.provider.InstitutionalFeedProvider;
 import org.sakaiproject.feeds.api.provider.InternalFeedStorageProvider;
 import org.sakaiproject.feeds.impl.SakaiFeedFetcher.CredentialSupplier;
 import org.sakaiproject.feeds.impl.SakaiFeedFetcher.InnerFetcherException;
+import org.sakaiproject.feeds.impl.entity.ExternalFeedEntityProviderImpl;
 import org.sakaiproject.id.api.IdManager;
 import org.sakaiproject.site.api.Site;
 import org.sakaiproject.site.api.SiteService;
 import org.sakaiproject.tool.api.Placement;
 import org.sakaiproject.tool.api.Session;
 import org.sakaiproject.tool.api.SessionManager;
+import org.sakaiproject.tool.api.Tool;
 import org.sakaiproject.tool.cover.ToolManager;
 import org.sakaiproject.user.api.Preferences;
 import org.sakaiproject.user.api.PreferencesEdit;
@@ -79,6 +86,7 @@ public class FeedsServiceImpl implements FeedsService {
 	private static Log						LOG	= LogFactory.getLog(FeedsServiceImpl.class);
 	private SiteService						m_siteService;
 	private EntityBroker					m_entityBroker;
+	private EntityProviderManager			m_entityProviderManager;
 	private ServerConfigurationService		m_serverConfigurationService;
 	private IdManager						m_idManager;
 	private SessionManager					m_sessionManager;
@@ -113,6 +121,10 @@ public class FeedsServiceImpl implements FeedsService {
 		this.m_entityBroker = entityBroker;
 	}
 
+	public void setEntityProviderManager(EntityProviderManager entityProviderManager) {
+		this.m_entityProviderManager = entityProviderManager;
+	}
+
 	public void setServerConfigurationService(ServerConfigurationService serverConfigurationService) {
 		this.m_serverConfigurationService = serverConfigurationService;
 	}
@@ -145,13 +157,16 @@ public class FeedsServiceImpl implements FeedsService {
 		
 		// register security functions
 		FunctionManager.registerFunction(AUTH_SUBSCRIBE);
-		if(m_internalFeedStorageProvider != null) {
-			// TODO Internal feed creation is not yet implemented!!!
-			FunctionManager.registerFunction(AUTH_NEW);
-			FunctionManager.registerFunction(AUTH_ADD);
-			FunctionManager.registerFunction(AUTH_EDIT);
-			FunctionManager.registerFunction(AUTH_DELETE);
-		}
+		//if(m_internalFeedStorageProvider != null) {
+			// Not implemented!!! - probably never?
+			//FunctionManager.registerFunction(AUTH_NEW);
+			//FunctionManager.registerFunction(AUTH_ADD);
+			//FunctionManager.registerFunction(AUTH_EDIT);
+			//FunctionManager.registerFunction(AUTH_DELETE);
+		//}
+		
+		// register entities
+		m_entityProviderManager.registerEntityProvider(new ExternalFeedEntityProviderImpl());
 		
 		// if no provider was set, see if we can find one
 		if(m_institutionalFeedProvider == null){
@@ -159,6 +174,19 @@ public class FeedsServiceImpl implements FeedsService {
 		}
 		
 		LOG.info("init(): provider: " + ((m_institutionalFeedProvider == null) ? "none" : m_institutionalFeedProvider.getClass().getName()));
+		
+		if(m_serverConfigurationService.getBoolean(SAK_PROP_MIGRATE, false)){
+			LOG.info("init(): feeds.convertOldNewsTool: starting conversion of 'sakai.news' tools to new 'sakai.feeds'...");
+			boolean getOnlineFeedInfo = m_serverConfigurationService.getBoolean(SAK_PROP_MIGRATE_GETONLINEINFO, true);
+			boolean alwaysCreateTool = m_serverConfigurationService.getBoolean(SAK_PROP_MIGRATE_ALWAYSCREATETOOL, false);
+			boolean addPermission = m_serverConfigurationService.getBoolean(SAK_PROP_MIGRATE_ADDPERMISSION, false);			
+			String defaultFeedUrl = m_serverConfigurationService.getString(SAK_PROP_MIGRATE_DEFAULTFEEDURL, MIGRATE_DEFAULTFEEDURL);
+			int count = ToolMigration.convertFromOldNewsTool(getOnlineFeedInfo, alwaysCreateTool, addPermission, defaultFeedUrl);
+			if(count > 0)
+				LOG.info("init(): feeds.convertOldNewsTool: converted old 'sakai.news' tools to new 'sakai.feeds' in "+count+" sites.");
+			else
+				LOG.info("init(): feeds.convertOldNewsTool: NOTHING to convert => you may want to remove '"+SAK_PROP_MIGRATE+"' from sakai.properties?");
+		}
 	}
 	
 	public void destroy() {
@@ -478,7 +506,7 @@ public class FeedsServiceImpl implements FeedsService {
 			if(configured != null) {
 				for(int i=0; i<configured.length; i++) {
 					try{
-						FeedSubscription subs = getFeedSubscriptionFromFeedUrl(configured[i]);
+						FeedSubscription subs = getFeedSubscriptionFromFeedUrl(configured[i], true);
 						LOG.info("Institutional Feed: "+subs.getTitle());
 						institutionalFeeds.add(subs);
 					}catch(Exception e){
@@ -502,7 +530,7 @@ public class FeedsServiceImpl implements FeedsService {
 			if(additional != null){
 				for(String feedUrl : additional){
 					try{
-						FeedSubscription subs = getFeedSubscriptionFromFeedUrl(feedUrl);
+						FeedSubscription subs = getFeedSubscriptionFromFeedUrl(feedUrl, true);
 						LOG.info("Additional Institutional Feed: " + subs.getTitle());
 						userInstitutionalFeeds.add(subs);
 					}catch(Exception e){
@@ -661,10 +689,10 @@ public class FeedsServiceImpl implements FeedsService {
 		return false;
 	}
 	
-	public FeedSubscription getFeedSubscriptionFromFeedUrl(String feedUrl) throws IllegalArgumentException, MalformedURLException, IOException, InvalidFeedException, FetcherException, FeedAuthenticationException {
+	public FeedSubscription getFeedSubscriptionFromFeedUrl(String feedUrl, boolean getOnlineInfo) throws IllegalArgumentException, MalformedURLException, IOException, InvalidFeedException, FetcherException, FeedAuthenticationException {
 		EntityReference reference = getEntityReference(feedUrl);
 		IdEntityReference idEntityRef = (IdEntityReference) reference;
-		Feed feed = getFeed(reference, false);
+		Feed feed = getOnlineInfo? getFeed(reference, false) : null;
 		FeedSubscription subscription = new FeedSubscriptionImpl();
 		if(feed != null) {
 			subscription.setUrl(feedUrl);
@@ -673,6 +701,13 @@ public class FeedsServiceImpl implements FeedsService {
 			subscription.setIconUrl(feed.getImageUrl() == null? defaultFeedIcon : feed.getImageUrl());			
 		}else{
 			subscription.setUrl(feedUrl);
+			try{
+				URL url = new URL(feedUrl);
+				subscription.setTitle(url.getHost());
+			}catch(Exception e){
+				subscription.setTitle(feedUrl);
+			}
+			subscription.setDescription("");
 			subscription.setIconUrl(defaultFeedIcon);
 		}
 		return subscription;
