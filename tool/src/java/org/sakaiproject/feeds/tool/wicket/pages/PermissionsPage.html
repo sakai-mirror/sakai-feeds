@@ -1,0 +1,44 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<body>
+
+<wicket:head></wicket:head>
+<wicket:extend>
+
+	<h4>
+		<wicket:message key="permissions.title">[title]</wicket:message>
+	</h4>
+	<p class="instruction">
+		<wicket:message key="permissions.instr">[permissions.instr]</wicket:message>
+	</p>
+	
+	<form wicket:id="permissionsForm">	
+		<table class="listHier lines nolines" cellspacing="0" border="0">
+			<tr>
+				<th id="role"><wicket:message key="permissions.role">[permissions.role]</wicket:message></th>
+				<th><wicket:message key="feeds.subscribe">[feeds.subscribe]</wicket:message></th>
+			</tr>
+			<tr wicket:id="permissions">
+				<td headers="role">
+					<span wicket:id="role"></span>
+				</td>
+				<td headers="subscribe">
+					<input wicket:id="feeds.subscribe" type="checkbox" />
+				</td>
+			</tr>
+		</table>	
+
+		<!-- BUTTONS -->
+		<p class="act">
+			<input type="submit" wicket:id="save" wicket:message="value:save" class="active"/>
+			<input type="submit" wicket:id="cancel" wicket:message="value:cancel"/>
+		</p>
+	</form>
+	
+</wicket:extend>
+
+</body>
+</html>
+

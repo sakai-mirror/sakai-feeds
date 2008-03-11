@@ -35,7 +35,6 @@ public interface FeedsService {
 	public static final String	SAK_PROP_MIGRATE						= "feeds.migrate";
 	public static final String	SAK_PROP_MIGRATE_GETONLINEINFO			= "feeds.migrate.getOnlineFeedInfo";
 	public static final String	SAK_PROP_MIGRATE_ALWAYSCREATETOOL		= "feeds.migrate.alwaysCreateTool";
-	public static final String	SAK_PROP_MIGRATE_ADDPERMISSION			= "feeds.migrate.addPermission";
 	public static final String	SAK_PROP_MIGRATE_DEFAULTFEEDURL			= "feeds.migrate.defaultFeedUrl";
 	public static final String	MIGRATE_DEFAULTFEEDURL					= "http://www.sakaiproject.org/cms/index2.php?option=com_rss&amp;feed=RSS2.0&amp;no_html=1";
 
@@ -54,6 +53,9 @@ public interface FeedsService {
 	/** Permission for deleting entries on (internal) feeds. */
 	public static final String	AUTH_DELETE								= "feeds.delete";
 
+	/** Check if user is allowed to edit permissions for tool. */
+	public boolean allowEditPermissions();
+	
 	/** Check if user is allowed to subscribe feeds. */
 	public boolean allowSubscribeFeeds();
 
@@ -140,4 +142,5 @@ public interface FeedsService {
 	
 	/** Add cookie (relevant to this domain) for the current user. */
 	public void addClientCookie(String domain, String name, String value, String path, int maxAge, boolean secure);
+
 }

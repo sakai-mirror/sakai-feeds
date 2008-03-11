@@ -4,11 +4,9 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import com.sun.syndication.feed.synd.SyndFeed;
 import com.sun.syndication.fetcher.impl.FeedFetcherCache;
 import com.sun.syndication.fetcher.impl.SyndFeedInfo;
 

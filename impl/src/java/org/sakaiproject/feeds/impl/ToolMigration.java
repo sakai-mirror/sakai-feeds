@@ -11,7 +11,6 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.sakaiproject.authz.api.AuthzGroup;
 import org.sakaiproject.authz.cover.AuthzGroupService;
 import org.sakaiproject.component.cover.ComponentManager;
 import org.sakaiproject.db.cover.SqlService;
@@ -21,11 +20,8 @@ import org.sakaiproject.site.api.Site;
 import org.sakaiproject.site.api.SitePage;
 import org.sakaiproject.site.api.ToolConfiguration;
 import org.sakaiproject.site.cover.SiteService;
-import org.sakaiproject.tool.api.Placement;
 import org.sakaiproject.tool.api.Session;
-import org.sakaiproject.tool.api.Tool;
 import org.sakaiproject.tool.cover.SessionManager;
-import org.sakaiproject.tool.cover.ToolManager;
 import org.sakaiproject.user.cover.UserDirectoryService;
 
 
@@ -36,7 +32,7 @@ public class ToolMigration {
 	
 	private static FeedsService	m_feedsService		= (FeedsService) ComponentManager.get(FeedsService.class);
 
-	public static int convertFromOldNewsTool(boolean getOnlineInfo, boolean alwaysCreateTool, boolean addPermission, String defaultFeedUrl) {
+	public static int convertFromOldNewsTool(boolean getOnlineInfo, boolean alwaysCreateTool, String defaultFeedUrl) {
 		int siteCount = 0;
 		Connection c = null;
 
@@ -124,11 +120,12 @@ public class ToolMigration {
 				addSubscribedFeeds(toolConfig, subscriptions);
 				
 				// add permission?
-				if(addPermission) {
-					AuthzGroup authz = AuthzGroupService.getAuthzGroup(site.getReference());
-					authz.getRole(site.getMaintainRole()).allowFunction(FeedsService.AUTH_SUBSCRIBE);
-					AuthzGroupService.save(authz);
-				}
+				// -- NOT NEEDED, There is a Permissions page now
+				//if(addPermission) {
+				//	AuthzGroup authz = AuthzGroupService.getAuthzGroup(site.getReference());
+				//	authz.getRole(site.getMaintainRole()).allowFunction(FeedsService.AUTH_SUBSCRIBE);
+				//	AuthzGroupService.save(authz);
+				//}
 				
 				// increment site counter
 				siteCount++;

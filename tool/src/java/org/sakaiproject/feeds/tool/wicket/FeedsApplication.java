@@ -3,7 +3,6 @@ package org.sakaiproject.feeds.tool.wicket;
 import org.apache.wicket.protocol.http.HttpSessionStore;
 import org.apache.wicket.session.ISessionStore;
 import org.apache.wicket.settings.IExceptionSettings;
-import org.apache.wicket.util.time.Duration;
 import org.sakaiproject.feeds.tool.facade.SakaiFacade;
 import org.sakaiproject.feeds.tool.wicket.pages.MainPage;
 import org.sakaiproject.wicket.protocol.http.SakaiWebApplication;

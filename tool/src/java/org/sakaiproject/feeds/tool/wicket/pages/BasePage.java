@@ -1,6 +1,5 @@
 package org.sakaiproject.feeds.tool.wicket.pages;
 
-import org.apache.wicket.Session;
 import org.apache.wicket.markup.html.IHeaderResponse;
 import org.sakaiproject.util.ResourceLoader;
 import org.sakaiproject.wicket.markup.html.SakaiPortletWebPage;

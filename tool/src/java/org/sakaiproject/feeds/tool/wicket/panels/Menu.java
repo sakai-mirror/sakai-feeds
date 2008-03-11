@@ -7,6 +7,7 @@ import org.apache.wicket.spring.injection.annot.SpringBean;
 import org.sakaiproject.feeds.tool.facade.SakaiFacade;
 import org.sakaiproject.feeds.tool.wicket.pages.MainPage;
 import org.sakaiproject.feeds.tool.wicket.pages.OptionsPage;
+import org.sakaiproject.feeds.tool.wicket.pages.PermissionsPage;
 import org.sakaiproject.feeds.tool.wicket.pages.SubscriptionsPage;
 
 
@@ -22,11 +23,14 @@ public class Menu extends Panel {
 	private BookmarkablePageLink	refreshLink;
 	private BookmarkablePageLink	subscriptionsLink;
 	private BookmarkablePageLink	optionsLink;
+	private BookmarkablePageLink	permissionsLink;
 
 	public Menu(String id) {
 		super(id);
 
 		boolean subscriptionsVisible = facade.getFeedsService().allowSubscribeFeeds();
+		boolean isInMyWorkspace = facade.getSiteService().isUserSite(facade.getToolManager().getCurrentPlacement().getContext());
+		boolean permissionsVisible = !isInMyWorkspace && facade.getFeedsService().allowEditPermissions();		
 
 		PageParameters params = new PageParameters();
 		params.put("forceExternalCheck", Boolean.TRUE);
@@ -39,6 +43,10 @@ public class Menu extends Panel {
 
 		optionsLink = new BookmarkablePageLink("optionsLink", OptionsPage.class);
 		add(optionsLink);	
+		
+		permissionsLink = new BookmarkablePageLink("permissionsLink", PermissionsPage.class);
+		permissionsLink.setVisible(permissionsVisible);
+		add(permissionsLink);
 	}
 
 }

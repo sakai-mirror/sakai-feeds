@@ -3,9 +3,6 @@ package org.sakaiproject.feeds.impl;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,7 +26,6 @@ import org.sakaiproject.authz.cover.FunctionManager;
 import org.sakaiproject.authz.cover.SecurityService;
 import org.sakaiproject.component.api.ServerConfigurationService;
 import org.sakaiproject.component.cover.ComponentManager;
-import org.sakaiproject.db.cover.SqlService;
 import org.sakaiproject.entity.api.ResourceProperties;
 import org.sakaiproject.entity.api.ResourcePropertiesEdit;
 import org.sakaiproject.entitybroker.EntityBroker;
@@ -62,13 +58,11 @@ import org.sakaiproject.site.api.SiteService;
 import org.sakaiproject.tool.api.Placement;
 import org.sakaiproject.tool.api.Session;
 import org.sakaiproject.tool.api.SessionManager;
-import org.sakaiproject.tool.api.Tool;
 import org.sakaiproject.tool.cover.ToolManager;
 import org.sakaiproject.user.api.Preferences;
 import org.sakaiproject.user.api.PreferencesEdit;
 import org.sakaiproject.user.api.PreferencesService;
 import org.sakaiproject.user.api.User;
-import org.sakaiproject.user.api.UserDirectoryProvider;
 import org.sakaiproject.user.api.UserDirectoryService;
 import org.sakaiproject.util.commonscodec.CommonsCodecBase64;
 
@@ -179,9 +173,8 @@ public class FeedsServiceImpl implements FeedsService {
 			LOG.info("init(): feeds.convertOldNewsTool: starting conversion of 'sakai.news' tools to new 'sakai.feeds'...");
 			boolean getOnlineFeedInfo = m_serverConfigurationService.getBoolean(SAK_PROP_MIGRATE_GETONLINEINFO, true);
 			boolean alwaysCreateTool = m_serverConfigurationService.getBoolean(SAK_PROP_MIGRATE_ALWAYSCREATETOOL, false);
-			boolean addPermission = m_serverConfigurationService.getBoolean(SAK_PROP_MIGRATE_ADDPERMISSION, false);			
 			String defaultFeedUrl = m_serverConfigurationService.getString(SAK_PROP_MIGRATE_DEFAULTFEEDURL, MIGRATE_DEFAULTFEEDURL);
-			int count = ToolMigration.convertFromOldNewsTool(getOnlineFeedInfo, alwaysCreateTool, addPermission, defaultFeedUrl);
+			int count = ToolMigration.convertFromOldNewsTool(getOnlineFeedInfo, alwaysCreateTool, defaultFeedUrl);
 			if(count > 0)
 				LOG.info("init(): feeds.convertOldNewsTool: converted old 'sakai.news' tools to new 'sakai.feeds' in "+count+" sites.");
 			else
@@ -471,19 +464,21 @@ public class FeedsServiceImpl implements FeedsService {
 				for(int i=0; i<chsPair.length; i++){
 					try{
 						String[] fields = chsPair[i].split(TC_PROP_LEVEL2_DELIMITER);
-						SavedCredentials crd = new SavedCredentialsImpl();
-						crd.setUrl(new URL(fields[0]));
-						crd.setRealm(fields[1]);
-						crd.setUsername(fields[2]);
-						String password = decryptData(fields[3]);
-						crd.setPassword(password);
-						if(crd.getUrl() != null && password != null){
-							savedCredentials.add(crd);
+						if(fields[0] != null && !fields[0].trim().equals("")) {
+							SavedCredentials crd = new SavedCredentialsImpl();
+							crd.setUrl(new URL(fields[0]));
+							crd.setRealm(fields[1]);
+							crd.setUsername(fields[2]);
+							String password = decryptData(fields[3]);
+							crd.setPassword(password);
+							if(crd.getUrl() != null && password != null){
+								savedCredentials.add(crd);
+							}
 						}
 					}catch(MalformedURLException e){
-						LOG.warn("Saved credentials contains an invalid URL.");
+						LOG.warn("Saved credentials contains an invalid URL.", e);
 					}catch(Exception e){
-						LOG.warn("Invalid saved credentials.");
+						LOG.warn("Invalid saved credentials.", e);
 					}
 				}
 			}
@@ -730,6 +725,20 @@ public class FeedsServiceImpl implements FeedsService {
 
 	protected String getUniqueId() {
 		return m_idManager.createUuid();
+	}
+	
+	public boolean allowEditPermissions() {
+		try{
+			// do not require subscribe permission when tool is on My Workspace
+			String siteId = ToolManager.getCurrentPlacement().getContext();
+			if(m_siteService.isUserSite(siteId))
+				return true;
+			else
+				return SecurityService.unlock(SiteService.SECURE_UPDATE_SITE, m_siteService.siteReference(siteId));
+		}catch(Exception e){
+			LOG.warn("allowEditPermissions()", e);
+			return false;
+		}
 	}
 
 	public boolean allowSubscribeFeeds() {

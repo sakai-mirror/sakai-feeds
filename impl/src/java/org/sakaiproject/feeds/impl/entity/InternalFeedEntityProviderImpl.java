@@ -1,7 +1,6 @@
 package org.sakaiproject.feeds.impl.entity;
 
 import org.sakaiproject.entitybroker.entityprovider.CoreEntityProvider;
-import org.sakaiproject.entitybroker.entityprovider.capabilities.AutoRegisterEntityProvider;
 import org.sakaiproject.feeds.api.FeedsService;
 import org.sakaiproject.feeds.api.entity.InternalFeedEntityProvider;
 
