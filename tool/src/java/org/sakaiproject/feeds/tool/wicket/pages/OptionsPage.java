@@ -216,6 +216,7 @@ public class OptionsPage extends BasePage {
 		List<String> modes = new ArrayList<String>();
 		modes.add(ViewOptions.VIEW_DETAIL_FULL_ENTRY);
 		modes.add(ViewOptions.VIEW_DETAIL_TITLE_ENTRY);
+		modes.add(ViewOptions.VIEW_DETAIL_NO_ENTRY);
 		return modes;
 	}
 }

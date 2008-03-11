@@ -15,6 +15,7 @@ public interface ViewOptions extends Serializable {
 	
 	public static final String	VIEW_DETAIL_FULL_ENTRY	= "view.entry.full";
 	public static final String	VIEW_DETAIL_TITLE_ENTRY	= "view.entry.title";
+	public static final String	VIEW_DETAIL_NO_ENTRY	= "view.entry.none";
 	public static final String	DEFAULT_VIEW_DETAIL		= VIEW_DETAIL_FULL_ENTRY;
 
 	public String getViewFilter();

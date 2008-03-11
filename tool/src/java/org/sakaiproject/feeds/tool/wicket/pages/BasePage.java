@@ -24,7 +24,7 @@ public class BasePage extends SakaiPortletWebPage {
 	@Override
 	protected void onBeforeRender() {
 		// prevent wicket session expiration
-		Session.findOrCreate();
+		//Session.findOrCreate();
 		super.onBeforeRender();
 	}
 }
