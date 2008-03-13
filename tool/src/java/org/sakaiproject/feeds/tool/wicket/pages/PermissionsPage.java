@@ -49,8 +49,10 @@ public class PermissionsPage extends BasePage {
 				
 				item.add(new Label("role", pw.getRole()));
 				CheckBox chk = new CheckBox("feeds.subscribe", new PropertyModel(pw, "feedsSubscribe"));
-				if(pw.getRole().equals(maintainRole))
+				if(pw.getRole().equals(maintainRole)){
+					pw.setFeedsSubscribe(new Boolean(true));
 					chk.setEnabled(false);
+				}
 				item.add(chk);
 			}
 		};
@@ -128,7 +130,7 @@ public class PermissionsPage extends BasePage {
 			Iterator<PermissionWrapper> it = permissions.iterator();
 			while(it.hasNext()) {
 				PermissionWrapper pw = it.next();
-				if(pw.getFeedsSubscribe())
+				if(pw.getFeedsSubscribe() && !pw.getRole().equals(getMaintainRole()))
 					authz.getRole(pw.getRole()).allowFunction(FeedsService.AUTH_SUBSCRIBE);
 				else
 					authz.getRole(pw.getRole()).disallowFunction(FeedsService.AUTH_SUBSCRIBE);
