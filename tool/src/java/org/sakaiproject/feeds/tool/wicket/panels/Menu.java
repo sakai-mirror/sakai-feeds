@@ -28,7 +28,7 @@ public class Menu extends Panel {
 	public Menu(String id) {
 		super(id);
 
-		boolean subscriptionsVisible = facade.getFeedsService().allowSubscribeFeeds();
+		boolean subscriptionsVisible = facade.getFeedsService().allowSubscribeFeeds() || facade.getFeedsService().allowEditPermissions();
 		boolean isInMyWorkspace = facade.getSiteService().isUserSite(facade.getToolManager().getCurrentPlacement().getContext());
 		boolean permissionsVisible = !isInMyWorkspace && facade.getFeedsService().allowEditPermissions();		
 
