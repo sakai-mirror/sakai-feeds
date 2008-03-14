@@ -173,7 +173,8 @@ public class FeedsServiceImpl implements FeedsService {
 			LOG.info("init(): feeds.convertOldNewsTool: starting conversion of 'sakai.news' tools to new 'sakai.feeds'...");
 			boolean getOnlineFeedInfo = m_serverConfigurationService.getBoolean(SAK_PROP_MIGRATE_GETONLINEINFO, true);
 			boolean alwaysCreateTool = m_serverConfigurationService.getBoolean(SAK_PROP_MIGRATE_ALWAYSCREATETOOL, false);
-			String defaultFeedUrl = m_serverConfigurationService.getString(SAK_PROP_MIGRATE_DEFAULTFEEDURL, MIGRATE_DEFAULTFEEDURL);
+			String sakaiDefaultUrl = m_serverConfigurationService.getString("news.feedURL", MIGRATE_DEFAULTFEEDURL);
+			String defaultFeedUrl = m_serverConfigurationService.getString(SAK_PROP_MIGRATE_DEFAULTFEEDURL, sakaiDefaultUrl);
 			int count = ToolMigration.convertFromOldNewsTool(getOnlineFeedInfo, alwaysCreateTool, defaultFeedUrl);
 			if(count > 0)
 				LOG.info("init(): feeds.convertOldNewsTool: converted old 'sakai.news' tools to new 'sakai.feeds' in "+count+" sites.");
