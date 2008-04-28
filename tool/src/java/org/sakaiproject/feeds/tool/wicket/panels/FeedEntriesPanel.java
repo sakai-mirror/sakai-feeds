@@ -1,8 +1,12 @@
 package org.sakaiproject.feeds.tool.wicket.panels;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
@@ -92,7 +96,7 @@ public class FeedEntriesPanel extends Panel {
 					@Override
 					protected void onComponentTagBody(MarkupStream markupStream, ComponentTag openTag) {
 						String str = getModelObjectAsString();
-						str += getLinkChangeJs(getMarkupId());
+						str += getLinkChangeJs(getMarkupId(), entry);
 						replaceComponentTagBody(markupStream, openTag, str);
 					}										
 				};
@@ -105,7 +109,7 @@ public class FeedEntriesPanel extends Panel {
 					@Override
 					protected void onComponentTagBody(MarkupStream markupStream, ComponentTag openTag) {
 						String str = getModelObjectAsString();
-						str += getLinkChangeJs(getMarkupId());
+						str += getLinkChangeJs(getMarkupId(), entry);
 						replaceComponentTagBody(markupStream, openTag, str);
 					}										
 				};
@@ -118,6 +122,7 @@ public class FeedEntriesPanel extends Panel {
 				// read external
 				final WebMarkupContainer readExternalWrapper = new WebMarkupContainer("readExternalWrapper");
 				final ExternalLink readExternal = new ExternalLink("readExternal", entry.getLink()!=null? entry.getLink():"");
+				readExternal.add(new AttributeModifier("style", true, new Model("clear: left; float: left;")));
 				readExternalWrapper.setOutputMarkupId(true);
 				readExternalWrapper.add(readExternal);
 				feedBody.add(readExternalWrapper);
@@ -301,8 +306,24 @@ public class FeedEntriesPanel extends Panel {
 		return js.toString();
 	}
 	
-	public String getLinkChangeJs(String markupId) {
+	public String getLinkChangeJs(String markupId, FeedEntry feedEntry) {
+		String hostAddress = getHostUrl(feedEntry);
 		return "<script type=\"text/javascript\">" +
+						/* Fix server relative urls in images and links */
+						"$(\"#"+markupId+"\").find(\"img\")" +
+								".filter(function(index){" +
+									"return $(this).attr(\"src\").indexOf('/')==0;" +
+								"})" +
+								".attr(\"src\",function(index) {" +
+									"return \""+ hostAddress +"\" + $(this).attr(\"src\");" +
+								"});" +
+						"$(\"#"+markupId+"\").find(\"a\")" +
+								".filter(function(index){" +
+									"return $(this).attr(\"href\").indexOf('/')==0;" +
+								"})" +
+								".attr(\"href\",function(index) {" +
+									"return \""+ hostAddress +"\" + $(this).attr(\"href\");" +
+								"});" +	
 						/* Add class '.external' to external links */
 						"$(\"#"+markupId+"\").find(\"a\")" +
 								".not(\".readMore\").not(\".audio\").not(\".video\").not(\".image\").not(\".other\")" +
@@ -316,8 +337,19 @@ public class FeedEntriesPanel extends Panel {
 								".filter(function(index){" +
 									"return $(this).attr(\"href\") != undefined;" +
 								"})" +
-								".attr(\"target\",\"_blank\");" +						
+								".attr(\"target\",\"_blank\");" +
 				"</script>";
+	}
+	
+	private String getHostUrl(FeedEntry feedEntry) {
+		try{
+			URL u = new URL(feedEntry.getLink());
+			URL newUrl = new URL(u.getProtocol(), u.getHost(), u.getPort(), "");
+			return newUrl.toExternalForm();
+		}catch(MalformedURLException e){
+			e.printStackTrace();			
+		}
+		return null;
 	}
 
 	public FeedDataProvider getFeedDataProvider() {
