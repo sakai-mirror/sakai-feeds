@@ -30,7 +30,8 @@ public class Menu extends Panel {
 
 		boolean subscriptionsVisible = facade.getFeedsService().allowSubscribeFeeds() || facade.getFeedsService().allowEditPermissions();
 		boolean isInMyWorkspace = facade.getSiteService().isUserSite(facade.getToolManager().getCurrentPlacement().getContext());
-		boolean permissionsVisible = !isInMyWorkspace && facade.getFeedsService().allowEditPermissions();		
+		boolean permissionsVisible = !isInMyWorkspace && facade.getFeedsService().allowEditPermissions();	
+		boolean optionsVisible = facade.getSessionManager().getCurrentSessionUserId() != null;
 
 		PageParameters params = new PageParameters();
 		params.put("forceExternalCheck", Boolean.TRUE);
@@ -42,6 +43,7 @@ public class Menu extends Panel {
 		add(subscriptionsLink);
 
 		optionsLink = new BookmarkablePageLink("optionsLink", OptionsPage.class);
+		optionsLink.setVisible(optionsVisible);
 		add(optionsLink);	
 		
 		permissionsLink = new BookmarkablePageLink("permissionsLink", PermissionsPage.class);
