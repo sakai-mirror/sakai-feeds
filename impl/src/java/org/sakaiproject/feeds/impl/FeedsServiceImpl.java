@@ -346,17 +346,19 @@ public class FeedsServiceImpl implements FeedsService {
 			LOG.warn("Unable to save view options for user "+userId, e);
 			return;
 		}
-		try{
-			ResourcePropertiesEdit props = prefsEdit.getPropertiesEdit(PREFS_SUBSCRIPTIONSORDER);
-			props.removeProperty(PREFS_PROP_SUBSCRIPTIONSORDER);
-			for(String url : subscriptionUrls) {
-				props.addPropertyToList(PREFS_PROP_SUBSCRIPTIONSORDER, url);
+		if(prefsEdit != null) {
+			try{
+				ResourcePropertiesEdit props = prefsEdit.getPropertiesEdit(PREFS_SUBSCRIPTIONSORDER);
+				props.removeProperty(PREFS_PROP_SUBSCRIPTIONSORDER);
+				for(String url : subscriptionUrls) {
+					props.addPropertyToList(PREFS_PROP_SUBSCRIPTIONSORDER, url);
+				}
+			}catch(Exception e){	
+				if(prefsEdit != null)
+					m_preferencesService.cancel(prefsEdit);
 			}
-		}catch(Exception e){	
-			if(prefsEdit != null)
-				m_preferencesService.cancel(prefsEdit);
+			m_preferencesService.commit(prefsEdit);		
 		}
-		m_preferencesService.commit(prefsEdit);		
 	}
 	
 	public List<String> getSubscriptionsOrder() {
@@ -687,7 +689,6 @@ public class FeedsServiceImpl implements FeedsService {
 	
 	public FeedSubscription getFeedSubscriptionFromFeedUrl(String feedUrl, boolean getOnlineInfo) throws IllegalArgumentException, MalformedURLException, IOException, InvalidFeedException, FetcherException, FeedAuthenticationException {
 		EntityReference reference = getEntityReference(feedUrl);
-		IdEntityReference idEntityRef = (IdEntityReference) reference;
 		Feed feed = getOnlineInfo? getFeed(reference, false) : null;
 		FeedSubscription subscription = new FeedSubscriptionImpl();
 		if(feed != null) {
@@ -849,6 +850,8 @@ public class FeedsServiceImpl implements FeedsService {
 				url = new URL(feedUri);
 				feedFetcherAuth.retrieveFeed(url, false);
 				return true;
+			}catch(RuntimeException e){
+				return false;
 			}catch(Exception e){
 				return false;
 			}

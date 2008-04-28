@@ -104,13 +104,13 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 				RE re = null;
 				try{
 					re = new RE("^.*" + nonProxiableHost + "$");
+
+					if(re.match(feedUrl.getHost())){
+						proxiableHost = false;
+						break;
+					}
 				}catch(Exception ex){
 					LOG.warn("Unable to parse http.nonProxyHosts: "+nonProxyHosts);
-				}
-
-				if(re.match(feedUrl.getHost())){
-					proxiableHost = false;
-					break;
 				}
 			}
 		}
@@ -184,8 +184,8 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 		SyndFeed feed = null;
 		
 		// Maybe was recently cached
-		if(feedInfoCache instanceof SakaiFeedFetcherCache) {
-			SakaiFeedFetcherCache cache = (SakaiFeedFetcherCache) feedInfoCache;
+		if(getFeedInfoCache() instanceof SakaiFeedFetcherCache) {
+			SakaiFeedFetcherCache cache = (SakaiFeedFetcherCache) getFeedInfoCache();
 			if(!forceExternalCheck && cache.isRecent(feedUrl)){
 				//LOG.info("Feed was recently cached - returning feed from cache: "+feedUrl.toString());
 				return cache.getFeedInfo(feedUrl).getSyndFeed();
@@ -255,7 +255,7 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 			    }
 			    
 			    method.setFollowRedirects(true);			    
-				int statusCode = executeHttpClientMethod(feedUrl, client, method, authScope, credentials);			    			    
+				int statusCode = executeHttpClientMethod(feedUrl, client, method, null, null);			    			    
 			    SyndFeed feed = getFeed(syndFeedInfo, urlStr, method, statusCode);		
 				syndFeedInfo = buildSyndFeedInfo(feedUrl, urlStr, method, feed, statusCode);
 				cache.setFeedInfo(new URL(urlStr), syndFeedInfo);

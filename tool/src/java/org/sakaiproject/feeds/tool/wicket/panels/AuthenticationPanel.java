@@ -4,6 +4,8 @@ import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
@@ -25,6 +27,7 @@ import org.sakaiproject.feeds.tool.wicket.dataproviders.FeedDataProvider;
  */
 public class AuthenticationPanel extends Panel {
 	private static final long		serialVersionUID	= 1L;
+	private static Log				LOG	= LogFactory.getLog(AuthenticationPanel.class);
 
 	@SpringBean
 	private transient SakaiFacade	facade;
@@ -84,8 +87,12 @@ public class AuthenticationPanel extends Panel {
 					// remove overrided credentials
 					Set<SavedCredentials> toRemove = new HashSet<SavedCredentials>();
 					for(SavedCredentials saved : savedCredentials){
-						if(saved.getUrl().equals(newCrd.getUrl()) && saved.getRealm().equals(newCrd.getRealm()))
-							toRemove.add(saved);
+						try{
+							if(saved.getUrl().toURI().equals(newCrd.getUrl().toURI()) && saved.getRealm().equals(newCrd.getRealm()))
+								toRemove.add(saved);
+						}catch(Exception e){
+							LOG.warn("Unable to compare URLs: "+saved.getUrl().toExternalForm()+" with "+newCrd.getUrl().toExternalForm(), e);
+						}
 					}
 					savedCredentials.removeAll(toRemove);
 					// add new credential

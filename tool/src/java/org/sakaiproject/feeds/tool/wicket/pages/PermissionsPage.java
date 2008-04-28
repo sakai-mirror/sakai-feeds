@@ -50,7 +50,7 @@ public class PermissionsPage extends BasePage {
 				item.add(new Label("role", pw.getRole()));
 				CheckBox chk = new CheckBox("feeds.subscribe", new PropertyModel(pw, "feedsSubscribe"));
 				if(pw.getRole().equals(maintainRole)){
-					pw.setFeedsSubscribe(new Boolean(true));
+					pw.setFeedsSubscribe(Boolean.valueOf(true));
 					chk.setEnabled(false);
 				}
 				item.add(chk);
@@ -97,7 +97,7 @@ public class PermissionsPage extends BasePage {
 				Iterator<Role> it = authz.getRoles().iterator();
 				while(it.hasNext()) {
 					Role r = it.next();
-					permissions.add(new PermissionWrapper(r.getId(), new Boolean(r.isAllowed(FeedsService.AUTH_SUBSCRIBE))));
+					permissions.add(new PermissionWrapper(r.getId(), Boolean.valueOf(r.isAllowed(FeedsService.AUTH_SUBSCRIBE))));
 				}
 			}catch(Exception e){
 				LOG.error("Unable to get permission list", e);
@@ -143,7 +143,7 @@ public class PermissionsPage extends BasePage {
 
 	// ----------------------------------------
 
-	class PermissionWrapper {
+	static class PermissionWrapper {
 		private String	role;
 		private Boolean	feedsSubscribe;
 

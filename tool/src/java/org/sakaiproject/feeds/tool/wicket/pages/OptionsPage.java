@@ -53,7 +53,6 @@ public class OptionsPage extends BasePage {
 		
 		
 		// view options
-		final Component parent = this;
 		final DropDownChoice viewFilter = new DropDownChoice("viewFilter", getViewFilterModes(), new IChoiceRenderer(){
 			private static final long	serialVersionUID	= 0L;
 			public Object getDisplayValue(Object obj) {

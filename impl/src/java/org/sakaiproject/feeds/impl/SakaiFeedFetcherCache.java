@@ -1,6 +1,7 @@
 package org.sakaiproject.feeds.impl;
 
 import java.io.Serializable;
+import java.net.URI;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Date;
@@ -19,8 +20,8 @@ import com.sun.syndication.fetcher.impl.SyndFeedInfo;
  */
 public class SakaiFeedFetcherCache implements FeedFetcherCache, Serializable {
 	private static final long		serialVersionUID	= 1L;
-	private Map<URL, SyndFeedInfo>	infoCache;
-	private Map<URL, Date>			fetchDateCache;
+	private Map<URI, SyndFeedInfo>	infoCache;
+	private Map<URI, Date>			fetchDateCache;
 	private long 					recentForMs;
 
 	public SakaiFeedFetcherCache(int maxCachedEntries, long markFeedRecentForMs) {
@@ -42,11 +43,11 @@ public class SakaiFeedFetcherCache implements FeedFetcherCache, Serializable {
 //			}
 //		}
 //		System.out.println("FeedCache: feedCount: "+infoCache.size()+"  |  totalFeedSize: "+(sizeInBytes/1024)+" KB");
-		return infoCache.get(url);
+		return infoCache.get(urlToUri(url));
 	}
 
 	public boolean isRecent(URL url) {
-		Date feedFetchDate = fetchDateCache.get(url);
+		Date feedFetchDate = fetchDateCache.get(urlToUri(url));
 		if(feedFetchDate != null){
 			return (feedFetchDate.getTime() + recentForMs) >= (new Date().getTime()); 
 		}
@@ -54,11 +55,22 @@ public class SakaiFeedFetcherCache implements FeedFetcherCache, Serializable {
 	}
 
 	public void setFeedInfo(URL url, SyndFeedInfo syndFeedInfo) {
-		infoCache.put(url, syndFeedInfo);
-		fetchDateCache.put(url, new Date());
+		URI uri = urlToUri(url);
+		if(uri != null) {
+			infoCache.put(urlToUri(url), syndFeedInfo);
+			fetchDateCache.put(urlToUri(url), new Date());
+		}
+	}
+	
+	private URI urlToUri(URL url) {
+		try{
+			return url.toURI();
+		}catch(Exception e){
+			return null;
+		}
 	}
 
-	class CacheMap extends LinkedHashMap implements Serializable {
+	static class CacheMap extends LinkedHashMap implements Serializable {
 		private static final long	serialVersionUID	= 1L;
 		private final static float	DEFAULT_LOAD_FACTOR	= 0.75f;
 		private int					maxCachedEntries;

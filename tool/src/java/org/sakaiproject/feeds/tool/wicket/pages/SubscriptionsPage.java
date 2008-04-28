@@ -9,6 +9,8 @@ import java.util.Set;
 
 import javax.net.ssl.SSLHandshakeException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
@@ -39,6 +41,7 @@ import org.sakaiproject.feeds.tool.wicket.panels.CSSFeedbackPanel;
 
 public class SubscriptionsPage extends BasePage {
 	private static final long			serialVersionUID			= 1L;
+	private static Log					LOG	= LogFactory.getLog(SubscriptionsPage.class);
 
 	@SpringBean
 	private transient SakaiFacade		facade;
@@ -240,8 +243,12 @@ public class SubscriptionsPage extends BasePage {
 				// remove overrided credentials
 				Set<SavedCredentials> toRemove = new HashSet<SavedCredentials>();
 				for(SavedCredentials saved : savedCredentials){
-					if(saved.getUrl().equals(newCrd.getUrl()) && saved.getRealm().equals(newCrd.getRealm()))
-						toRemove.add(saved);
+					try{
+						if(saved.getUrl().toURI().equals(newCrd.getUrl().toURI()) && saved.getRealm().equals(newCrd.getRealm()))
+							toRemove.add(saved);
+					}catch(Exception e){
+						LOG.warn("Unable to compare URLs: "+saved.getUrl().toExternalForm()+" with "+newCrd.getUrl().toExternalForm(), e);
+					}
 				}
 				savedCredentials.removeAll(toRemove);
 				// add new credential

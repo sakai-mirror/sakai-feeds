@@ -294,11 +294,13 @@ public class FeedEntriesPanel extends Panel {
 		StringBuilder js = new StringBuilder();
 		
 		//update feed count
+		int entryCount = 0;
 		try{
-			int entryCount = getFeedDataProvider().getFeedEntries().size();
-			js.append("$(\"#" + feedEntryHolder.getMarkupId() + "\").parent().parent().parent().find(\".feedCount\").html(\" ( " + entryCount + " )\");");
+			entryCount = getFeedDataProvider().getFeedEntries().size();			
 		}catch(Exception e){
+			entryCount = 0;
 		}
+		js.append("$(\"#" + feedEntryHolder.getMarkupId() + "\").parent().parent().parent().find(\".feedCount\").html(\" ( " + entryCount + " )\");");
 
 		// adjust frame height
 		js.append("setMainFrameHeightNoScroll(window.name);");
@@ -308,37 +310,35 @@ public class FeedEntriesPanel extends Panel {
 	
 	public String getLinkChangeJs(String markupId, FeedEntry feedEntry) {
 		String hostAddress = getHostUrl(feedEntry);
-		return "<script type=\"text/javascript\">" +
-						/* Fix server relative urls in images and links */
-						"$(\"#"+markupId+"\").find(\"img\")" +
-								".filter(function(index){" +
-									"return $(this).attr(\"src\").indexOf('/')==0;" +
-								"})" +
-								".attr(\"src\",function(index) {" +
-									"return \""+ hostAddress +"\" + $(this).attr(\"src\");" +
-								"});" +
-						"$(\"#"+markupId+"\").find(\"a\")" +
-								".filter(function(index){" +
-									"return $(this).attr(\"href\").indexOf('/')==0;" +
-								"})" +
-								".attr(\"href\",function(index) {" +
-									"return \""+ hostAddress +"\" + $(this).attr(\"href\");" +
-								"});" +	
-						/* Add class '.external' to external links */
-						"$(\"#"+markupId+"\").find(\"a\")" +
-								".not(\".readMore\").not(\".audio\").not(\".video\").not(\".image\").not(\".other\")" +
-								".filter(function(index){" +
-									"return $(this).attr(\"href\") != undefined;" +
-								"})" +
-								".addClass(\"external\");" +
-						/* Open external links in new window */
-						"$(\"#"+markupId+"\").find(\"a\")" +
-								".not(\".readMore\").not(\".audio\").not(\".video\").not(\".image\").not(\".other\")" +
-								".filter(function(index){" +
-									"return $(this).attr(\"href\") != undefined;" +
-								"})" +
-								".attr(\"target\",\"_blank\");" +
-				"</script>";
+		StringBuilder b = new StringBuilder();
+		
+		b.append("<script type=\"text/javascript\">");
+		
+		/* Fix server relative urls in images */
+		b.append("$(\"#").append(markupId).append("\").find(\"img\")");
+		b.append(".filter(function(index){ return $(this).attr(\"src\").indexOf('/')==0; })");
+		b.append(".attr(\"src\",function(index){ return \"").append(hostAddress).append("\" + $(this).attr(\"src\"); });");
+		
+		/* Fix server relative urls in links */
+		b.append("$(\"#").append(markupId).append("\").find(\"a\")");
+		b.append(".filter(function(index){ return $(this).attr(\"href\").indexOf('/')==0; })");
+		b.append(".attr(\"href\",function(index){ return \"").append(hostAddress).append("\" + $(this).attr(\"href\"); });");
+		
+		/* Add class '.external' to external links */
+		b.append("$(\"#").append(markupId).append("\").find(\"a\")");
+		b.append(".not(\".readMore\").not(\".audio\").not(\".video\").not(\".image\").not(\".other\")");
+		b.append(".filter(function(index){ return $(this).attr(\"href\") != undefined; })");
+		b.append(".addClass(\"external\");");
+		
+		/* Open external links in new window */
+		b.append("$(\"#").append(markupId).append("\").find(\"a\")");
+		b.append(".not(\".readMore\").not(\".audio\").not(\".video\").not(\".image\").not(\".other\")");
+		b.append(".filter(function(index){ return $(this).attr(\"href\") != undefined; })");
+		b.append(".attr(\"target\",\"_blank\");");
+		
+		b.append("</script>");
+		
+		return b.toString();
 	}
 	
 	private String getHostUrl(FeedEntry feedEntry) {

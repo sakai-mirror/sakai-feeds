@@ -133,6 +133,8 @@ public class ToolMigration {
 			}
 			rs.close();
 			ps.close();
+		}catch(RuntimeException e){
+			LOG.error("Unable to retrieve list of placed tools with id 'sakai.news'. Conversion aborted.", e);
 		}catch(Exception e){
 			LOG.error("Unable to retrieve list of placed tools with id 'sakai.news'. Conversion aborted.", e);
 		}finally{
