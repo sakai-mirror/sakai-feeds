@@ -10,12 +10,15 @@ import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
 import org.apache.wicket.markup.html.WebMarkupContainer;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.PasswordTextField;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.CompoundPropertyModel;
+import org.apache.wicket.model.Model;
+import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.spring.injection.annot.SpringBean;
 import org.sakaiproject.feeds.api.SavedCredentials;
 import org.sakaiproject.feeds.tool.facade.SakaiFacade;
@@ -38,11 +41,13 @@ public class AuthenticationPanel extends Panel {
 	private String					username;
 	private String					password;
 	private boolean					rememberMe;
+	private String					affectedFeed 		= null;
 
-	public AuthenticationPanel(String id, FeedDataProvider feedDataProvider, Component componentToRefresh) {
+	public AuthenticationPanel(String id, FeedDataProvider feedDataProvider, Component componentToRefresh, String affectedFeed) {
 		super(id);
 		this.feedDataProvider = feedDataProvider;
 		this.componentToRefresh = componentToRefresh;
+		this.affectedFeed = affectedFeed;
 		
 		if(savedCredentials == null)
 			savedCredentials = facade.getFeedsService().getSavedCredentials();
@@ -53,8 +58,16 @@ public class AuthenticationPanel extends Panel {
 	private void init() {
 		setModel(new CompoundPropertyModel(this));
 
-		//WebMarkupContainer divAuthPanelWrapper = new WebMarkupContainer("divAuthPanelWrapper");
 		WebMarkupContainer divAuthPanel = new WebMarkupContainer("divAuthPanel");
+		
+		Label message = new Label("message", "");
+		if(affectedFeed == null) {
+			message.setModel(new StringResourceModel("provide.auth.details", this, null));
+		}else{
+			message.setModel(new StringResourceModel("provide.auth.details2", this, new Model(this)));
+		}
+		divAuthPanel.add(message);
+		
 		Form form = new Form("form");
 
 		final TextField usernameTF = new TextField("username");
@@ -71,19 +84,28 @@ public class AuthenticationPanel extends Panel {
 			@Override
 			protected void onSubmit(AjaxRequestTarget target, Form form) {
 				URL url = null;
+				String realm = feedDataProvider.getAuthenticationRealm();
+				
 				if(getUsername() != null && !getUsername().trim().equals("")){
 					try{
-						url = new URL(feedDataProvider.getFeedSubscription().getUrl());
-						facade.getFeedsService().addCredentials(url, feedDataProvider.getAuthenticationRealm(), username, password);
-						System.out.println("AuthenticationPanel: " + url.toString() + ", " + feedDataProvider.getAuthenticationRealm() + ", " + getUsername() + ", " + getPassword());
+						url = new URL(affectedFeed);
+						facade.getFeedsService().addCredentials(url, realm, username, password);
+						//System.out.println("AuthenticationPanel: " + url.toString() + ", " + realm + ", " + getUsername() + ", " + getPassword());
 					}catch(Exception e){
 						e.printStackTrace();
 					}
 				}
-				feedDataProvider.getFeed();
+				if(!feedDataProvider.getFeedSubscription().isAggregateMultipleFeeds()) {
+					feedDataProvider.getFeed();
+				}else {
+					feedDataProvider.getAggregatedFeeds();
+				}
 				boolean authSuccess = !feedDataProvider.requireAuthentication();
-				if(authSuccess && isRememberMe()) {
-					SavedCredentials newCrd = facade.getFeedsService().newSavedCredentials(url, feedDataProvider.getAuthenticationRealm(), username, password);
+				if( 
+					(authSuccess 
+							|| realm.equals(feedDataProvider.getAuthenticationRealm()) && affectedFeed.equals(feedDataProvider.getAffectedFeed()) ) 
+					&& isRememberMe()) {
+					SavedCredentials newCrd = facade.getFeedsService().newSavedCredentials(url, realm, username, password);
 					// remove overrided credentials
 					Set<SavedCredentials> toRemove = new HashSet<SavedCredentials>();
 					for(SavedCredentials saved : savedCredentials){
@@ -107,10 +129,9 @@ public class AuthenticationPanel extends Panel {
 		form.add(ok);
 
 		divAuthPanel.add(form);
-//		divAuthPanelWrapper.add(divAuthPanel);
-//		add(divAuthPanelWrapper);
 		add(divAuthPanel);
 	}
+
 
 	public String getUsername() {
 		return username;

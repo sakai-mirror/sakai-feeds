@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -33,6 +34,7 @@ public class FeedDataProvider implements IDataProvider {
 	private transient SakaiFacade	facade;
 	private	String					viewDetail;
 	private boolean					requireAuthentication		= false;
+	private String					affectedFeed				= null;
 	private String					authenticationRealm			= null;
 	private FeedSubscription 		subscription;
 	private Feed 					feed;
@@ -46,7 +48,11 @@ public class FeedDataProvider implements IDataProvider {
 		this.subscription = subscription;
 		this.viewDetail = viewDetail;
 		this.forceExternalCheck = forceExternalCheck.booleanValue();
-		getFeed();
+		if(!subscription.isAggregateMultipleFeeds()) {
+			getFeed();
+		}else {
+			getAggregatedFeeds();
+		}
 	}
 	
 	public String getViewDetail() {
@@ -70,54 +76,83 @@ public class FeedDataProvider implements IDataProvider {
 
 	public Feed getFeed() {
 		if(feed == null){
-			EntityReference reference = facade.getFeedsService().getEntityReference(subscription.getUrl());
-			try{
-				feed = facade.getFeedsService().getFeed(reference, forceExternalCheck);
-				requireAuthentication = false;
-				setErrorMessage(null);
-				entries = null;
-				setErrorMessage(null);
-			}catch(FeedAuthenticationException e){
-				requireAuthentication = true;
-				authenticationRealm = e.getRealm();
-				feed = null;
-			}catch(IllegalArgumentException e){
-				setErrorMessage((String) new ResourceModel("err.subscribing").getObject());
-				e.printStackTrace();
-				feed = null;
-			}catch(MalformedURLException e){
-				setErrorMessage((String) new ResourceModel("err.malformed").getObject());
-				e.printStackTrace();
-				feed = null;
-			}catch(SSLHandshakeException e){
-				setErrorMessage((String) new ResourceModel("err.ssl").getObject());
-				e.printStackTrace();
-				feed = null;
-			}catch(IOException e){
-				setErrorMessage((String) new ResourceModel("err.io").getObject());
-				e.printStackTrace();
-				feed = null;
-			}catch(InvalidFeedException e){
-				setErrorMessage((String) new ResourceModel("err.invalid_feed").getObject());
-				e.printStackTrace();
-				feed = null;
-			}catch(FetcherException e){
-				if(e.getHttpCode() == 403)
-					setErrorMessage((String) new ResourceModel("err.forbidden").getObject());
-				else
-					setErrorMessage((String) new ResourceModel("err.no_fetch").getObject());
-				e.printStackTrace();
-			}catch(Exception e){
-				setErrorMessage((String) new ResourceModel("err.subscribing").getObject());
-				e.printStackTrace();
-				feed = null;
-			}
-//			}catch(Exception e){
-//				e.printStackTrace();
-//				feed = null;
-//			}
+			feed = getFeed(subscription.getUrl());
 		}
 		return feed;
+	}
+
+	public Feed getAggregatedFeeds() {
+		if(feed == null){
+			String[] urls = subscription.getUrls();
+			List<FeedEntry> agEntries = new ArrayList<FeedEntry>();
+			for(int i=0; i<urls.length; i++) {
+				Feed t = getFeed(urls[i]);
+				if(t == null) {
+					feed = null;
+					return null;
+				}else if(feed == null){
+					feed = t;
+				}
+				for(FeedEntry e : t.getEntries()){
+					e.setFeedTitle(t.getTitle());
+					e.setFeedLink(t.getLink());
+					e.setAggregated(true);
+					agEntries.add(e);
+				}
+			}
+			Collections.sort(agEntries, new FeedEntryComparator());
+			feed.setTitle("All");
+			feed.setLink("#");
+			feed.setEntries(agEntries);
+		}
+		return feed;
+	}
+
+	private Feed getFeed(String url) {
+		EntityReference reference = facade.getFeedsService().getEntityReference(url);
+		Feed _feed = null;
+		try{
+			_feed = facade.getFeedsService().getFeed(reference, forceExternalCheck);
+			requireAuthentication = false;
+			entries = null;
+			setErrorMessage(null);
+		}catch(FeedAuthenticationException e){
+			requireAuthentication = true;
+			affectedFeed = url;
+			authenticationRealm = e.getRealm();
+			_feed = null;
+		}catch(IllegalArgumentException e){
+			setErrorMessage((String) new ResourceModel("err.subscribing").getObject());
+			e.printStackTrace();
+			_feed = null;
+		}catch(MalformedURLException e){
+			setErrorMessage((String) new ResourceModel("err.malformed").getObject());
+			e.printStackTrace();
+			_feed = null;
+		}catch(SSLHandshakeException e){
+			setErrorMessage((String) new ResourceModel("err.ssl").getObject());
+			e.printStackTrace();
+			_feed = null;
+		}catch(IOException e){
+			setErrorMessage((String) new ResourceModel("err.io").getObject());
+			e.printStackTrace();
+			_feed = null;
+		}catch(InvalidFeedException e){
+			setErrorMessage((String) new ResourceModel("err.invalid_feed").getObject());
+			e.printStackTrace();
+			_feed = null;
+		}catch(FetcherException e){
+			if(e.getHttpCode() == 403)
+				setErrorMessage((String) new ResourceModel("err.forbidden").getObject());
+			else
+				setErrorMessage((String) new ResourceModel("err.no_fetch").getObject());
+			e.printStackTrace();
+		}catch(Exception e){
+			setErrorMessage((String) new ResourceModel("err.subscribing").getObject());
+			e.printStackTrace();
+			_feed = null;
+		}
+		return _feed;
 	}
 
 	public List<FeedEntry> getFeedEntries() {
@@ -225,4 +260,13 @@ public class FeedDataProvider implements IDataProvider {
 	public void detach() {
 		//System.out.println("FeedDataProvider.detach()");
 	}
+
+	public String getAffectedFeed() {
+		return affectedFeed;
+	}
+
+	public void setAffectedFeed(String affectedFeed) {
+		this.affectedFeed = affectedFeed;
+	}
+	
 }

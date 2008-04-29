@@ -105,6 +105,7 @@ public class FeedsPanel extends Panel {
 				// feed external source link
 				ExternalLink sourceLink = new ExternalLink("sourceLink", subscription.getUrl(), new StringResourceModel("sourcelink", parent, null).getString());
 				sourceLink.add(new AttributeModifier("title", true, new StringResourceModel("sourcelink.title", parent, null)));
+				sourceLink.setVisible(subscription.getUrl() != null && !subscription.isAggregateMultipleFeeds());
 				item.add(sourceLink);
 				
 				// feed description
@@ -112,7 +113,7 @@ public class FeedsPanel extends Panel {
 				descriptionWrapper.setOutputMarkupId(true);
 				final Label description = new Label("description", subscription.getDescription());
 				description.setOutputMarkupId(true);
-				description.setVisible(subscription.getDescription() != null && !subscription.getDescription().equals("null") && ViewOptions.VIEW_DETAIL_FULL_ENTRY.equals(getViewDetail()));
+				description.setVisible(subscription.getDescription() != null && !subscription.getDescription().equals("null") && !subscription.isAggregateMultipleFeeds() && ViewOptions.VIEW_DETAIL_FULL_ENTRY.equals(getViewDetail()));
 				descriptionWrapper.add(description);
 				item.add(descriptionWrapper);				
 				feedDescriptions.add(description);
@@ -166,7 +167,8 @@ public class FeedsPanel extends Panel {
 					}
 				};
 				titleLinkExpandImg.setOutputMarkupId(true);
-				final Label titleLinkLabel = new Label("titleLinkLabel", subscription.getTitle());
+				String titleStr = subscription.isAggregateMultipleFeeds()? (new StringResourceModel("aggregate.title", parent, null)).getString() : subscription.getTitle();
+				final Label titleLinkLabel = new Label("titleLinkLabel", titleStr);
 				Link link = new Link("title") {	
 					private static final long	serialVersionUID	= 1L;
 					@Override

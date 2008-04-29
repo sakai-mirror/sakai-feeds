@@ -42,4 +42,21 @@ public interface FeedEntry extends Serializable {
 	/** Set the feed entry enclosures. */
 	public void setEnclosures(List<FeedEntryEnclosure> enclosures);
 	
+	/** Check if feed entry is part of a subscription that aggregates multiple feeds. */
+	public boolean isAggregated();
+	
+	/** Set if feed entry is part of a subscription that aggregates multiple feeds. */
+	public void setAggregated(boolean aggregate);
+	
+	/** Get the feed title (for aggregated feeds). */
+	public String getFeedTitle();
+	
+	/** Set the feed title (for aggregated feeds). */
+	public void setFeedTitle(String feedTitle);
+	
+	/** Get the feed link (for aggregated feeds). */
+	public String getFeedLink();
+	
+	/** Set the feed link (for aggregated feeds). */
+	public void setFeedLink(String feedLink);
 }

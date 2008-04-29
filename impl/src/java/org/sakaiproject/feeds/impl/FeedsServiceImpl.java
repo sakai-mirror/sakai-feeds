@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -282,7 +284,7 @@ public class FeedsServiceImpl implements FeedsService {
 		}
 	}
 
-	public Set<FeedSubscription> getSubscribedFeeds() {
+	public Set<FeedSubscription> getSubscribedFeeds(int mode) {
 		Set<FeedSubscription> subscriptions = new LinkedHashSet<FeedSubscription>();
 
 		Placement placement = ToolManager.getCurrentPlacement();
@@ -303,7 +305,91 @@ public class FeedsServiceImpl implements FeedsService {
 			}
 		}
 		
-		return orderFeedSubscriptions(subscriptions);
+		if(mode == MODE_SUBSCRIBED && isAggregateFeeds()) {
+			return aggregateFeeds(subscriptions);
+		}else {
+			Set<FeedSubscription> institutional = null;
+			switch(mode){
+				case MODE_SUBSCRIBED:
+					return orderFeedSubscriptions( subscriptions );
+				case MODE_ALL_INSTITUTIONAL:
+					institutional = getInstitutionalFeeds();
+					return orderFeedSubscriptions( getInstitutionalMarked(institutional, subscriptions) );
+				case MODE_ALL_NON_INSTITUTIONAL:
+					institutional = getInstitutionalFeeds();
+					return orderFeedSubscriptions( getSubscribedWithoutInstitutional(institutional, subscriptions) );
+			}
+			return orderFeedSubscriptions(subscriptions);
+		}
+	}
+
+	private Set<FeedSubscription> getInstitutionalMarked(Set<FeedSubscription> institutional, Set<FeedSubscription> subscribed) {
+		Set<FeedSubscription> result = new LinkedHashSet<FeedSubscription>();
+		for(FeedSubscription i : institutional){
+			boolean selected = false;
+			for(FeedSubscription s : subscribed){
+				if(s.getUrl().equalsIgnoreCase(i.getUrl())){
+					selected = true;
+					break;
+				}
+			}
+			i.setSelected(selected);
+			result.add(i);
+		}
+		return result;
+	}
+
+	private Set<FeedSubscription> getSubscribedWithoutInstitutional(Set<FeedSubscription> institutional, Set<FeedSubscription> subscribed) {
+		Set<FeedSubscription> result = new LinkedHashSet<FeedSubscription>();
+		for(FeedSubscription s : subscribed){
+			boolean isInstitutional = false;
+			for(FeedSubscription i : institutional){
+				if(s.getUrl().equalsIgnoreCase(i.getUrl())){
+					isInstitutional = true;
+					break;
+				}
+			}
+			if(!isInstitutional){
+				s.setSelected(true);
+				result.add(s);
+			}
+		}
+		return result;
+	}
+	
+	public boolean isAggregateFeeds() {
+		boolean aggregate = false;
+		Placement placement = ToolManager.getCurrentPlacement();
+		Properties config = placement.getPlacementConfig();
+		if(config != null){
+			String prop = config.getProperty(TC_PROP_AGGREGATE, "false");
+			aggregate = Boolean.parseBoolean(prop);
+		}
+		return aggregate;
+	}
+	
+	public void setAggregateFeeds(boolean aggregate) {
+		Placement placement = ToolManager.getCurrentPlacement();
+		Properties config = placement.getPlacementConfig();
+		if(config != null){
+			config.setProperty(TC_PROP_AGGREGATE, Boolean.toString(aggregate));
+			placement.save();
+		}
+	}
+	
+	private Set<FeedSubscription> aggregateFeeds(Set<FeedSubscription> subscriptions) {
+		Set<FeedSubscription> aggregated = new LinkedHashSet<FeedSubscription>();
+		FeedSubscription a = new FeedSubscriptionImpl();
+		List<String> urls = new ArrayList<String>();
+		for(FeedSubscription s : subscriptions) {
+			urls.add( s.getUrl() );			
+		}
+		a.setTitle("");
+		a.setUrl("");
+		a.setIconUrl(defaultFeedIcon);
+		a.setUrls(urls.toArray(new String[]{}));
+		aggregated.add(a);
+		return aggregated;
 	}
 	
 	public Set<FeedSubscription> orderFeedSubscriptions(Set<FeedSubscription> subscriptions) {

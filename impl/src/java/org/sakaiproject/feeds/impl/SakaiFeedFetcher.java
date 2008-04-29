@@ -187,7 +187,7 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 		if(getFeedInfoCache() instanceof SakaiFeedFetcherCache) {
 			SakaiFeedFetcherCache cache = (SakaiFeedFetcherCache) getFeedInfoCache();
 			if(!forceExternalCheck && cache.isRecent(feedUrl)){
-				//LOG.info("Feed was recently cached - returning feed from cache: "+feedUrl.toString());
+				LOG.debug("Feed was recently cached - returning feed from cache: "+feedUrl.toString());
 				return cache.getFeedInfo(feedUrl).getSyndFeed();
 			}
 		}		

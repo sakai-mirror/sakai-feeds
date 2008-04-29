@@ -15,6 +15,9 @@ public class FeedEntryImpl implements FeedEntry {
 	private Date						publishedDate;
 	private String						link;
 	private List<FeedEntryEnclosure>	enclosures;
+	private boolean 					aggregate;
+	private String						feedTitle;
+	private String						feedLink;
 
 	public String getTitle() {
 		return title;
@@ -62,6 +65,30 @@ public class FeedEntryImpl implements FeedEntry {
 
 	public void setEnclosures(List<FeedEntryEnclosure> enclosures) {
 		this.enclosures = enclosures;
+	}
+	
+	public boolean isAggregated() {
+		return aggregate;
+	}
+	
+	public void setAggregated(boolean aggregate) {
+		this.aggregate = aggregate;
+	}
+
+	public String getFeedTitle() {
+		return feedTitle;
+	}
+
+	public void setFeedTitle(String feedTitle) {
+		this.feedTitle = feedTitle;
+	}
+
+	public String getFeedLink() {
+		return feedLink;
+	}
+
+	public void setFeedLink(String feedLink) {
+		this.feedLink = feedLink;
 	}
 
 }

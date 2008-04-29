@@ -8,26 +8,31 @@
 		<table style="width: 100%">
 			<tr wicket:id="feedEntry">
 				<td class="feedEntry">
-					<div class="feedTitleWrapper">
-						<a wicket:id="titleLink" class="feedEntryTitle">
-							<img wicket:id="titleLinkExpandImg" style="vertical-align:bottom"/><span wicket:id="titleLinkLabel"></span>
-						</a>
-						&nbsp;<span wicket:id="feedEntryDate" class="feedEntryDate">[feedEntryDate]</span>
+					<div style="clear: both">
+						<div class="feedTitleWrapper">
+							<a wicket:id="titleLink" class="feedEntryTitle">
+								<img wicket:id="titleLinkExpandImg" style="vertical-align:bottom"/><span wicket:id="titleLinkLabel"></span>
+							</a>
+							&nbsp;<span wicket:id="feedEntryDate" class="feedEntryDate">[feedEntryDate]</span>
+						</div>
+						<div wicket:id="feedEntrySource" class="feedEntrySource">
+							<wicket:message key="aggr.in"/>&nbsp;<a wicket:id="feedEntrySourceLink" class="external" target="_blank"></a>
+						</div>
 					</div>
-					<span wicket:id="feedBodyWrapper">
+					<div wicket:id="feedBodyWrapper" style="clear: both">
 						<span wicket:id="feedBody" class="feedEntryBody">
-							<span wicket:id="description">[description]</span>
-							<span wicket:id="contents">[contents]</span>
+							<div wicket:id="description" style="padding-top: 0.1em;">[description]</div>
+							<div wicket:id="contents" style="padding-top: 0.1em;">[contents]</div>
 							<ul wicket:id="enclosuresWrapper">
 								<li wicket:id="enclosures">
 									<a wicket:id="enclosureLink" target="_blank"></a>
 									&nbsp;<span wicket:id="enclosureSize"></span>
 								</li>
 							</ul>
-							<span wicket:id="readMoreWrapper"><br/><a wicket:id="readMore" class="readMore"><wicket:message key="read.more" >[read.more]</wicket:message></a></span>
-							<span wicket:id="readExternalWrapper">&nbsp<a wicket:id="readExternal" class="readExternal external" target="_blank"><wicket:message key="read.external" >[read.external]</wicket:message></a></span>
+							<div wicket:id="readMoreWrapper"><a wicket:id="readMore" class="readMore"><wicket:message key="read.more" >[read.more]</wicket:message></a></div>
+							<div wicket:id="readExternalWrapper"><a wicket:id="readExternal" class="readExternal external" target="_blank"><wicket:message key="read.external" >[read.external]</wicket:message></a></div>
 						</span>
-					</span>
+					</div>
 				</td>
 			</tr>	    
 		</table>

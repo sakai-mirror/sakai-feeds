@@ -7,8 +7,10 @@ public class FeedSubscriptionImpl implements FeedSubscription {
 	private String title;
 	private String description;
 	private String url;
+	private String[] urls;
 	private String iconUrl;
 	private boolean selected;
+	private boolean aggregate;
 
 	public String getDescription() {
 		return description;
@@ -21,6 +23,10 @@ public class FeedSubscriptionImpl implements FeedSubscription {
 	public String getUrl() {
 		return url;
 	}
+	
+	public String[] getUrls() {
+		return urls;
+	}
 
 	public void setDescription(String description) {
 		this.description = description;
@@ -32,6 +38,11 @@ public class FeedSubscriptionImpl implements FeedSubscription {
 
 	public void setUrl(String url) {
 		this.url = url;
+	}
+
+	public void setUrls(String[] urls) {
+		this.urls = urls;
+		setAggregateMultipleFeeds(true);
 	}
 	
 	public void setIconUrl(String url){
@@ -48,6 +59,15 @@ public class FeedSubscriptionImpl implements FeedSubscription {
 	
 	public boolean isSelected(){
 		return selected;
+	}
+	
+	public boolean isAggregateMultipleFeeds() {
+		return aggregate;
+	}
+	
+	/** Set if subscription aggregates multiple feeds. */
+	public void setAggregateMultipleFeeds(boolean aggregate) {
+		this.aggregate = aggregate;
 	}
 
 }

@@ -19,8 +19,14 @@ public interface FeedSubscription extends Serializable {
 	/** Set the subscription URL. */
 	public void setUrl(String url);
 	
+	/** Set the subscription URLs, when all feeds are aggregated into a single one. */
+	public void setUrls(String[] urls);
+	
 	/** Get the subscription URL. */
 	public String getUrl();
+	
+	/** Get the subscription URLs, when all feeds are aggregated into a single one. */
+	public String[] getUrls();
 	
 	/** Set the subscription icon. */
 	public void setIconUrl(String url);
@@ -33,4 +39,10 @@ public interface FeedSubscription extends Serializable {
 	
 	/** Check if subscription is selected. */
 	public boolean isSelected();
+	
+	/** Check if subscription aggregates multiple feeds. */
+	public boolean isAggregateMultipleFeeds();
+	
+	/** Set if subscription aggregates multiple feeds. */
+	public void setAggregateMultipleFeeds(boolean aggregate);
 }

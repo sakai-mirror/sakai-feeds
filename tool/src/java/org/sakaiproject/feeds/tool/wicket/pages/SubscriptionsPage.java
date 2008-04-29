@@ -54,6 +54,7 @@ public class SubscriptionsPage extends BasePage {
 	private String						username					= "";
 	private String						password					= "";
 	private boolean						rememberMe					= true;
+	private boolean						aggregate					= false;
 
 	private String						authenticationRealm;
 	private Set<SavedCredentials>		savedCredentials			= null;
@@ -61,6 +62,7 @@ public class SubscriptionsPage extends BasePage {
 	public SubscriptionsPage() {
 		if(savedCredentials == null)
 			savedCredentials = facade.getFeedsService().getSavedCredentials();
+		setAggregate(facade.getFeedsService().isAggregateFeeds());
 		
 		feedback = new CSSFeedbackPanel("messages");
 		add(feedback);
@@ -107,6 +109,10 @@ public class SubscriptionsPage extends BasePage {
 		otherAuthRememberMe.add(rememberMeChk);
 		otherAuthRememberMe.setVisible(false);
 		options.add(otherAuthRememberMe);
+		
+		// Aggregation
+		CheckBox aggr = new CheckBox("aggregate");
+		options.add(aggr);
 		
 		Button subscribe = new Button("subscribe") {
 			private static final long	serialVersionUID	= 1L;
@@ -192,6 +198,7 @@ public class SubscriptionsPage extends BasePage {
 			}
 		}
 		facade.getFeedsService().setSubscribedFeeds(subscribed);
+		facade.getFeedsService().setAggregateFeeds(isAggregate());
 		facade.getFeedsService().setSavedCredentials(savedCredentials);
 		facade.getFeedsService().loadCredentials();
 	}
@@ -226,6 +233,14 @@ public class SubscriptionsPage extends BasePage {
 
 	public void setRememberMe(boolean rememberMe) {
 		this.rememberMe = rememberMe;
+	}
+
+	public boolean isAggregate() {
+		return aggregate;
+	}
+
+	public void setAggregate(boolean aggregate) {
+		this.aggregate = aggregate;
 	}
 
 	private FeedSubscription urlToFeedSubscription(String url, String username, String password) throws FeedAuthenticationException {

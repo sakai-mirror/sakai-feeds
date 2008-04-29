@@ -1,6 +1,7 @@
 package org.sakaiproject.feeds.tool.wicket.pages;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,6 +37,7 @@ public class OptionsPage extends BasePage {
 	@SpringBean
 	private transient SakaiFacade facade;
 	
+	private boolean isAggregate;
 	private ViewOptions viewOptions;
 	private Set<FeedSubscription> subscriptions;
 	private List<FeedSubscription> subscriptionsList;
@@ -45,7 +47,12 @@ public class OptionsPage extends BasePage {
 	
 	public OptionsPage() {
 		viewOptions = facade.getFeedsService().getViewOptions();
-		subscriptions = facade.getFeedsService().getSubscribedFeeds();
+		isAggregate = facade.getFeedsService().isAggregateFeeds();
+		if(isAggregate) {
+			subscriptions = new HashSet<FeedSubscription>();
+		}else{
+			subscriptions = facade.getFeedsService().getSubscribedFeeds(FeedsService.MODE_SUBSCRIBED);
+		}
 		subscriptionsList = new LinkedList<FeedSubscription>(subscriptions);
 
 		Form form = new Form("options");
@@ -107,6 +114,7 @@ public class OptionsPage extends BasePage {
 			
 		};
 		container.add(list);
+		container.setVisible(!isAggregate);
 		form.add(container);
 		
 		// Subscriptions order instruction...
@@ -116,8 +124,13 @@ public class OptionsPage extends BasePage {
 		
 		// No subscriptions...
 		WebMarkupContainer noSubscriptions = new WebMarkupContainer("noSubscriptions");
-		noSubscriptions.setVisible(getSubscriptionsList().size() == 0);
+		noSubscriptions.setVisible(getSubscriptionsList().size() == 0 && !isAggregate);
 		form.add(noSubscriptions);
+		
+		// Can't order aggregated subscriptions
+		WebMarkupContainer noSubscriptionsAggr = new WebMarkupContainer("noSubscriptionsAggr");
+		noSubscriptionsAggr.setVisible(isAggregate);
+		form.add(noSubscriptionsAggr);
 		
 
 		
@@ -169,11 +182,13 @@ public class OptionsPage extends BasePage {
 		session.setAttribute(FeedsService.SESSION_ATTR_VIEWOPTIONS, viewOptions);
 		
 		// subscriptions order
-		List<String> urls = new LinkedList<String>();
-		for(FeedSubscription fs : subscriptionsList){
-			urls.add(fs.getUrl());
-		}		
-		facade.getFeedsService().setSubscriptionsOrder(urls);
+		if(isAggregate) {
+			List<String> urls = new LinkedList<String>();
+			for(FeedSubscription fs : subscriptionsList){
+				urls.add(fs.getUrl());
+			}		
+			facade.getFeedsService().setSubscriptionsOrder(urls);
+		}
 	}
 	
 	public List<FeedSubscription> getSubscriptionsList() {

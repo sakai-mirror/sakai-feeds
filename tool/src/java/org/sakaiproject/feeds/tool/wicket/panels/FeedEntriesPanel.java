@@ -63,6 +63,14 @@ public class FeedEntriesPanel extends Panel {
 			protected void populateItem(Item item) {
 				final FeedEntry entry = (FeedEntry) item.getModelObject();
 				
+				// feed title and link (for aggregated feeds)
+				final WebMarkupContainer feedEntrySource = new WebMarkupContainer("feedEntrySource");
+				ExternalLink feedEntrySourceLink = new ExternalLink("feedEntrySourceLink", entry.getFeedLink(), entry.getFeedTitle());
+				feedEntrySourceLink.add(new AttributeModifier("title", true, new Model(entry.getFeedTitle())));
+				feedEntrySource.add(feedEntrySourceLink);
+				feedEntrySource.setVisible(entry.isAggregated());
+				item.add(feedEntrySource);
+				
 				// date
 				Date feedEntryDate = entry.getPublishedDate();
 				Model feedEntryDateModel = null;
@@ -96,9 +104,10 @@ public class FeedEntriesPanel extends Panel {
 					@Override
 					protected void onComponentTagBody(MarkupStream markupStream, ComponentTag openTag) {
 						String str = getModelObjectAsString();
+						str = removeOffensiveTags(str);
 						str += getLinkChangeJs(getMarkupId(), entry);
 						replaceComponentTagBody(markupStream, openTag, str);
-					}										
+					}								
 				};
 				description.setEscapeModelStrings(false);
 				description.setOutputMarkupId(true);
@@ -109,6 +118,7 @@ public class FeedEntriesPanel extends Panel {
 					@Override
 					protected void onComponentTagBody(MarkupStream markupStream, ComponentTag openTag) {
 						String str = getModelObjectAsString();
+						str = removeOffensiveTags(str);
 						str += getLinkChangeJs(getMarkupId(), entry);
 						replaceComponentTagBody(markupStream, openTag, str);
 					}										
@@ -116,7 +126,6 @@ public class FeedEntriesPanel extends Panel {
 				contents.setEscapeModelStrings(false);
 				contents.setOutputMarkupId(true);
 				contents.setVisible(false);
-				contents.setEscapeModelStrings(false);
 				feedBody.add(contents);
 				
 				// read external
@@ -271,7 +280,7 @@ public class FeedEntriesPanel extends Panel {
 		if(errorMessage != null)
 			error(errorMessage);
 		
-		AuthenticationPanel authPanel = new AuthenticationPanel("authPanel", feedDataProvider, feedEntryHolder);
+		AuthenticationPanel authPanel = new AuthenticationPanel("authPanel", feedDataProvider, feedEntryHolder, feedDataProvider.getAffectedFeed());
 		authPanel.setVisible(feedDataProvider.requireAuthentication());
 		authPanel.setOutputMarkupId(true);
 		feedEntryHolder.add(authPanel);
@@ -289,6 +298,11 @@ public class FeedEntriesPanel extends Panel {
 		
 		add(feedEntryHolder);
 	}
+	
+	private String removeOffensiveTags(String str) {
+		/* Remove script tags */
+		return str.replaceAll("<\\s*script", "<span").replaceAll("</\\s*script\\s*>", "</span>");
+	}		
 	
 	public String getJs() {
 		StringBuilder js = new StringBuilder();
