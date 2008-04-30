@@ -101,7 +101,8 @@
 		<dependency>
 			<groupId>org.sakaiproject</groupId>
 			<artifactId>sakai-wicket</artifactId>
-			<version>${sakai.version}</version>
+			<!--<version>${sakai.version}</version>-->
+			<version>M2</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
