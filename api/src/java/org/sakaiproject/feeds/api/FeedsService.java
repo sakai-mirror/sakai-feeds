@@ -33,6 +33,7 @@ public interface FeedsService {
 	public static final String	SAK_PROP_SECRETKEY					= "feeds.secret.key";
 	public static final String	DEFAULT_SECRETKEY					= "a24896181a2a6bfac91b7e1b9b23018e";
 	public static final String	SAK_PROP_MAXCACHEDFEEDS				= "feeds.maxCachedFeeds";
+	public static final String	SAK_PROP_CACHETIMEINMIN				= "feeds.cacheTimeInMin";
 	public static final String	SAK_PROP_MIGRATE					= "feeds.migrate";
 	public static final String	SAK_PROP_MIGRATE_GETONLINEINFO		= "feeds.migrate.getOnlineFeedInfo";
 	public static final String	SAK_PROP_MIGRATE_ALWAYSCREATETOOL	= "feeds.migrate.alwaysCreateTool";
