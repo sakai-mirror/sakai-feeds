@@ -88,7 +88,15 @@
 		</p>
 		<input wicket:id="aggregate" type="checkbox" />
 		<wicket:message key="aggr.check">[aggr.check]</wicket:message>
-		
+		<table class="indnt1 aggregateOptionsClass" wicket:id="aggregateOptions">
+			<span wicket:id="aggregateOptionsGroup">
+				<tr wicket:id="aggregateOptions">
+					<td><input type="radio" wicket:id="radio"/></td>
+					<td><span wicket:id="optionName">[option.name]</span></td>
+				</tr>
+			</span>
+		</table>
+		<span class="shorttext"><input type="text" wicket:id="aggregateCustomTitle" class="indnt2 aggregateCustomTitleClass" size="37" /></span>
 
 	<!-- BUTTONS -->
 		<p class="act">

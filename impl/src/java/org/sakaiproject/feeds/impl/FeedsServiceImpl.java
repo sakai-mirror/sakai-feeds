@@ -37,6 +37,7 @@ import org.sakaiproject.entitybroker.entityprovider.EntityProviderManager;
 import org.sakaiproject.exception.IdUnusedException;
 import org.sakaiproject.exception.InUseException;
 import org.sakaiproject.exception.PermissionException;
+import org.sakaiproject.feeds.api.AggregateFeedOptions;
 import org.sakaiproject.feeds.api.Feed;
 import org.sakaiproject.feeds.api.FeedEntry;
 import org.sakaiproject.feeds.api.FeedEntryEnclosure;
@@ -376,6 +377,39 @@ public class FeedsServiceImpl implements FeedsService {
 			config.setProperty(TC_PROP_AGGREGATE, Boolean.toString(aggregate));
 			placement.save();
 		}
+	}
+	
+	public void setAggregateFeedsOptions(AggregateFeedOptions opt) {
+		Placement placement = ToolManager.getCurrentPlacement();
+		Properties config = placement.getPlacementConfig();
+		if(config != null){
+			StringBuilder tmp = new StringBuilder();
+			tmp.append(opt.getTitleDisplayOption());
+			tmp.append(TC_PROP_LEVEL1_DELIMITER);
+			tmp.append(opt.getCustomTitle());
+
+			config.setProperty(TC_PROP_AGGREGATE_OPTIONS, tmp.toString());
+			placement.save();
+		}
+	}
+	
+	public AggregateFeedOptions getAggregateFeedsOptions() {
+		AggregateFeedOptions opt = new AggregateFeedOptions();
+		Placement placement = ToolManager.getCurrentPlacement();
+		Properties config = placement.getPlacementConfig();
+		if(config != null){
+			String prop = config.getProperty(TC_PROP_AGGREGATE_OPTIONS);
+			if(prop != null){
+				String[] values = prop.split(TC_PROP_LEVEL1_DELIMITER);
+				for(int i=0; i<values.length; i++){
+					opt.setTitleDisplayOption(Integer.parseInt(values[0]));
+					if(opt.getTitleDisplayOption() == AggregateFeedOptions.TITLE_DISPLAY_CUSTOM) {
+						opt.setCustomTitle(values[1]);
+					}
+				}
+			}
+		}
+		return opt;		
 	}
 	
 	private Set<FeedSubscription> aggregateFeeds(Set<FeedSubscription> subscriptions) {

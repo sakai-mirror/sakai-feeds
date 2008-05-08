@@ -3,14 +3,19 @@ package org.sakaiproject.feeds.tool.wicket.pages;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.net.ssl.SSLHandshakeException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.wicket.AttributeModifier;
+import org.apache.wicket.Component;
+import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
@@ -18,16 +23,23 @@ import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.PasswordTextField;
+import org.apache.wicket.markup.html.form.Radio;
+import org.apache.wicket.markup.html.form.RadioGroup;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.link.ExternalLink;
+import org.apache.wicket.markup.html.list.ListItem;
+import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.markup.repeater.data.DataView;
 import org.apache.wicket.model.CompoundPropertyModel;
+import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.spring.injection.annot.SpringBean;
+import org.sakaiproject.feeds.api.AggregateFeedOptions;
 import org.sakaiproject.feeds.api.FeedSubscription;
 import org.sakaiproject.feeds.api.SavedCredentials;
 import org.sakaiproject.feeds.api.exception.FeedAuthenticationException;
@@ -55,14 +67,19 @@ public class SubscriptionsPage extends BasePage {
 	private String						password					= "";
 	private boolean						rememberMe					= true;
 	private boolean						aggregate					= false;
+	private AggregateFeedOptions		aggregateOptions			= null;
 
 	private String						authenticationRealm;
 	private Set<SavedCredentials>		savedCredentials			= null;
 
 	public SubscriptionsPage() {
+		final Component component = this;
+		
 		if(savedCredentials == null)
 			savedCredentials = facade.getFeedsService().getSavedCredentials();
+		
 		setAggregate(facade.getFeedsService().isAggregateFeeds());
+		aggregateOptions = facade.getFeedsService().getAggregateFeedsOptions();
 		
 		feedback = new CSSFeedbackPanel("messages");
 		add(feedback);
@@ -112,8 +129,42 @@ public class SubscriptionsPage extends BasePage {
 		
 		// Aggregation
 		CheckBox aggr = new CheckBox("aggregate");
+		aggr.add(new AttributeModifier("onclick", true, new Model("$('.aggregateOptionsClass').toggle();$('.aggregateCustomTitleClass').toggle(); setMainFrameHeightNoScroll(window.name);")));
 		options.add(aggr);
+		WebMarkupContainer aggregateOptions = new WebMarkupContainer("aggregateOptions");
+		RadioGroup group = new RadioGroup("aggregateOptionsGroup");
+		ListView persons = new ListView("aggregateOptions", getAggregateOptions()) {
+			private static final long	serialVersionUID	= 1L;
+			protected void populateItem(ListItem item) {
+				IModel model = null;
+				Radio radio = new Radio("radio", item.getModel());
+				item.add(radio);
+				if(item.getModelObjectAsString().equals(String.valueOf(AggregateFeedOptions.TITLE_DISPLAY_DEFAULT))) {
+					model = new Model(component);
+					radio.add(new AttributeModifier("onclick", true, new Model("$('.aggregateCustomTitleClass').attr('disabled','true'); setMainFrameHeightNoScroll(window.name);")));
+				}else if(item.getModelObjectAsString().equals(String.valueOf(AggregateFeedOptions.TITLE_DISPLAY_CUSTOM))) {
+					radio.add(new AttributeModifier("onclick", true, new Model("$('.aggregateCustomTitleClass').removeAttr('disabled'); setMainFrameHeightNoScroll(window.name);")));
+				}else{
+					radio.add(new AttributeModifier("onclick", true, new Model("$('.aggregateCustomTitleClass').attr('disabled','true'); setMainFrameHeightNoScroll(window.name);")));
+				}
+				item.add(new Label("optionName", new StringResourceModel("aggregateOption."+item.getModelObjectAsString(), component, model)));
+			}
+		};
+		group.add(persons);
+		TextField aggregateCustomTitle = new TextField("aggregateCustomTitle");
+		if(!isAggregate()) {
+			aggregateOptions.add(new AttributeModifier("style", true, new Model("display: none;")));
+			aggregateCustomTitle.add(new AttributeModifier("style", true, new Model("display: none;")));
+		}
+		if(!getAggregateOptionsGroup().equals(String.valueOf(AggregateFeedOptions.TITLE_DISPLAY_CUSTOM))) {
+			aggregateCustomTitle.add(new AttributeModifier("disabled", true, new Model("true")));
+		}
+		aggregateOptions.add(group);
+		options.add(aggregateCustomTitle);
+		options.add(aggregateOptions);
 		
+		
+		// Buttons
 		Button subscribe = new Button("subscribe") {
 			private static final long	serialVersionUID	= 1L;
 
@@ -183,6 +234,39 @@ public class SubscriptionsPage extends BasePage {
 		add(options);
 	}
 
+	@Override
+	public void renderHead(IHeaderResponse response) {
+		response.renderJavascriptReference("/sakai-feeds-tool/js/common.js");
+		response.renderJavascriptReference("/library/js/jquery.js");
+		super.renderHead(response);
+	}
+
+	public List<String> getAggregateOptions() {
+		List<String> options = new ArrayList<String>();
+		options.add(String.valueOf(AggregateFeedOptions.TITLE_DISPLAY_DEFAULT));
+		options.add(String.valueOf(AggregateFeedOptions.TITLE_DISPLAY_NONE));
+		options.add(String.valueOf(AggregateFeedOptions.TITLE_DISPLAY_CUSTOM));
+		return options;
+	}
+	
+	public void setAggregateOptionsGroup(String s) {
+		aggregateOptions.setTitleDisplayOption(Integer.parseInt(s));
+	}
+	
+	public String getAggregateOptionsGroup() {
+		return String.valueOf(aggregateOptions.getTitleDisplayOption());
+		//return "0";
+	}
+	
+	public String getAggregateCustomTitle() {
+		String t = aggregateOptions.getCustomTitle();
+		return t != null && !t.equals("null")? t : "";
+	}
+	
+	public void setAggregateCustomTitle(String title) {
+		aggregateOptions.setCustomTitle(title);
+	}
+
 	private void saveSubscriptions() {
 		// Institutional feeds
 		Set<FeedSubscription> subscribed = new LinkedHashSet<FeedSubscription>();
@@ -199,6 +283,7 @@ public class SubscriptionsPage extends BasePage {
 		}
 		facade.getFeedsService().setSubscribedFeeds(subscribed);
 		facade.getFeedsService().setAggregateFeeds(isAggregate());
+		facade.getFeedsService().setAggregateFeedsOptions(aggregateOptions);
 		facade.getFeedsService().setSavedCredentials(savedCredentials);
 		facade.getFeedsService().loadCredentials();
 	}
@@ -241,6 +326,10 @@ public class SubscriptionsPage extends BasePage {
 
 	public void setAggregate(boolean aggregate) {
 		this.aggregate = aggregate;
+	}
+	
+	public String getDefaultTitle() {
+		return new StringResourceModel("aggregate.title", this, null).getString();
 	}
 
 	private FeedSubscription urlToFeedSubscription(String url, String username, String password) throws FeedAuthenticationException {

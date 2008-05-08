@@ -21,6 +21,7 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.spring.injection.annot.SpringBean;
+import org.sakaiproject.feeds.api.AggregateFeedOptions;
 import org.sakaiproject.feeds.api.FeedSubscription;
 import org.sakaiproject.feeds.api.FeedsService;
 import org.sakaiproject.feeds.api.ViewOptions;
@@ -40,6 +41,7 @@ public class FeedsPanel extends Panel {
 	private transient SakaiFacade facade;
 	
 	private ViewOptions viewOptions;
+	private AggregateFeedOptions aggregateFeedOptions; 
 	
 	public FeedsPanel(String id, final Boolean forceExternalCheck) {
 		super(id);
@@ -100,7 +102,9 @@ public class FeedsPanel extends Panel {
 				setOutputMarkupId(true);
 				item.setOutputMarkupId(true);
 				
-				item.add(new ExternalImage("iconUrl", subscription.getIconUrl()));
+				ExternalImage iconUrl = new ExternalImage("iconUrl", subscription.getIconUrl());
+				iconUrl.setVisible(!(subscription.isAggregateMultipleFeeds() && aggregateFeedOptions.getTitleDisplayOption() == AggregateFeedOptions.TITLE_DISPLAY_NONE));
+				item.add(iconUrl);
 				
 				// feed external source link
 				ExternalLink sourceLink = new ExternalLink("sourceLink", subscription.getUrl(), new StringResourceModel("sourcelink", parent, null).getString());
@@ -121,6 +125,7 @@ public class FeedsPanel extends Panel {
 				// feed entries count
 				final Label feedCount = new Label("feedCount","");
 				feedCount.setOutputMarkupId(true);
+				feedCount.setVisible(!(subscription.isAggregateMultipleFeeds() && aggregateFeedOptions.getTitleDisplayOption() == AggregateFeedOptions.TITLE_DISPLAY_NONE));
 				item.add(feedCount);
 				
 				// feed published date (unused)
@@ -167,7 +172,17 @@ public class FeedsPanel extends Panel {
 					}
 				};
 				titleLinkExpandImg.setOutputMarkupId(true);
-				String titleStr = subscription.isAggregateMultipleFeeds()? (new StringResourceModel("aggregate.title", parent, null)).getString() : subscription.getTitle();
+				String titleStr = null;
+				if(subscription.isAggregateMultipleFeeds()) {
+					if(aggregateFeedOptions.getTitleDisplayOption() == AggregateFeedOptions.TITLE_DISPLAY_DEFAULT)
+						titleStr = (new StringResourceModel("aggregate.title", parent, null)).getString();
+					else if(aggregateFeedOptions.getTitleDisplayOption() == AggregateFeedOptions.TITLE_DISPLAY_CUSTOM)
+						titleStr = aggregateFeedOptions.getCustomTitle();
+					else
+						titleStr = "";
+				}else{
+					titleStr = subscription.getTitle();
+				}
 				final Label titleLinkLabel = new Label("titleLinkLabel", titleStr);
 				Link link = new Link("title") {	
 					private static final long	serialVersionUID	= 1L;
@@ -191,6 +206,7 @@ public class FeedsPanel extends Panel {
 				link.setOutputMarkupId(true);
 				link.add(titleLinkExpandImg);
 				link.add(titleLinkLabel);
+				link.setVisible(!(subscription.isAggregateMultipleFeeds() && aggregateFeedOptions.getTitleDisplayOption() == AggregateFeedOptions.TITLE_DISPLAY_NONE));				
 				item.add(link);
 			}
         	
@@ -255,6 +271,13 @@ public class FeedsPanel extends Panel {
 			viewOptions = facade.getFeedsService().getViewOptions();
 			session.setAttribute(FeedsService.SESSION_ATTR_VIEWOPTIONS, viewOptions);
 		}
+		
+		// load aggregateFeedOptions
+		aggregateFeedOptions = facade.getFeedsService().getAggregateFeedsOptions();
+		if(aggregateFeedOptions.getTitleDisplayOption() == AggregateFeedOptions.TITLE_DISPLAY_NONE) {
+			viewOptions.setViewDetail(ViewOptions.VIEW_DETAIL_TITLE_ENTRY);
+			session.setAttribute(FeedsService.SESSION_ATTR_VIEWOPTIONS, viewOptions);
+		}
 	}
 	
 	public String getViewFilter() {
@@ -282,7 +305,7 @@ public class FeedsPanel extends Panel {
 	}
 	
 
-	public static List<String> getViewFilterModes(){
+	public List<String> getViewFilterModes(){
 		List<String> modes = new ArrayList<String>();
 		modes.add(ViewOptions.VIEW_FILTER_ALL);
 		modes.add(ViewOptions.VIEW_FILTER_TODAY);
@@ -295,11 +318,13 @@ public class FeedsPanel extends Panel {
 	
 
 
-	public static List<String> getViewDetailModes() {
+	public List<String> getViewDetailModes() {
 		List<String> modes = new ArrayList<String>();
 		modes.add(ViewOptions.VIEW_DETAIL_FULL_ENTRY);
 		modes.add(ViewOptions.VIEW_DETAIL_TITLE_ENTRY);
-		modes.add(ViewOptions.VIEW_DETAIL_NO_ENTRY);
+		if(!(facade.getFeedsService().isAggregateFeeds() && aggregateFeedOptions.getTitleDisplayOption() == AggregateFeedOptions.TITLE_DISPLAY_NONE)) {
+			modes.add(ViewOptions.VIEW_DETAIL_NO_ENTRY);
+		}
 		return modes;
 	}
 	

@@ -21,6 +21,7 @@ public interface FeedsService {
 	public static final String	TC_PROP_SUBCRIPTIONS_ESC			= "__.__";
 	public static final String	TC_PROP_CREDENTIALS					= "feedCredentials";
 	public static final String	TC_PROP_AGGREGATE					= "aggregateFeeds";
+	public static final String	TC_PROP_AGGREGATE_OPTIONS			= "aggregateFeedsOptions";
 
 	public static final String	PREFS_VIEWOPTIONS					= "viewOptions";
 	public static final String	PREFS_PROP_VIEWFILTER				= "viewFilter";
@@ -103,6 +104,12 @@ public interface FeedsService {
 	
 	/** Configure if feeds will be aggregated in a single feed. */
 	public void setAggregateFeeds(boolean aggregate);
+
+	/** Configure title display options for feeds that will be aggregated in a single feed. */
+	public void setAggregateFeedsOptions(AggregateFeedOptions opt);
+	
+	/** Get title display options for feeds that will be aggregated in a single feed. */
+	public AggregateFeedOptions getAggregateFeedsOptions();
 	
 	/** Check if it is possible to save feed credentials (dependes on AES Cipher initialization success) .*/
 	public boolean isAbleToSaveCredentials();
