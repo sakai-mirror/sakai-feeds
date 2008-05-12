@@ -950,12 +950,13 @@ public class FeedsServiceImpl implements FeedsService {
 		}else
 			reference = feedUrl.substring(feedUrl.indexOf(InternalFeedEntityProvider.ENTITY_PREFIX) - 1);
 		EntityReference ref = m_entityBroker.parseReference(reference);
-		//LOG.info("getEntityReference(): "+reference+", "+ref);
+		LOG.debug("getEntityReference("+feedUrl+"): "+reference+", "+ref);
 		return ref;
 	}
 	
 	public EntityReference buildEntityReference(String prefix, String uri) {
 		EntityReference entityReference = m_entityBroker.parseReference(EntityReference.SEPARATOR + prefix + EntityReference.SEPARATOR + encodeUri(uri));
+		LOG.debug("buildEntityReference("+prefix+", "+uri+"): "+entityReference);
 		return entityReference;
 	}
 
