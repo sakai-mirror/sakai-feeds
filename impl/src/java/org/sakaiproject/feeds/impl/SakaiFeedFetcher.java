@@ -30,7 +30,6 @@ import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.feeds.api.FeedsService;
 import org.sakaiproject.feeds.api.exception.FeedAuthenticationException;
 import org.sakaiproject.tool.cover.SessionManager;
-import org.springframework.util.StringUtils;
 
 import com.sun.org.apache.regexp.internal.RE;
 import com.sun.syndication.feed.synd.SyndFeed;
@@ -94,8 +93,10 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 
 				// XXX is there any other characters that need to be
 				// escaped?
-				nonProxiableHost = StringUtils.replace(nonProxiableHost, ".", "\\.");
-				nonProxiableHost = StringUtils.replace(nonProxiableHost, "*", ".*");
+				//nonProxiableHost = StringUtils.replace(nonProxiableHost, ".", "\\.");
+				//nonProxiableHost = StringUtils.replace(nonProxiableHost, "*", ".*");
+				nonProxiableHost = nonProxiableHost.replaceAll("\\.", "\\\\.");
+				nonProxiableHost = nonProxiableHost.replaceAll("\\*", ".*");
 
 				// XXX do we want .example.com to match
 				// computer.example.com? it seems to be a very common

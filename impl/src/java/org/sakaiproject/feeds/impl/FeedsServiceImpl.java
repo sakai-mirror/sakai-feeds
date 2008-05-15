@@ -797,7 +797,8 @@ public class FeedsServiceImpl implements FeedsService {
 	}
 
 	public boolean saveFeed(Feed feed) {
-		if(InternalFeedEntityProvider.ENTITY_PREFIX.equals(m_entityBroker.parseReference(feed.getReference()).prefix)){
+		//if(InternalFeedEntityProvider.ENTITY_PREFIX.equals(m_entityBroker.parseReference(feed.getReference()).prefix)){
+		if(InternalFeedEntityProvider.ENTITY_PREFIX.equals(new IdEntityReference(feed.getReference()).prefix)){
 			if(m_internalFeedStorageProvider != null)
 				return m_internalFeedStorageProvider.saveFeed(feed);
 			else
@@ -949,19 +950,21 @@ public class FeedsServiceImpl implements FeedsService {
 				reference = EntityReference.SEPARATOR + ExternalFeedEntityProvider.ENTITY_PREFIX + EntityReference.SEPARATOR + encodeUri(feedUrl);
 		}else
 			reference = feedUrl.substring(feedUrl.indexOf(InternalFeedEntityProvider.ENTITY_PREFIX) - 1);
-		EntityReference ref = m_entityBroker.parseReference(reference);
+		//EntityReference ref = m_entityBroker.parseReference(reference);
+		EntityReference ref = new IdEntityReference(reference);
 		LOG.debug("getEntityReference("+feedUrl+"): "+reference+", "+ref);
 		return ref;
 	}
 	
 	public EntityReference buildEntityReference(String prefix, String uri) {
-		EntityReference entityReference = m_entityBroker.parseReference(EntityReference.SEPARATOR + prefix + EntityReference.SEPARATOR + encodeUri(uri));
+		//EntityReference entityReference = m_entityBroker.parseReference(EntityReference.SEPARATOR + prefix + EntityReference.SEPARATOR + encodeUri(uri));
+		EntityReference entityReference = new IdEntityReference(prefix, encodeUri(uri));
 		LOG.debug("buildEntityReference("+prefix+", "+uri+"): "+entityReference);
 		return entityReference;
 	}
 
 	public boolean entityExists(String entityPrefix, String id) {
-		//LOG.info("FeedsService.entityExists(): " + entityPrefix + ", " + id);
+		LOG.debug("FeedsService.entityExists(): " + entityPrefix + ", " + id);
 		if(InternalFeedEntityProvider.ENTITY_PREFIX.equals(entityPrefix)){
 			// TODO Implement entityExists for Internal
 			return false;

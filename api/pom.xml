@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>sakai-feeds</artifactId>
 		<groupId>org.sakaiproject</groupId>
-		<version>SNAPSHOT</version>
+		<version>${feeds.version}</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<name>sakai-feeds-api</name>
@@ -47,7 +47,7 @@
 		<dependency>
 			<groupId>org.sakaiproject.entitybroker</groupId>
 			<artifactId>entitybroker-api</artifactId>
-			<version>1.2.0</version>
+			<version>${entitybroker.version}</version>
 		</dependency>
 	</dependencies>
 </project>

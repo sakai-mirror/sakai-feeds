@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>sakai-feeds</artifactId>
 		<groupId>org.sakaiproject</groupId>
-		<version>SNAPSHOT</version>
+		<version>${feeds.version}</version>
 	</parent>
 	
 	<repositories>
@@ -39,7 +39,7 @@
 		<dependency>
 			<groupId>org.sakaiproject</groupId>
 			<artifactId>sakai-feeds-api</artifactId>
-			<version>${sakai.version}</version>
+			<version>${feeds.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<!-- <dependency>
@@ -60,7 +60,7 @@
 		<dependency>
 			<groupId>org.sakaiproject.entitybroker</groupId>
 			<artifactId>entitybroker-api</artifactId>
-			<version>1.2.0</version>
+			<version>${entitybroker.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -101,8 +101,7 @@
 		<dependency>
 			<groupId>org.sakaiproject</groupId>
 			<artifactId>sakai-wicket</artifactId>
-			<!--<version>${sakai.version}</version>-->
-			<version>M2</version>
+			<version>${sakai-wicket.version}</version>			
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
