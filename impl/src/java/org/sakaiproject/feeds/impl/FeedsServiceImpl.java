@@ -99,6 +99,8 @@ public class FeedsServiceImpl implements FeedsService {
 
 	private Set<FeedSubscription>			institutionalFeeds;
 	private String							defaultFeedIcon;
+	private String							defaultViewDetail;
+	private String							defaultViewFilter;
 	
 	private	Cipher 							cipher;
 	private SecretKey						secretKey;
@@ -161,6 +163,10 @@ public class FeedsServiceImpl implements FeedsService {
 			//FunctionManager.registerFunction(AUTH_EDIT);
 			//FunctionManager.registerFunction(AUTH_DELETE);
 		//}
+		
+		// default view options
+		defaultViewDetail = m_serverConfigurationService.getString(SAK_PROP_DEFAULTVIEWDETAIL, ViewOptions.DEFAULT_VIEW_DETAIL);
+		defaultViewFilter = m_serverConfigurationService.getString(SAK_PROP_DEFAULTVIEWFILTER, ViewOptions.DEFAULT_VIEW_FILTER);
 		
 		// register entities
 		m_entityProviderManager.registerEntityProvider(new ExternalFeedEntityProviderImpl());
@@ -526,7 +532,7 @@ public class FeedsServiceImpl implements FeedsService {
 	}
 
 	public ViewOptions getViewOptions() {
-		ViewOptions viewOptions = new ViewOptionsImpl();
+		ViewOptions viewOptions = new ViewOptionsImpl(defaultViewDetail, defaultViewFilter);
 		
 		Preferences prefs = m_preferencesService.getPreferences(m_sessionManager.getCurrentSessionUserId());
 		if(prefs != null) {

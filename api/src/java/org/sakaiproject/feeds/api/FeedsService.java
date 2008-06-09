@@ -40,6 +40,8 @@ public interface FeedsService {
 	public static final String	SAK_PROP_MIGRATE_ALWAYSCREATETOOL	= "feeds.migrate.alwaysCreateTool";
 	public static final String	SAK_PROP_MIGRATE_DEFAULTFEEDURL		= "feeds.migrate.defaultFeedUrl";
 	public static final String	MIGRATE_DEFAULTFEEDURL				= "http://www.sakaiproject.org/cms/index2.php?option=com_rss&amp;feed=RSS2.0&amp;no_html=1";
+	public static final String	SAK_PROP_DEFAULTVIEWDETAIL			= "feeds.defaultViewDetail";
+	public static final String	SAK_PROP_DEFAULTVIEWFILTER			= "feeds.defaultViewFilter";
 
 	public static final String	SESSION_ATTR_CREDENTIALS			= "feedCredentials";
 	public static final String	SESSION_ATTR_HTTPSTATE				= "httpState";

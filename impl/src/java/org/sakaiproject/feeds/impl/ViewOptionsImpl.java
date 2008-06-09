@@ -8,6 +8,14 @@ public class ViewOptionsImpl implements ViewOptions {
 	private String				viewDetail			= DEFAULT_VIEW_DETAIL;
 	private String				viewFilter			= DEFAULT_VIEW_FILTER;
 
+	public ViewOptionsImpl() {		
+	}
+	
+	public ViewOptionsImpl(String defaultViewDetail, String defaultViewFilter) {
+		this.viewDetail = defaultViewDetail;
+		this.viewFilter = defaultViewFilter;
+	}
+	
 	public String getViewDetail() {
 		return viewDetail;
 	}
