@@ -273,10 +273,12 @@ public class FeedsPanel extends Panel {
 		}
 		
 		// load aggregateFeedOptions
-		aggregateFeedOptions = facade.getFeedsService().getAggregateFeedsOptions();
-		if(aggregateFeedOptions.getTitleDisplayOption() == AggregateFeedOptions.TITLE_DISPLAY_NONE) {
-			viewOptions.setViewDetail(ViewOptions.VIEW_DETAIL_TITLE_ENTRY);
-			session.setAttribute(FeedsService.SESSION_ATTR_VIEWOPTIONS, viewOptions);
+		if(facade.getFeedsService().isAggregateFeeds()) {
+			aggregateFeedOptions = facade.getFeedsService().getAggregateFeedsOptions();
+			if(aggregateFeedOptions.getTitleDisplayOption() == AggregateFeedOptions.TITLE_DISPLAY_NONE) {
+				viewOptions.setViewDetail(ViewOptions.VIEW_DETAIL_TITLE_ENTRY);
+				session.setAttribute(FeedsService.SESSION_ATTR_VIEWOPTIONS, viewOptions);
+			}
 		}
 	}
 	
