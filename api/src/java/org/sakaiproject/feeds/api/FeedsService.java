@@ -46,6 +46,13 @@ public interface FeedsService {
 	public static final String	SESSION_ATTR_CREDENTIALS			= "feedCredentials";
 	public static final String	SESSION_ATTR_HTTPSTATE				= "httpState";
 	public static final String	SESSION_ATTR_VIEWOPTIONS			= "viewOptions";
+	public static final String	SESSION_ATTR_LOG_READ_EVENT			= "logReadEvent";
+	
+	public static final String	LOG_EVENT_READ						= "feeds.read";
+	public static final String	LOG_EVENT_SUBSCRIBE_INSTITUTIONAL	= "feeds.subscribe.institutional";
+	public static final String	LOG_EVENT_SUBSCRIBE_USER			= "feeds.subscribe.user";
+	public static final String	LOG_EVENT_UNSUBSCRIBE_INSTITUTIONAL	= "feeds.unsubscribe.institutional";
+	public static final String	LOG_EVENT_UNSUBSCRIBE_USER			= "feeds.unsubscribe.user";
 
 	public static final int		MODE_SUBSCRIBED						= 0;
 	public static final int		MODE_ALL_INSTITUTIONAL				= 1;
@@ -164,4 +171,6 @@ public interface FeedsService {
 	/** Add cookie (relevant to this domain) for the current user. */
 	public void addClientCookie(String domain, String name, String value, String path, int maxAge, boolean secure);
 
+	/** Log event through EventTrackingService. */
+	public void logEvent(String event, FeedSubscription feedSubscription, boolean modify);
 }

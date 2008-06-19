@@ -70,4 +70,15 @@ public class FeedSubscriptionImpl implements FeedSubscription {
 		this.aggregate = aggregate;
 	}
 
+	public FeedSubscription clone() {
+		FeedSubscription fs = new FeedSubscriptionImpl();
+		fs.setAggregateMultipleFeeds(isAggregateMultipleFeeds());
+		fs.setDescription(getDescription());
+		fs.setIconUrl(getIconUrl());
+		fs.setSelected(isSelected());
+		fs.setTitle(getTitle());
+		fs.setUrl(getUrl());
+		fs.setUrls(getUrls());
+		return fs;
+	}
 }

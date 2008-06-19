@@ -21,6 +21,7 @@
 		<property name="userDirectoryService" ref="org.sakaiproject.user.api.UserDirectoryService"/>
 		<property name="serverConfigurationService" ref="org.sakaiproject.component.api.ServerConfigurationService"/>
 		<property name="idManager" ref="org.sakaiproject.id.api.IdManager"/>
+		<property name="eventTrackingService" ref="org.sakaiproject.event.api.EventTrackingService"/>
 	</bean>
 	
 	<!-- FeedStorage ______________________________________________________________________________ -->

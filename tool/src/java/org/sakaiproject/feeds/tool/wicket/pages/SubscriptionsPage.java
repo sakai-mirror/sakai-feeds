@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -41,6 +42,7 @@ import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.spring.injection.annot.SpringBean;
 import org.sakaiproject.feeds.api.AggregateFeedOptions;
 import org.sakaiproject.feeds.api.FeedSubscription;
+import org.sakaiproject.feeds.api.FeedsService;
 import org.sakaiproject.feeds.api.SavedCredentials;
 import org.sakaiproject.feeds.api.exception.FeedAuthenticationException;
 import org.sakaiproject.feeds.api.exception.FetcherException;
@@ -71,6 +73,9 @@ public class SubscriptionsPage extends BasePage {
 
 	private String						authenticationRealm;
 	private Set<SavedCredentials>		savedCredentials			= null;
+	
+	private Set<FeedSubscription>		previousInstitutionalSubscriptions = null;
+	private Set<FeedSubscription>		previousUserSubscriptions = null;
 
 	public SubscriptionsPage() {
 		final Component component = this;
@@ -91,6 +96,9 @@ public class SubscriptionsPage extends BasePage {
 		// Institutional subscriptions
 		WebMarkupContainer institutionalWrapper = new WebMarkupContainer("institutionalWrapper");
 		allInstitutionalDataProvider = new SubscriptionsDataProvider(SubscriptionsDataProvider.MODE_ALL_INSTITUTIONAL);
+		if(previousInstitutionalSubscriptions == null) {
+			previousInstitutionalSubscriptions = getDeepCopy(allInstitutionalDataProvider.getFeedSubscriptions());
+		}
 		DataView institutionalView = new DataView("institutionalFeeds", allInstitutionalDataProvider) {
 			private static final long	serialVersionUID	= 1L;
 
@@ -192,6 +200,9 @@ public class SubscriptionsPage extends BasePage {
 		options.add(subscribe);
 		
 		subscriptionsWithoutInstitutionalDataProvider = new SubscriptionsDataProvider(SubscriptionsDataProvider.MODE_ALL_NON_INSTITUTIONAL);
+		if(previousUserSubscriptions == null) {
+			previousUserSubscriptions = getDeepCopy(subscriptionsWithoutInstitutionalDataProvider.getFeedSubscriptions());
+		}
 		DataView otherView = new DataView("otherFeeds", subscriptionsWithoutInstitutionalDataProvider) {
 			private static final long	serialVersionUID	= 1L;
 
@@ -268,6 +279,9 @@ public class SubscriptionsPage extends BasePage {
 	}
 
 	private void saveSubscriptions() {
+		// Log actions
+		logSubscribeActions();
+		
 		// Institutional feeds
 		Set<FeedSubscription> subscribed = new LinkedHashSet<FeedSubscription>();
 		for(FeedSubscription subscription : allInstitutionalDataProvider.getFeedSubscriptions()) {
@@ -286,6 +300,67 @@ public class SubscriptionsPage extends BasePage {
 		facade.getFeedsService().setAggregateFeedsOptions(aggregateOptions);
 		facade.getFeedsService().setSavedCredentials(savedCredentials);
 		facade.getFeedsService().loadCredentials();
+	}
+
+	private void logSubscribeActions() {
+		// log unsubscriptions: Institutional
+		for(FeedSubscription fs1 : previousInstitutionalSubscriptions) {
+			boolean unsubscribed = false;
+			for(FeedSubscription fs2 : allInstitutionalDataProvider.getFeedSubscriptions()) {
+				if(fs1.getUrl().equals(fs2.getUrl()) && fs1.isSelected() && !fs2.isSelected()) {
+					unsubscribed = true;
+					continue;
+				}
+			}
+			if(unsubscribed)
+				facade.getFeedsService().logEvent(FeedsService.LOG_EVENT_UNSUBSCRIBE_INSTITUTIONAL, fs1, true);			
+		}		
+		// log unsubscriptions: User
+		for(FeedSubscription fs1 : previousUserSubscriptions) {
+			boolean found = false;
+			boolean unsubscribed = false;
+			for(FeedSubscription fs2 : subscriptionsWithoutInstitutionalDataProvider.getFeedSubscriptions()) {
+				if(fs1.getUrl().equals(fs2.getUrl())) {
+					found = true;
+					if(fs1.isSelected() && !fs2.isSelected()) {
+						unsubscribed = true;
+					}
+					continue;
+				}
+			}
+			if(!found || unsubscribed)
+				facade.getFeedsService().logEvent(FeedsService.LOG_EVENT_UNSUBSCRIBE_USER, fs1, true);				
+		}
+
+		
+		// log subscriptions: Institutional
+		for(FeedSubscription fs1 : allInstitutionalDataProvider.getFeedSubscriptions()) {
+			boolean subscribed = false;
+			for(FeedSubscription fs2 : previousInstitutionalSubscriptions) {
+				if(fs1.getUrl().equals(fs2.getUrl()) && fs1.isSelected() && !fs2.isSelected()) {
+					subscribed = true;
+					continue;
+				}
+			}
+			if(subscribed)
+				facade.getFeedsService().logEvent(FeedsService.LOG_EVENT_SUBSCRIBE_INSTITUTIONAL, fs1, true);			
+		}		
+		// log subscriptions: User
+		for(FeedSubscription fs1 : subscriptionsWithoutInstitutionalDataProvider.getFeedSubscriptions()) {
+			boolean found = false;
+			boolean subscribed = false;
+			for(FeedSubscription fs2 : previousUserSubscriptions) {
+				if(fs1.getUrl().equals(fs2.getUrl())) {
+					found = true;
+					if(fs1.isSelected() && !fs2.isSelected()) {
+						subscribed = true;
+					}
+					continue;
+				}
+			}
+			if(!found || subscribed)
+				facade.getFeedsService().logEvent(FeedsService.LOG_EVENT_SUBSCRIBE_USER, fs1, true);			
+		}
 	}
 
 	public String getNewSubscribedUrl() {
@@ -390,5 +465,12 @@ public class SubscriptionsPage extends BasePage {
 			e.printStackTrace();
 		}
 		return feedSubscription;
+	}
+	
+	private Set<FeedSubscription> getDeepCopy(Set<FeedSubscription> set) {
+		Set<FeedSubscription> result = new HashSet<FeedSubscription>();
+		for(FeedSubscription fs : set)
+			result.add(fs.clone());
+		return result;
 	}
 }

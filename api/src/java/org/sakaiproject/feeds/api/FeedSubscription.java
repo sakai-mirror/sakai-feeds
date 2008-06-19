@@ -45,4 +45,7 @@ public interface FeedSubscription extends Serializable {
 	
 	/** Set if subscription aggregates multiple feeds. */
 	public void setAggregateMultipleFeeds(boolean aggregate);
+	
+	/** Get a deep copy of this object. */
+	public FeedSubscription clone();
 }

@@ -34,6 +34,8 @@ import org.sakaiproject.entitybroker.EntityBroker;
 import org.sakaiproject.entitybroker.EntityReference;
 import org.sakaiproject.entitybroker.IdEntityReference;
 import org.sakaiproject.entitybroker.entityprovider.EntityProviderManager;
+import org.sakaiproject.event.api.Event;
+import org.sakaiproject.event.api.EventTrackingService;
 import org.sakaiproject.exception.IdUnusedException;
 import org.sakaiproject.exception.InUseException;
 import org.sakaiproject.exception.PermissionException;
@@ -89,6 +91,7 @@ public class FeedsServiceImpl implements FeedsService {
 	private SessionManager					m_sessionManager;
 	private PreferencesService				m_preferencesService;
 	private UserDirectoryService			m_userDirectoryService;
+	private EventTrackingService			m_eventTrackingService;
 	
 	// providers
 	private InstitutionalFeedProvider		m_institutionalFeedProvider;
@@ -134,6 +137,10 @@ public class FeedsServiceImpl implements FeedsService {
 
 	public void setIdManager(IdManager idManager) {
 		this.m_idManager = idManager;
+	}
+
+	public void setEventTrackingService(EventTrackingService eventTrackingService) {
+		this.m_eventTrackingService = eventTrackingService;
 	}
 	
 	public void setInstitutionalFeedProvider(InstitutionalFeedProvider institutionalFeedProvider) {
@@ -1021,6 +1028,18 @@ public class FeedsServiceImpl implements FeedsService {
 			httpState.addCookie(cookie);
 			session.setAttribute(FeedsService.SESSION_ATTR_HTTPSTATE, httpState);
 		}
+	}
+
+	public void logEvent(String event, FeedSubscription feedSubscription, boolean modify) {
+		StringBuilder ref = new StringBuilder();
+		ref.append("/feeds/");
+		ref.append(ToolManager.getCurrentPlacement().getContext());
+		if(!LOG_EVENT_READ.equals(event)) {
+			ref.append('/');
+			ref.append(feedSubscription.getUrl());
+		}
+		Event e = m_eventTrackingService.newEvent(event, ref.toString(), modify);
+		m_eventTrackingService.post(e);
 	}
 
 	class FeedCredentialSupplier implements CredentialSupplier {

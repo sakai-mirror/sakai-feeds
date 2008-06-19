@@ -41,13 +41,16 @@ public class FeedsPanel extends Panel {
 	private transient SakaiFacade facade;
 	
 	private ViewOptions viewOptions;
-	private AggregateFeedOptions aggregateFeedOptions; 
+	private AggregateFeedOptions aggregateFeedOptions;
 	
 	public FeedsPanel(String id, final Boolean forceExternalCheck) {
 		super(id);
 		
 		// do necessary client setup (feed auth, cookies, ...)
-		setupClient();				
+		setupClient();	
+		
+		// log read event
+		doLogReadEvent(forceExternalCheck);
 		
 		SubscriptionsDataProvider subscriptionDataProvider = new SubscriptionsDataProvider(SubscriptionsDataProvider.MODE_SUBSCRIBED);
 		int subscriptionsSize = subscriptionDataProvider.size();
@@ -258,6 +261,16 @@ public class FeedsPanel extends Panel {
 				target.appendJavascript("setMainFrameHeightNoScroll(window.name);");
 			}
 		});
+	}
+
+	private void doLogReadEvent(final Boolean forceExternalCheck) {
+		Session session = facade.getSessionManager().getCurrentSession();
+		Boolean readEventLogged = (Boolean) session.getAttribute(FeedsService.SESSION_ATTR_LOG_READ_EVENT);
+		
+		if(!Boolean.TRUE.equals(readEventLogged) || forceExternalCheck) {
+			facade.getFeedsService().logEvent(FeedsService.LOG_EVENT_READ, null, false);
+			session.setAttribute(FeedsService.SESSION_ATTR_LOG_READ_EVENT, Boolean.TRUE);
+		}
 	}
 
 	private void setupClient() {

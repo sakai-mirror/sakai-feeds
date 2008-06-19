@@ -56,5 +56,6 @@
 	<classpathentry kind="var" path="WICKET_HOME/lib/slf4j-api-1.1.0.jar"/>
 	<classpathentry kind="var" path="WICKET_HOME/lib/slf4j-log4j12-1.1.0.jar"/>
 	<classpathentry kind="var" path="M2_REPO/commons-httpclient/commons-httpclient-contrib/3.0-beta1/commons-httpclient-contrib-3.0-beta1.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/event-api"/>
 	<classpathentry kind="output" path="m2-target/classes"/>
 </classpath>
