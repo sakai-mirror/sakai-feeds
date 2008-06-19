@@ -265,11 +265,15 @@ public class FeedsPanel extends Panel {
 
 	private void doLogReadEvent(final Boolean forceExternalCheck) {
 		Session session = facade.getSessionManager().getCurrentSession();
-		Boolean readEventLogged = (Boolean) session.getAttribute(FeedsService.SESSION_ATTR_LOG_READ_EVENT);
+		String contextId = facade.getToolManager().getCurrentPlacement().getContext();
+		List<String> readEventLoggedInContexts = (List<String>) session.getAttribute(FeedsService.SESSION_ATTR_LOG_READ_EVENT);
 		
-		if(!Boolean.TRUE.equals(readEventLogged) || forceExternalCheck) {
+		if(readEventLoggedInContexts == null || !readEventLoggedInContexts.contains(contextId) || forceExternalCheck) {
 			facade.getFeedsService().logEvent(FeedsService.LOG_EVENT_READ, null, false);
-			session.setAttribute(FeedsService.SESSION_ATTR_LOG_READ_EVENT, Boolean.TRUE);
+			if(readEventLoggedInContexts == null)
+				readEventLoggedInContexts = new ArrayList<String>();
+			readEventLoggedInContexts.add(contextId);
+			session.setAttribute(FeedsService.SESSION_ATTR_LOG_READ_EVENT, readEventLoggedInContexts);
 		}
 	}
 
