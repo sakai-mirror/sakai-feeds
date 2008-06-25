@@ -182,7 +182,7 @@ public class OptionsPage extends BasePage {
 		session.setAttribute(FeedsService.SESSION_ATTR_VIEWOPTIONS, viewOptions);
 		
 		// subscriptions order
-		if(isAggregate) {
+		if(!isAggregate) {
 			List<String> urls = new LinkedList<String>();
 			for(FeedSubscription fs : subscriptionsList){
 				urls.add(fs.getUrl());

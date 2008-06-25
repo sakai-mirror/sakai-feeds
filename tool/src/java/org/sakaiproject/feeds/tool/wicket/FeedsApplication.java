@@ -1,19 +1,27 @@
 package org.sakaiproject.feeds.tool.wicket;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.wicket.protocol.http.HttpSessionStore;
+import org.apache.wicket.protocol.http.WebApplication;
 import org.apache.wicket.session.ISessionStore;
 import org.apache.wicket.settings.IExceptionSettings;
+import org.apache.wicket.spring.injection.annot.SpringComponentInjector;
 import org.sakaiproject.feeds.tool.facade.SakaiFacade;
 import org.sakaiproject.feeds.tool.wicket.pages.MainPage;
-import org.sakaiproject.wicket.protocol.http.SakaiWebApplication;
 
-public class FeedsApplication extends SakaiWebApplication {
-	//private static Log LOG = LogFactory.getLog(FeedsApplication.class);
+public class FeedsApplication extends WebApplication {
+	private static Log LOG = LogFactory.getLog(FeedsApplication.class);
 
 	private SakaiFacade facade;
 	
 	protected void init() {
 		super.init();
+		
+		// Configure general wicket application settings
+		addComponentInstantiationListener(new SpringComponentInjector(this));
+		getResourceSettings().setThrowExceptionOnMissingResource(true);
+		getDebugSettings().setAjaxDebugModeEnabled(false);	
 		
 		// Home page
 		mountBookmarkablePage("/home", MainPage.class);
@@ -41,6 +49,8 @@ public class FeedsApplication extends SakaiWebApplication {
 
 	@Override
 	protected ISessionStore newSessionStore() {
+		// SecondLevelCacheSessionStore causes problems with Ajax requests;
+		// => use HttpSessionStore instead.
 		return new HttpSessionStore(this);
 	}
 }

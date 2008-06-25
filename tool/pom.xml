@@ -99,27 +99,71 @@
 			<version>${sakai.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.sakaiproject</groupId>
-			<artifactId>sakai-wicket</artifactId>
-			<version>${sakai-wicket.version}</version>			
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
 			<version>2.4</version>
 			<scope>provided</scope>
 		</dependency>
+		
+		<!-- Apache Wicket dependencies -->	
+		<!--  
+		<dependency>
+			<groupId>org.sakaiproject</groupId>
+			<artifactId>sakai-wicket</artifactId>
+			<version>${sakai-wicket.version}</version>			
+			<scope>compile</scope>
+		</dependency>
+		-->			
+		<dependency>
+			<groupId>org.apache.wicket</groupId>
+			<artifactId>wicket</artifactId>
+  	        	<version>${feeds.wicket.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.wicket</groupId>
+			<artifactId>wicket-extensions</artifactId>
+  	       	<version>${feeds.wicket.version}</version>
+		</dependency>		
+		<dependency>
+			<groupId>org.apache.wicket</groupId>
+			<artifactId>wicket-ioc</artifactId>
+  	       	<version>${feeds.wicket.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.wicket</groupId>
+			<artifactId>wicket-spring</artifactId>
+  	       	<version>${feeds.wicket.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.wicket</groupId>
+			<artifactId>wicket-spring-annot</artifactId>
+  	       	<version>${feeds.wicket.version}</version>
+		</dependency>		
+		<dependency>
+			<groupId>org.apache.wicket</groupId>
+			<artifactId>wicket-datetime</artifactId>
+  	       	<version>${feeds.wicket.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.wicketstuff</groupId>
 			<artifactId>wicketstuff-dojo</artifactId>
-			<version>1.3.0-SNAPSHOT</version>
+			<version>1.3.0-beta</version>
 		</dependency>
 		<!-- <dependency>
 			<groupId>org.wicketstuff.jquery</groupId>
 			<artifactId>wicketstuff-jquery</artifactId>
 			<version>0.1-SNAPSHOT</version>
 		</dependency> -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+  	        	<version>${feeds.slf4j.version}</version>
+		</dependency>	
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+  	        	<version>${feeds.slf4j.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>

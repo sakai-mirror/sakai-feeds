@@ -29,7 +29,7 @@ sakai-wicket   - (for sakai 2.4.x)   https://source.sakaiproject.org/contrib/wic
 	For Maven 1 builds (Sakai 2.4):
 	----------------------------------------------------------
 	mkdir -p ~/.maven/repository/org.wicketstuff/jars/
-	cp lib/wicketstuff-dojo-1.3.0-SNAPSHOT.jar ~/.maven/repository/org.wicketstuff/jars/
+	cp lib/wicketstuff-dojo-1.3.0-beta.jar ~/.maven/repository/org.wicketstuff/jars/
 	mkdir -p ~/.maven/repository/commons-httpclient/jars
 	cp lib/commons-httpclient-contrib-3.0-beta1.jar ~/.maven/repository/commons-httpclient/jars/
 	
