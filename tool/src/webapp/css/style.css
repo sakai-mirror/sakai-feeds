@@ -124,11 +124,11 @@ a.feedEntryTitle img {
 
 
 /* Feed entry enclosure styling */
-td.feedEntry ul {
+td.feedEntry ul.feedEnclosures {
 	list-style-type: none;
 	padding-left: 0px;
 }
-td.feedEntry ul li {
+td.feedEntry ul.feedEnclosures li {
 	display: inline;
 	padding-right: 12px;
 }
