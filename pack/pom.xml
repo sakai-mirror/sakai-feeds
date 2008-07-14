@@ -24,25 +24,23 @@
 	</properties>
 
 	<dependencies>
+		<!-- Internal: Sakai Feeds -->
 		<dependency>
 			<groupId>org.sakaiproject</groupId>
 			<artifactId>sakai-feeds-api</artifactId>
-			<version>${feeds.version}</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.sakaiproject</groupId>
 			<artifactId>sakai-feeds-impl</artifactId>
-			<version>${feeds.version}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.sakaiproject</groupId>
 					<artifactId>sakai-feeds-api</artifactId>
 				</exclusion>
-                                <exclusion>
-                                        <groupId>org.sakaiproject</groupId>
-                                        <artifactId>generic-dao</artifactId>
-                                </exclusion>
+				<exclusion>
+					<groupId>org.sakaiproject</groupId>
+					<artifactId>generic-dao</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 	</dependencies>
