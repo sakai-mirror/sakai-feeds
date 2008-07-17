@@ -846,15 +846,20 @@ public class FeedsServiceImpl implements FeedsService {
 	private String encodeUri(String uri) {
 		// use Base64
 		byte[] encoded = CommonsCodecBase64.encodeBase64(uri.getBytes());
-		// '/' cannot be used in Reference => use '.' instead (not part of
+		// '/' cannot be used in Reference => use ',' instead (not part of
 		// Base64 alphabet)
-		String encStr = new String(encoded).replaceAll("/", "\\.");
+		String encStr = new String(encoded).replaceAll("/", ",");
 		return encStr;
 	}
 
 	private String decodeUri(String id) {
 		// use Base64
-		byte[] decoded = CommonsCodecBase64.decodeBase64(id.replaceAll("\\.", "/").getBytes());
+		byte[] decoded = CommonsCodecBase64.decodeBase64(
+				id
+				.replaceAll(",", "/")
+				.replaceAll("\\.", "/")
+				.getBytes()
+				);
 		return new String(decoded);
 	}
 
