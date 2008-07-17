@@ -48,7 +48,7 @@ public class FeedEntryImpl implements FeedEntry {
 	}
 
 	public void setPublishedDate(Date publishedDate) {
-		this.publishedDate = publishedDate;
+		this.publishedDate = new Date(publishedDate.getTime());
 	}
 
 	public String getLink() {

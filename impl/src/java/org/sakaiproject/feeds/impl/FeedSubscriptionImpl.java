@@ -41,7 +41,9 @@ public class FeedSubscriptionImpl implements FeedSubscription {
 	}
 
 	public void setUrls(String[] urls) {
-		this.urls = urls;
+		this.urls = new String[urls.length];
+		for(int i=0; i<urls.length; i++)
+			this.urls[i] = urls[i];
 		setAggregateMultipleFeeds(true);
 	}
 	
@@ -70,6 +72,7 @@ public class FeedSubscriptionImpl implements FeedSubscription {
 		this.aggregate = aggregate;
 	}
 
+	@Override
 	public FeedSubscription clone() {
 		FeedSubscription fs = new FeedSubscriptionImpl();
 		fs.setAggregateMultipleFeeds(isAggregateMultipleFeeds());

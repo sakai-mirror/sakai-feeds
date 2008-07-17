@@ -42,11 +42,11 @@ public class FeedEntriesPanel extends Panel {
 	private Boolean 					forceExternalCheck		= Boolean.FALSE;
 
 	private FeedbackPanel				feedback;
-	private final WebMarkupContainer 	feedEntryHolder = new WebMarkupContainer("feedEntryHolder");
+	private final WebMarkupContainer 	feedEntryHolder 		= new WebMarkupContainer("feedEntryHolder");
 	private final WebMarkupContainer 	myJs;
 	
-	final transient DateTimeFormatter dateTimeFormatterToday = DateTimeFormat.forPattern(", HH:mm").withLocale(getSession().getLocale());
-	final transient DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("YYYY-MM-dd HH:mm").withLocale(getSession().getLocale());
+	private final transient DateTimeFormatter dateTimeFormatterToday = DateTimeFormat.forPattern(", HH:mm").withLocale(getSession().getLocale());
+	private final transient DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("YYYY-MM-dd HH:mm").withLocale(getSession().getLocale());
 
 	public FeedEntriesPanel(String id, FeedSubscription subscription, final String _viewFilter, final String _viewDetail, final Boolean forceExternalCheck) {
 		super(id);

@@ -208,7 +208,7 @@ public class FeedsServiceImpl implements FeedsService {
 	private void initFeedFetcher() {
 		int maxCachedFeeds = m_serverConfigurationService.getInt(SAK_PROP_MAXCACHEDFEEDS, 100);
 		int cacheTimeInMin = m_serverConfigurationService.getInt(SAK_PROP_CACHETIMEINMIN, 15);
-		feedInfoCache = new SakaiFeedFetcherCache(maxCachedFeeds, cacheTimeInMin * 60 * 1000);
+		feedInfoCache = new SakaiFeedFetcherCache(maxCachedFeeds, cacheTimeInMin * 60 * 1000L);
 		feedFetcherAuth = new SakaiFeedFetcher(feedInfoCache, 30000, m_serverConfigurationService.getBoolean(SAK_PROP_IGNORECERTERR, true));
 		feedFetcherAuth.setUsingDeltaEncoding(false);
 		feedFetcherAuth.setUserAgent("SakaiFeeds");

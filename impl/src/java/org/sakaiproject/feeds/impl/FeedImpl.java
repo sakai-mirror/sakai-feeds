@@ -89,7 +89,7 @@ public class FeedImpl implements Feed {
 	}
 
 	public void setPublishedDate(Date publishedDate) {
-		this.publishedDate = publishedDate;
+		this.publishedDate = new Date(publishedDate.getTime());
 	}
 
 	public String getCopyright() {
