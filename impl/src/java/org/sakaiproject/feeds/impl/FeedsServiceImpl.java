@@ -828,7 +828,7 @@ public class FeedsServiceImpl implements FeedsService {
 			subscription.setUrl(feedUrl);
 			subscription.setTitle(feed.getTitle());
 			subscription.setDescription(feed.getDescription());
-			subscription.setIconUrl(feed.getImageUrl() == null? defaultFeedIcon : feed.getImageUrl());			
+			subscription.setIconUrl((feed.getImageUrl() == null || feed.getImageUrl().trim().equals(""))? defaultFeedIcon : feed.getImageUrl());			
 		}else{
 			subscription.setUrl(feedUrl);
 			try{
