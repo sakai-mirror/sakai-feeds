@@ -1,7 +1,6 @@
 package org.sakaiproject.feeds.tool.wicket.dataproviders;
 
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.apache.wicket.injection.web.InjectorHolder;
