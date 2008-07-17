@@ -63,7 +63,10 @@ public class FeedEntriesPanel extends Panel {
 				
 				// feed title and link (for aggregated feeds)
 				final WebMarkupContainer feedEntrySource = new WebMarkupContainer("feedEntrySource");
-				ExternalLink feedEntrySourceLink = new ExternalLink("feedEntrySourceLink", entry.getFeedLink(), entry.getFeedTitle());
+				String feedEntrySourceStr = entry.getFeedLink();
+				if(feedEntrySourceStr == null)
+					feedEntrySourceStr = entry.getLink() != null? entry.getLink() : "";
+				ExternalLink feedEntrySourceLink = new ExternalLink("feedEntrySourceLink", feedEntrySourceStr, entry.getFeedTitle());
 				feedEntrySourceLink.add(new AttributeModifier("title", true, new Model(entry.getFeedTitle())));
 				feedEntrySource.add(feedEntrySourceLink);
 				feedEntrySource.setVisible(entry.isAggregated());
