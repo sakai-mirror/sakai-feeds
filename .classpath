@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry kind="src" output="api/m2-target/classes" path="api/src/java"/>
+	<classpathentry kind="src" output="impl/m2-target/classes" path="impl/src/java"/>
+	<classpathentry excluding="**" kind="src" output="pack/m2-target/classes" path="pack/src/webapp"/>
+	<classpathentry kind="src" output="tool/m2-target/classes" path="tool/src/java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre1.5.0_11"/>
 	<classpathentry kind="con" path="org.maven.ide.eclipse.MAVEN2_CLASSPATH_CONTAINER"/>
 	<classpathentry kind="output" path="m2-target/classes"/>

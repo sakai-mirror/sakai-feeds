@@ -5,9 +5,9 @@
 	<parent>
 		<artifactId>master</artifactId>
 		<groupId>org.sakaiproject</groupId>
-		<version>2.5.0</version>              <!-- Version number for tagged releases (eg, 2.5.0) -->
-		<!-- <version>M2</version> -->        <!-- M2 for maintenance branches (eg, 2.5.x) -->
-		<!-- <version>SNAPSHOT</version> -->  <!-- SNAPSHOT for trunk -->
+		<version>2.5.0</version>				<!-- Version number for tagged releases (eg, 2.5.0) -->
+		<!-- <version>M2</version> -->			<!-- M2 for maintenance branches (eg, 2.5.x) -->
+		<!-- <version>SNAPSHOT</version> -->	<!-- SNAPSHOT for trunk -->
 	</parent>
 
 	<properties>
