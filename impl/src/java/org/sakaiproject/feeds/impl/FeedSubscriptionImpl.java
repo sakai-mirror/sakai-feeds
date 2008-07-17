@@ -41,9 +41,7 @@ public class FeedSubscriptionImpl implements FeedSubscription {
 	}
 
 	public void setUrls(String[] urls) {
-		this.urls = new String[urls.length];
-		for(int i=0; i<urls.length; i++)
-			this.urls[i] = urls[i];
+		this.urls = urls;
 		setAggregateMultipleFeeds(true);
 	}
 	

@@ -199,6 +199,7 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 		_client.setState(httpState);
 		try{
 			// 1st attempt with no credentials (realm is unknown)
+			LOG.debug("Retrieving feed: "+feedUrl.toExternalForm());
 			feed = attemptRetrieveFeed(feedUrl, _client, null, null);
 		}catch(FetcherException e){
 			if(e instanceof InnerFetcherException && e.getResponseCode() == 401 && getCredentialSupplier() != null) {
