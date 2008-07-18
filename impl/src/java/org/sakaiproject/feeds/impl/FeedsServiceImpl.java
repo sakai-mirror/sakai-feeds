@@ -247,7 +247,7 @@ public class FeedsServiceImpl implements FeedsService {
 			byte[] original = cipher.doFinal(encryptedBytes);
 			return new String(original);
 		}catch(Exception e){
-			LOG.error("Unable to decrypt feed password. Feed password will not be used!", e);
+			LOG.warn("Unable to decrypt feed password. You may need to re-enter feed password.");
 		}
 		return null;
 	}
