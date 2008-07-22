@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import java.util.Observer;
+import java.util.Properties;
 import java.util.Set;
 
 import org.sakaiproject.entitybroker.EntityReference;
@@ -42,11 +44,13 @@ public interface FeedsService {
 	public static final String	MIGRATE_DEFAULTFEEDURL				= "http://www.sakaiproject.org/cms/index2.php?option=com_rss&amp;feed=RSS2.0&amp;no_html=1";
 	public static final String	SAK_PROP_DEFAULTVIEWDETAIL			= "feeds.defaultViewDetail";
 	public static final String	SAK_PROP_DEFAULTVIEWFILTER			= "feeds.defaultViewFilter";
+	public static final String	SAK_PROP_MAXCACHINGTHREADS			= "feeds.maxCachingThreads";
 
 	public static final String	SESSION_ATTR_CREDENTIALS			= "feedCredentials";
 	public static final String	SESSION_ATTR_HTTPSTATE				= "httpState";
 	public static final String	SESSION_ATTR_VIEWOPTIONS			= "viewOptions";
 	public static final String	SESSION_ATTR_LOG_READ_EVENT			= "logReadEvent";
+	public static final String	SESSION_ATTR_FEED_USER_ID			= "feedUserId";
 	
 	public static final String	LOG_EVENT_READ						= "feeds.read";
 	public static final String	LOG_EVENT_SUBSCRIBE_INSTITUTIONAL	= "feeds.subscribe.institutional";
@@ -57,6 +61,7 @@ public interface FeedsService {
 	public static final int		MODE_SUBSCRIBED						= 0;
 	public static final int		MODE_ALL_INSTITUTIONAL				= 1;
 	public static final int		MODE_ALL_NON_INSTITUTIONAL			= 2;
+	
 
 	/** Permission for subscribing feeds. */
 	public static final String	AUTH_SUBSCRIBE						= "feeds.subscribe";
@@ -124,13 +129,16 @@ public interface FeedsService {
 	public boolean isAbleToSaveCredentials();
 	
 	/** Create a new SavedCredentials object. */
-	public SavedCredentials newSavedCredentials(URL url, String realm, String username, String password);
+	public SavedCredentials newSavedCredentials(URL url, String realm, String username, String password, String scheme);
 	
 	/** Save feed saved credentials. */
 	public void setSavedCredentials(Set<SavedCredentials> savedCredentials);
 	
 	/** Load feed saved credentials. */	
 	public Set<SavedCredentials> getSavedCredentials();
+	
+	/** Load feed saved credentials for a specific PlacementConfig. */	
+	public Set<SavedCredentials> getSavedCredentialsFromPlacementConfig(Properties config);
 
 	/** Get all institutional feeds. */
 	public Set<FeedSubscription> getInstitutionalFeeds();
@@ -144,8 +152,11 @@ public interface FeedsService {
 	/** Get a feed in XML format by Reference. */
 	public String getFeedXml(EntityReference reference) throws IllegalArgumentException, MalformedURLException, IOException, InvalidFeedException, FetcherException;
 	
+	/** Cache feed. */
+	public void cacheFeed(FeedSubscription feedSubscription, boolean forceExternalCheck, Observer observer);
+	
 	/** Add site credentials for a given user. */
-	public void addCredentials(URL url, String realm, String username, String password);
+	public void addCredentials(URL url, String realm, String username, String password, String scheme);
 	
 	/** Load site credentials for the actual session user. */
 	public void loadCredentials();
@@ -170,7 +181,7 @@ public interface FeedsService {
 	
 	/** Add cookie (relevant to this domain) for the current user. */
 	public void addClientCookie(String domain, String name, String value, String path, int maxAge, boolean secure);
-
+	
 	/** Log event through EventTrackingService. */
 	public void logEvent(String event, FeedSubscription feedSubscription, boolean modify);
 }

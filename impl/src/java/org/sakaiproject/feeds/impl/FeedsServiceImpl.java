@@ -9,6 +9,8 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Properties;
 import java.util.Set;
 
@@ -19,7 +21,6 @@ import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.httpclient.Cookie;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HttpState;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.sakaiproject.authz.cover.FunctionManager;
@@ -74,12 +75,11 @@ import com.sun.syndication.feed.synd.SyndEnclosure;
 import com.sun.syndication.feed.synd.SyndEntry;
 import com.sun.syndication.feed.synd.SyndFeed;
 import com.sun.syndication.feed.synd.SyndImage;
-import com.sun.syndication.fetcher.impl.FeedFetcherCache;
 import com.sun.syndication.io.FeedException;
 import com.sun.syndication.io.SyndFeedOutput;
 
 
-public class FeedsServiceImpl implements FeedsService {
+public class FeedsServiceImpl extends Observable implements FeedsService, Runnable {
 	private static Log						LOG	= LogFactory.getLog(FeedsServiceImpl.class);
 	private SiteService						m_siteService;
 	private EntityBroker					m_entityBroker;
@@ -95,8 +95,20 @@ public class FeedsServiceImpl implements FeedsService {
 	private InstitutionalFeedProvider		m_institutionalFeedProvider;
 	private InternalFeedStorageProvider		m_internalFeedStorageProvider;
 
-	private FeedFetcherCache				feedInfoCache;
+	private SakaiFeedFetcherCache			feedInfoCache;
 	private SakaiFeedFetcher				feedFetcherAuth;
+	private FeedCredentialSupplier 			feedCredentialSupplier;
+	
+	
+	/** Feed cache control thread and semaphore */
+	private Thread							feedCacheRequestThread;
+	private List<FeedCacheRequest>			feedCacheRequestQueue;
+	private int								activeCachingRequests = 0;
+	private Object							feedCacheRequestThreadSemaphore	= new Object();
+	private boolean							feedCacheRequestThreadRunning = true;
+	private long							feedCacheRequestThreadInterval = 200L;
+	private int 							maxFeedCachingThreads; // Maximum number of concurrent (very short-lived) threads that performs feed caching.
+
 
 	private Set<FeedSubscription>			institutionalFeeds;
 	private String							defaultFeedIcon;
@@ -155,9 +167,13 @@ public class FeedsServiceImpl implements FeedsService {
 	public void init() {
 		// initialize feed fetcher
 		initFeedFetcher();
-
+		
 		// initialize AES Cipher for encrypting saved passwords
 		initAESCipher();
+		
+		// initialize queue for feeds caching requests and controlling thread
+		feedCacheRequestQueue = new ArrayList<FeedCacheRequest>();
+		startFeedCacheControlThread();
 		
 		// register security functions
 		FunctionManager.registerFunction(AUTH_SUBSCRIBE);
@@ -199,6 +215,7 @@ public class FeedsServiceImpl implements FeedsService {
 	
 	public void destroy() {
 		LOG.info("destroy()");
+		stopFeedCacheControlThread();
 		if(feedFetcherAuth != null)
 			feedFetcherAuth.destroy();
 	}
@@ -210,7 +227,8 @@ public class FeedsServiceImpl implements FeedsService {
 		feedFetcherAuth = new SakaiFeedFetcher(feedInfoCache, 30000, m_serverConfigurationService.getBoolean(SAK_PROP_IGNORECERTERR, true));
 		feedFetcherAuth.setUsingDeltaEncoding(false);
 		feedFetcherAuth.setUserAgent("SakaiFeeds");
-		feedFetcherAuth.setCredentialSupplier(new FeedCredentialSupplier());
+		feedCredentialSupplier = new FeedCredentialSupplier();
+		feedFetcherAuth.setCredentialSupplier(feedCredentialSupplier);
 		
 		defaultFeedIcon = m_serverConfigurationService.getServerUrl() + "/sakai-feeds-tool/img/feed.png";		
 	}
@@ -268,7 +286,96 @@ public class FeedsServiceImpl implements FeedsService {
 		}
 		return bts;
 	}
+
+	// ######################################################
+	// Feed cache control thread methods
+	// ######################################################
+	/** Update thread: do not call this method! */
+	public void run(){
+		try{
+			while(feedCacheRequestThreadRunning){
+				// do update job
+				while(feedCacheRequestQueue.size() > 0 && activeCachingRequests <= maxFeedCachingThreads){
+					final FeedCacheRequest fcr = feedCacheRequestQueue.remove(0);
+					final Observable me = this;
+					new Thread(/*Thread.currentThread().getThreadGroup(), */new Runnable(){
+						public void run() {
+							activeCachingRequests++;
+							// This runs in a different thread/session::
+							Session thisSession = m_sessionManager.getCurrentSession();
+							//  : load saved credentials							
+							feedCredentialSupplier.setCredentialMap(fcr.getCredentialsMap(), thisSession);
+
+							//  : load client cookies
+							addClientCookies(fcr.getCookies(), thisSession);
+							//  : store userId
+							thisSession.setAttribute(FeedsService.SESSION_ATTR_FEED_USER_ID, fcr.getUserId());
+							
+							// cache feed
+							LOG.debug("["+activeCachingRequests+"/"+maxFeedCachingThreads+"] Caching feed: "+fcr.getFeedSubscription().getUrl());
+							try {
+								EntityReference reference = getEntityReference(fcr.getFeedSubscription().getUrl());
+								getFeed(reference, fcr.isForceExternalCheck());
+								LOG.debug("["+activeCachingRequests+"/"+maxFeedCachingThreads+"] Feed is CACHED: "+fcr.getFeedSubscription().getUrl());
+							} catch (FetcherException e) {								
+								// exception will be handled by content panel in UI
+								LOG.debug("["+activeCachingRequests+"/"+maxFeedCachingThreads+"] Feed NOT CACHED: "+fcr.getFeedSubscription().getUrl(), e);
+							} catch (RuntimeException e) {								
+								// exception will be handled by content panel in UI
+								LOG.debug("["+activeCachingRequests+"/"+maxFeedCachingThreads+"] Feed NOT CACHED: "+fcr.getFeedSubscription().getUrl(), e);
+							} catch (Exception e) {								
+								// exception will be handled by content panel in UI
+								LOG.debug("["+activeCachingRequests+"/"+maxFeedCachingThreads+"] Feed NOT CACHED: "+fcr.getFeedSubscription().getUrl(), e);
+							}
+							Observer observer = fcr.getObserver();
+							if(observer != null) {
+								observer.update(me, null);
+							}
+							activeCachingRequests--;
+						}
+					}).start();
+				}
+				
+				// sleep if no work to do
+				if(!feedCacheRequestThreadRunning) break;
+				try{
+					synchronized (feedCacheRequestThreadSemaphore){
+						feedCacheRequestThreadSemaphore.wait(feedCacheRequestThreadInterval);
+					}
+				}catch(InterruptedException e){
+					LOG.warn("Failed to sleep feed cache control thread",e);
+				}
+			}
+		}catch(Throwable t){
+			LOG.debug("Failed to execute feed cache control thread",t);
+		}finally{
+			if(feedCacheRequestThreadRunning){
+				// thread was stopped by an unknown error: restart
+				LOG.debug("Feed cache control thread was stoped by an unknown error: restarting...");
+				startFeedCacheControlThread();
+			}else
+				LOG.info("Finished feed cache control thread");
+		}
+	}
+
+	/** Start the update thread */
+	private void startFeedCacheControlThread(){
+		/** Maximum number of concurrent (very short-lived) threads that performs feed caching. */
+		maxFeedCachingThreads = m_serverConfigurationService.getInt(SAK_PROP_MAXCACHINGTHREADS, 30);
+		
+		feedCacheRequestThreadRunning = true;
+		feedCacheRequestThread = null;
+		feedCacheRequestThread = new Thread(this, "org.sakaiproject.feeds.impl.FeedsServiceImpl.feedCaching");
+		feedCacheRequestThread.start();
+	}
 	
+	/** Stop the update thread */
+	private void stopFeedCacheControlThread(){
+		feedCacheRequestThreadRunning = false;
+		synchronized (feedCacheRequestThreadSemaphore){
+			feedCacheRequestThreadSemaphore.notifyAll();
+		}
+	}
 
 	// ######################################################
 	// Service implementation methods
@@ -580,6 +687,8 @@ public class FeedsServiceImpl implements FeedsService {
 					break;
 				}
 				tmpStr += encrypedPassword;
+				tmpStr += TC_PROP_LEVEL2_DELIMITER;
+				tmpStr += crd.getScheme();
 			}
 			if(!abort) {
 				config.setProperty(TC_PROP_CREDENTIALS, tmpStr);
@@ -587,11 +696,15 @@ public class FeedsServiceImpl implements FeedsService {
 			}
 		}
 	}
-		
-	public Set<SavedCredentials> getSavedCredentials(){
-		Set<SavedCredentials> savedCredentials = new HashSet<SavedCredentials>();
+	
+	public Set<SavedCredentials> getSavedCredentials() {
 		Placement placement = ToolManager.getCurrentPlacement();
 		Properties config = placement.getPlacementConfig();
+		return getSavedCredentialsFromPlacementConfig(config);
+	}
+	
+	public Set<SavedCredentials> getSavedCredentialsFromPlacementConfig(Properties config) {
+		Set<SavedCredentials> savedCredentials = new HashSet<SavedCredentials>();
 		if(config != null){
 			String prop = config.getProperty(TC_PROP_CREDENTIALS);
 			if(prop != null){
@@ -606,6 +719,9 @@ public class FeedsServiceImpl implements FeedsService {
 							crd.setUsername(fields[2]);
 							String password = decryptData(fields[3]);
 							crd.setPassword(password);
+							if(fields.length >= 5) {
+								crd.setScheme(fields[4]);
+							}
 							if(crd.getUrl() != null && password != null){
 								savedCredentials.add(crd);
 							}
@@ -621,8 +737,8 @@ public class FeedsServiceImpl implements FeedsService {
 		return savedCredentials;
 	}
 	
-	public SavedCredentials newSavedCredentials(URL url, String realm, String username, String password) {
-		return new SavedCredentialsImpl(url, realm, username, password);
+	public SavedCredentials newSavedCredentials(URL url, String realm, String username, String password, String scheme) {
+		return new SavedCredentialsImpl(url, realm, username, password, scheme);
 	}
 
 	public Set<FeedSubscription> getInstitutionalFeeds() {
@@ -673,16 +789,16 @@ public class FeedsServiceImpl implements FeedsService {
 		return userInstitutionalFeeds;
 	}
 
-	public void addCredentials(URL url, String realm, String username, String password) {
-		Credentials credentials = new UsernamePasswordCredentials(username, password);
-		feedFetcherAuth.addCredentials(url, realm, credentials);
+	public void addCredentials(URL url, String realm, String username, String password, String scheme) {
+		Credentials credentials = new UsernamePasswordRealmSchemeCredentials(username, password, realm, scheme);
+		feedFetcherAuth.addCredentials(url, credentials);
 	}
 	
 	public void loadCredentials() {
 		Set<SavedCredentials> saved = getSavedCredentials();
 		for(SavedCredentials crd : saved){
-			Credentials credentials = new UsernamePasswordCredentials(crd.getUsername(), crd.getPassword());
-			feedFetcherAuth.addCredentials(crd.getUrl(), crd.getRealm(), credentials);
+			Credentials credentials = new UsernamePasswordRealmSchemeCredentials(crd.getUsername(), crd.getPassword(), crd.getRealm(), crd.getScheme());
+			feedFetcherAuth.addCredentials(crd.getUrl(), credentials);
 		}
 	}
 
@@ -709,6 +825,7 @@ public class FeedsServiceImpl implements FeedsService {
 						ex.setResponseCode(e.getResponseCode());
 						if(e instanceof InnerFetcherException) {
 							ex.setRealm(((InnerFetcherException)e).getAuthState().getRealm());
+							ex.setScheme(((InnerFetcherException)e).getAuthState().getAuthScheme().getSchemeName());
 						}
 						throw ex;
 					}else{
@@ -805,6 +922,20 @@ public class FeedsServiceImpl implements FeedsService {
 			}
 		}
 		return feedXml;
+	}
+	
+	public void cacheFeed(FeedSubscription feedSubscription, boolean forceExternalCheck, Observer observer) {
+		feedCacheRequestQueue.add(new FeedCacheRequest
+				(
+				feedSubscription, 
+				forceExternalCheck,
+				feedCredentialSupplier.getCredentialsMap(),
+				/*getSavedCredentials(),*/
+				getClientCookies(),
+				m_sessionManager.getCurrentSessionUserId(),
+				observer
+				)
+		);
 	}
 
 	public boolean saveFeed(Feed feed) {
@@ -1033,6 +1164,32 @@ public class FeedsServiceImpl implements FeedsService {
 			session.setAttribute(FeedsService.SESSION_ATTR_HTTPSTATE, httpState);
 		}
 	}
+	
+	private Cookie[] getClientCookies() {
+		Session session = m_sessionManager.getCurrentSession();
+		Object o = session.getAttribute(FeedsService.SESSION_ATTR_HTTPSTATE);
+		HttpState httpState = null;
+		if(o == null){
+			httpState = new HttpState();
+		}else if(o != null && o instanceof HttpState){
+			httpState = (HttpState) o;
+		}
+	
+		return httpState != null? httpState.getCookies() : null;
+	}
+	
+	private void addClientCookies(Cookie[] cookies, Session toSession) {
+		Object o = toSession.getAttribute(FeedsService.SESSION_ATTR_HTTPSTATE);
+		HttpState httpState = null;
+		if(o == null){
+			httpState = new HttpState();
+		}else if(o != null && o instanceof HttpState){
+			httpState = (HttpState) o;
+		}
+		
+		httpState.addCookies(cookies);
+		toSession.setAttribute(FeedsService.SESSION_ATTR_HTTPSTATE, httpState);
+	}
 
 	public void logEvent(String event, FeedSubscription feedSubscription, boolean modify) {
 		StringBuilder ref = new StringBuilder();
@@ -1051,38 +1208,94 @@ public class FeedsServiceImpl implements FeedsService {
 		public FeedCredentialSupplier() {
 		}
 		
-		public void addCredentials(URL url, String realm, Credentials credentials) {
-			String key = composeKey(url, realm);
-			Map<String,Credentials> credentialsMap = getCredentialsMap();
-			credentialsMap.put(key, credentials);
+		public void addCredentials(URL url, Credentials credentials) {
+			Map<URL,Credentials> credentialsMap = getCredentialsMap();
+			credentialsMap.put(url, credentials);
 			setCredentialsMap(credentialsMap);
 		}
 
-		public Credentials getCredentials(URL url, String realm) {
-			String key = composeKey(url, realm);
-			Credentials credentials = getCredentialsMap().get(key);
+		public Credentials getCredentials(URL url) {
+			Credentials credentials = getCredentialsMap().get(url);
 			return credentials;
 		}
 		
-		private Map<String,Credentials> getCredentialsMap() {
+		protected Map<URL,Credentials> getCredentialsMap() {
 			Object o = m_sessionManager.getCurrentSession().getAttribute(SESSION_ATTR_CREDENTIALS);
 			if(o != null && o instanceof Map<?,?>){
-				Map<String,Credentials> credentialsMap = (Map<String,Credentials>) o;
+				Map<URL,Credentials> credentialsMap = (Map<URL,Credentials>) o;
 				return credentialsMap;
 			}else{
-				Map<String,Credentials> credentialsMap = new HashMap<String,Credentials>();
+				Map<URL,Credentials> credentialsMap = new HashMap<URL,Credentials>();
 				m_sessionManager.getCurrentSession().setAttribute(SESSION_ATTR_CREDENTIALS, credentialsMap);
 				return credentialsMap;
 			}
 		}
 		
-		private void setCredentialsMap(Map<String,Credentials> credentialsMap) {
-			m_sessionManager.getCurrentSession().setAttribute(SESSION_ATTR_CREDENTIALS, credentialsMap);
+		protected void setCredentialMap(Map<URL,Credentials> credentialsMap, Session toSession) {
+			if(toSession != null) {
+				toSession.setAttribute(SESSION_ATTR_CREDENTIALS, credentialsMap);
+			} else
+				LOG.warn("copyCredentialsToSession: toSession is null");
 		}
 		
-		private String composeKey(URL url, String realm) {
-			return url.getHost() + TC_PROP_LEVEL1_DELIMITER + (url.getPort() == -1 ? 80 : url.getPort()) + TC_PROP_LEVEL1_DELIMITER + realm;
+		private void setCredentialsMap(Map<URL,Credentials> credentialsMap) {
+			m_sessionManager.getCurrentSession().setAttribute(SESSION_ATTR_CREDENTIALS, credentialsMap);			
 		}
-		
 	}	
+	
+	class FeedCacheRequest {
+		private Observer observer;
+		private FeedSubscription feedSubscription;
+		private boolean forceExternalCheck;
+		private Cookie[] cookies;
+		private String userId;
+		private Map<URL,Credentials> credentialsMap;
+		
+		public FeedCacheRequest(
+				FeedSubscription feedSubscription, 
+				boolean forceExternalCheck, 
+				Observer observer) {
+			this(feedSubscription, forceExternalCheck, null, null, null, observer);
+		}
+
+		public FeedCacheRequest(
+				FeedSubscription feedSubscription, 
+				boolean forceExternalCheck, 
+				Map<URL,Credentials> credentialsMap,
+				Cookie[] cookies,
+				String userId,
+				Observer observer) {
+			this.feedSubscription = feedSubscription;
+			this.forceExternalCheck = forceExternalCheck;
+			this.credentialsMap = credentialsMap != null? credentialsMap : feedCredentialSupplier.getCredentialsMap();
+			this.cookies = cookies != null? cookies : getClientCookies();
+			this.userId = userId != null? userId : m_sessionManager.getCurrentSessionUserId();
+			this.observer = observer;
+		}
+
+		public FeedSubscription getFeedSubscription() {
+			return feedSubscription;
+		}
+
+		public boolean isForceExternalCheck() {
+			return forceExternalCheck;
+		}
+		
+		public Map<URL, Credentials> getCredentialsMap() {
+			return credentialsMap;
+		}
+
+		public Cookie[] getCookies() {
+			return cookies;
+		}
+
+		public String getUserId() {
+			return userId;
+		}
+
+		public Observer getObserver() {
+			return observer;
+		}
+		
+	}
 }

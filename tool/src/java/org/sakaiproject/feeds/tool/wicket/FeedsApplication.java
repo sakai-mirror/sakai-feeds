@@ -7,6 +7,7 @@ import org.apache.wicket.protocol.http.WebApplication;
 import org.apache.wicket.session.ISessionStore;
 import org.apache.wicket.settings.IExceptionSettings;
 import org.apache.wicket.spring.injection.annot.SpringComponentInjector;
+import org.sakaiproject.component.cover.ServerConfigurationService;
 import org.sakaiproject.feeds.tool.facade.SakaiFacade;
 import org.sakaiproject.feeds.tool.wicket.pages.MainPage;
 
@@ -21,7 +22,8 @@ public class FeedsApplication extends WebApplication {
 		// Configure general wicket application settings
 		addComponentInstantiationListener(new SpringComponentInjector(this));
 		getResourceSettings().setThrowExceptionOnMissingResource(true);
-		getDebugSettings().setAjaxDebugModeEnabled(false);	
+		getMarkupSettings().setStripWicketTags(true);
+		getDebugSettings().setAjaxDebugModeEnabled(ServerConfigurationService.getBoolean("feeds.ajaxDebugEnabled", false));
 		
 		// Home page
 		mountBookmarkablePage("/home", MainPage.class);

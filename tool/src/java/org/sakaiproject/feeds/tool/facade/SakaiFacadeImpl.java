@@ -6,20 +6,18 @@ import org.sakaiproject.site.api.SiteService;
 import org.sakaiproject.tool.api.SessionManager;
 import org.sakaiproject.tool.api.ToolManager;
 
-
 public class SakaiFacadeImpl implements SakaiFacade {
-	private FeedsService		feedsService;
-	private SessionManager		sessionManager;
-	private AuthzGroupService	authzGroupService;
-	private SiteService			siteService;
-	private ToolManager			toolManager;
+	private FeedsService 				feedsService;
+	private SessionManager 				sessionManager;
+	private AuthzGroupService 			authzGroupService;
+	private SiteService 				siteService;
+	private ToolManager 				toolManager;
 
 	public void setFeedsService(FeedsService feedsService) {
 		this.feedsService = feedsService;
 	}
 
 	public FeedsService getFeedsService() {
-		// return feedsService();
 		return feedsService;
 	}
 
@@ -54,5 +52,4 @@ public class SakaiFacadeImpl implements SakaiFacade {
 	public void setToolManager(ToolManager toolManager) {
 		this.toolManager = toolManager;
 	}
-
 }

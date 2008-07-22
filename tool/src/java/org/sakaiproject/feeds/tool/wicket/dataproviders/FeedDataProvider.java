@@ -36,6 +36,7 @@ public class FeedDataProvider implements IDataProvider {
 	private boolean					requireAuthentication		= false;
 	private String					affectedFeed				= null;
 	private String					authenticationRealm			= null;
+	private String					authenticationScheme		= null;
 	private FeedSubscription 		subscription;
 	private Feed 					feed;
 	private List<FeedEntry>			entries;
@@ -120,6 +121,7 @@ public class FeedDataProvider implements IDataProvider {
 			requireAuthentication = true;
 			affectedFeed = url;
 			authenticationRealm = e.getRealm();
+			authenticationScheme = e.getScheme();
 			_feed = null;
 		}catch(IllegalArgumentException e){
 			setErrorMessage((String) new ResourceModel("err.subscribing").getObject());
@@ -247,6 +249,10 @@ public class FeedDataProvider implements IDataProvider {
 
 	public String getAuthenticationRealm() {
 		return authenticationRealm;
+	}
+
+	public String getAuthenticationScheme() {
+		return authenticationScheme;
 	}
 
 	public String getErrorMessage() {

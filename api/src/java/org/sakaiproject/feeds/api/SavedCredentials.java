@@ -6,9 +6,6 @@ import java.net.URL;
 
 public interface SavedCredentials extends Serializable {
 
-	public String getRealm();
-	public void setRealm(String realm);
-
 	public URL getUrl();
 	public void setUrl(URL url);
 
@@ -17,5 +14,11 @@ public interface SavedCredentials extends Serializable {
 
 	public String getPassword();
 	public void setPassword(String password);
+
+	public String getRealm();
+	public void setRealm(String realm);
+
+	public String getScheme();
+	public void setScheme(String scheme);
 
 }

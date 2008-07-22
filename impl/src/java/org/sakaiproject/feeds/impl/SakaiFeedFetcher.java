@@ -1,9 +1,7 @@
 package org.sakaiproject.feeds.impl;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.StringTokenizer;
@@ -36,7 +34,6 @@ import com.sun.syndication.feed.synd.SyndFeed;
 import com.sun.syndication.fetcher.FetcherEvent;
 import com.sun.syndication.fetcher.FetcherException;
 import com.sun.syndication.fetcher.impl.AbstractFeedFetcher;
-import com.sun.syndication.fetcher.impl.FeedFetcherCache;
 import com.sun.syndication.fetcher.impl.SyndFeedInfo;
 import com.sun.syndication.io.FeedException;
 import com.sun.syndication.io.SyndFeedInput;
@@ -44,7 +41,7 @@ import com.sun.syndication.io.XmlReader;
 
 public class SakaiFeedFetcher extends AbstractFeedFetcher {
 	private static Log							LOG	= LogFactory.getLog(SakaiFeedFetcher.class);
-	private FeedFetcherCache					feedInfoCache;
+	private SakaiFeedFetcherCache				feedInfoCache;
 	private CredentialSupplier					credentialSupplier;
 	private MultiThreadedHttpConnectionManager	connectionManager;
 	private HttpClient							client;
@@ -53,7 +50,7 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 		this(null, 30000, true);
 	}
 
-	public SakaiFeedFetcher(FeedFetcherCache cache, int timeout, boolean ignoreCertificateErrors) {
+	public SakaiFeedFetcher(SakaiFeedFetcherCache cache, int timeout, boolean ignoreCertificateErrors) {
 		super();
 		
 		// configure logging
@@ -140,14 +137,14 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 	/**
 	 * @return the feedInfoCache.
 	 */
-	public synchronized FeedFetcherCache getFeedInfoCache() {
+	public synchronized SakaiFeedFetcherCache getFeedInfoCache() {
 		return feedInfoCache;
 	}
 	
     /**
 	 * @param feedInfoCache the feedInfoCache to set
 	 */
-	public synchronized void setFeedInfoCache(FeedFetcherCache feedInfoCache) {
+	public synchronized void setFeedInfoCache(SakaiFeedFetcherCache feedInfoCache) {
 		this.feedInfoCache = feedInfoCache;
 	}
 
@@ -164,9 +161,9 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
         this.credentialSupplier = credentialSupplier;
     }	
     
-    public void addCredentials(URL url, String realm, Credentials credentials) {
+    public void addCredentials(URL url, Credentials credentials) {
     	if(getCredentialSupplier() != null)
-    		getCredentialSupplier().addCredentials(url, realm, credentials);
+    		getCredentialSupplier().addCredentials(url, credentials);
     }
 	
 	/**
@@ -183,39 +180,46 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 		}
 		
 		SyndFeed feed = null;
+		Credentials credentials = getCredentialSupplier().getCredentials(feedUrl);
 		
-		// Maybe was recently cached
+		// Check if feed was recently cached
 		if(getFeedInfoCache() instanceof SakaiFeedFetcherCache) {
 			SakaiFeedFetcherCache cache = (SakaiFeedFetcherCache) getFeedInfoCache();
-			if(!forceExternalCheck && cache.isRecent(feedUrl)){
+			String userId = null;
+			String feedUsername = null;
+			if (credentials != null) {
+				if(credentials instanceof UsernamePasswordRealmSchemeCredentials) {
+					feedUsername = ((UsernamePasswordRealmSchemeCredentials) credentials).getUserName();
+				}
+				userId = SessionManager.getCurrentSessionUserId();
+				if(userId == null){
+					userId = (String) SessionManager.getCurrentSession().getAttribute(FeedsService.SESSION_ATTR_FEED_USER_ID);
+				}
+				if(!forceExternalCheck && cache.isRecent(feedUrl, userId, feedUsername)){
+					// cached authenticated feed
+					LOG.debug("Authenticated feed was recently cached - returning feed from cache: "+feedUrl.toString());
+					return cache.getFeedInfo(feedUrl, userId, feedUsername).getSyndFeed();
+				}
+			}else if(!forceExternalCheck && cache.isRecent(feedUrl)){
+				// cached non-authenticated feed
 				LOG.debug("Feed was recently cached - returning feed from cache: "+feedUrl.toString());
 				return cache.getFeedInfo(feedUrl).getSyndFeed();
 			}
 		}		
 		
-		// An HttpState per user
+		// Use an HttpState per user
 		HttpState httpState = getHttpState();
 		HttpClient _client = getHttpClient(feedUrl);
 		_client.setState(httpState);
-		try{
-			// 1st attempt with no credentials (realm is unknown)
-			LOG.debug("Retrieving feed: "+feedUrl.toExternalForm());
-			feed = attemptRetrieveFeed(feedUrl, _client, null, null);
-		}catch(FetcherException e){
-			if(e instanceof InnerFetcherException && e.getResponseCode() == 401 && getCredentialSupplier() != null) {
-				InnerFetcherException ex = (InnerFetcherException) e;
-				// Retry attempt with credentials
-				AuthState authState = ex.getAuthState();
-				Credentials credentials = getCredentialSupplier().getCredentials(feedUrl, authState.getRealm()); 
-				if (credentials != null) {
-					AuthScope authScope = new AuthScope(feedUrl.getHost(), feedUrl.getPort(), authState.getRealm(), authState.getAuthScheme().getSchemeName());
-					feed = attemptRetrieveFeed(feedUrl, _client, authScope, credentials);
-				}else
-					throw e;
-					
-			}else
-				throw e;
-		}
+		
+		// Retrieve feed
+		LOG.debug("Retrieving feed: "+feedUrl.toExternalForm());
+		AuthScope authScope = null;
+		if(credentials != null && credentials instanceof UsernamePasswordRealmSchemeCredentials) {
+			UsernamePasswordRealmSchemeCredentials c = (UsernamePasswordRealmSchemeCredentials) credentials;
+			authScope = new AuthScope(feedUrl.getHost(), feedUrl.getPort(), c.getRealm(), c.getScheme());
+		}				
+		feed = attemptRetrieveFeed(feedUrl, _client, authScope, credentials);
 		
 		return feed;
 	}
@@ -235,8 +239,8 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 	private SyndFeed attemptRetrieveFeed(URL feedUrl, HttpClient client, AuthScope authScope, Credentials credentials) throws IOException, HttpException, FetcherException, FeedException, MalformedURLException {
 		System.setProperty("httpclient.useragent", getUserAgent());
 		String urlStr = feedUrl.toString();
-		FeedFetcherCache cache = getFeedInfoCache();
-		if (cache != null && authScope == null && credentials == null) {
+		SakaiFeedFetcherCache cache = getFeedInfoCache();
+		if (cache != null) {
 			// retrieve feed
 			HttpMethod method = new GetMethod(urlStr);
 			method.addRequestHeader("Accept-Encoding", "gzip");
@@ -247,20 +251,38 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 
 				// get the feed info from the cache
 			    // Note that syndFeedInfo will be null if it is not in the cache
-				SyndFeedInfo syndFeedInfo = cache.getFeedInfo(feedUrl);			
+				SyndFeedInfo syndFeedInfo = null;
+				String userId = null;
+				String feedUsername = null;
+				if(authScope == null && credentials == null) {
+					// cached non-authenticated feed
+					syndFeedInfo = cache.getFeedInfo(feedUrl);			
+				}else{
+					// cached authenticated feed
+					if(credentials instanceof UsernamePasswordRealmSchemeCredentials) 
+						feedUsername = ((UsernamePasswordRealmSchemeCredentials) credentials).getUserName();
+					userId = SessionManager.getCurrentSessionUserId();
+					if(userId == null){
+						userId = (String) SessionManager.getCurrentSession().getAttribute(FeedsService.SESSION_ATTR_FEED_USER_ID);
+					}
+					syndFeedInfo = cache.getFeedInfo(feedUrl, userId, feedUsername);
+				}
 			    if (syndFeedInfo != null) {
-				    method.setRequestHeader("If-None-Match", syndFeedInfo.getETag());
-				    
+				    method.setRequestHeader("If-None-Match", syndFeedInfo.getETag());				    
 				    if (syndFeedInfo.getLastModified() instanceof String) {
 				        method.setRequestHeader("If-Modified-Since", (String)syndFeedInfo.getLastModified());
 				    }
 			    }
 			    
-			    method.setFollowRedirects(true);			    
-				int statusCode = executeHttpClientMethod(feedUrl, client, method, null, null);			    			    
+			    method.setFollowRedirects(true);			    		    			    
+			    int statusCode = executeHttpClientMethod(feedUrl, client, method, authScope, credentials);
 			    SyndFeed feed = getFeed(syndFeedInfo, urlStr, method, statusCode);		
-				syndFeedInfo = buildSyndFeedInfo(feedUrl, urlStr, method, feed, statusCode);
-				cache.setFeedInfo(new URL(urlStr), syndFeedInfo);
+				syndFeedInfo = buildSyndFeedInfo(feedUrl, urlStr, method, feed, statusCode, credentials);
+				if(authScope == null && credentials == null) {
+					cache.setFeedInfo(new URL(urlStr), syndFeedInfo);
+				}else{
+					cache.setFeedInfo(new URL(urlStr), userId, feedUsername, syndFeedInfo);
+				}
 					
 				// the feed may have been modified to pick up cached values
 				// (eg - for delta encoding)
@@ -319,7 +341,7 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
      * @return
      * @throws MalformedURLException
      */
-    private SyndFeedInfo buildSyndFeedInfo(URL feedUrl, String urlStr, HttpMethod method, SyndFeed feed, int statusCode) throws MalformedURLException {
+    private SyndFeedInfo buildSyndFeedInfo(URL feedUrl, String urlStr, HttpMethod method, SyndFeed feed, int statusCode, Credentials credentials) throws MalformedURLException {
         SyndFeedInfo syndFeedInfo;
         syndFeedInfo = new SyndFeedInfo();
         
@@ -329,11 +351,25 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
                 
         Header imHeader = method.getResponseHeader("IM");
         if (imHeader != null && imHeader.getValue().indexOf("feed") >= 0 && isUsingDeltaEncoding()) {
-			FeedFetcherCache cache = getFeedInfoCache();
+			SakaiFeedFetcherCache cache = getFeedInfoCache();
 			if (cache != null && statusCode == 226) {
 			    // client is setup to use http delta encoding and the server supports it and has returned a delta encoded response
 			    // This response only includes new items
-			    SyndFeedInfo cachedInfo = cache.getFeedInfo(feedUrl);
+				SyndFeedInfo cachedInfo = null;
+				if(credentials == null) {
+					// cached non-authenticated feed
+					cachedInfo = cache.getFeedInfo(feedUrl);
+				}else{
+					// cached authenticated feed
+					String userId = SessionManager.getCurrentSessionUserId();
+					if(userId == null){
+						userId = (String) SessionManager.getCurrentSession().getAttribute(FeedsService.SESSION_ATTR_FEED_USER_ID);
+					}
+					String feedUsername = null;
+					if(credentials instanceof UsernamePasswordRealmSchemeCredentials) 
+						feedUsername = ((UsernamePasswordRealmSchemeCredentials) credentials).getUserName();
+					cachedInfo = cache.getFeedInfo(feedUrl, userId, feedUsername);
+				}
 			    if (cachedInfo != null) {
 				    SyndFeed cachedFeed = cachedInfo.getSyndFeed();
 				    
@@ -369,7 +405,7 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 	 * @throws FeedException
 	 */
 	private static SyndFeed retrieveFeed(String urlStr, HttpMethod method) throws IOException, HttpException, FetcherException, FeedException {
-		LOG.info("Retrieving feed: "+urlStr);
+		//LOG.info("Retrieving feed: "+urlStr);
 		InputStream stream = null;
 		if ((method.getResponseHeader("Content-Encoding") != null) && ("gzip".equalsIgnoreCase(method.getResponseHeader("Content-Encoding").getValue()))) {
 			stream = new GZIPInputStream(method.getResponseBodyAsStream());
@@ -423,8 +459,8 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 
 
 	public interface CredentialSupplier {
-		public void addCredentials(URL url, String realm, Credentials credentials);
-        public Credentials getCredentials(URL url, String realm);
+		public void addCredentials(URL url, Credentials credentials);
+        public Credentials getCredentials(URL url);
     }
 	
 	public static class InnerFetcherException extends FetcherException {
@@ -455,24 +491,5 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 			this.authState = authState;
 		}
 		
-	}
-	
-	private static String inputStreamToString(InputStream stream) {
-		byte[] buffer = new byte[4096];
-		OutputStream outputStream = new ByteArrayOutputStream();		 
-		try{
-			while (true) {
-			    int read = stream.read(buffer);		 
-			    if (read == -1) {
-			        break;
-			    }		 
-			    outputStream.write(buffer, 0, read);
-			}		 
-			outputStream.close();
-			stream.close();
-		}catch(IOException e){
-			e.printStackTrace();
-		}		 
-		return outputStream.toString();
 	}
 }

@@ -71,6 +71,7 @@ public class SubscriptionsPage extends BasePage {
 	private AggregateFeedOptions		aggregateOptions			= null;
 
 	private String						authenticationRealm;
+	private String						authenticationScheme;
 	private Set<SavedCredentials>		savedCredentials			= null;
 	
 	private Set<FeedSubscription>		previousInstitutionalSubscriptions = null;
@@ -413,11 +414,11 @@ public class SubscriptionsPage extends BasePage {
 		try{
 			URL _url = new URL(url);
 			if(username != null && !username.trim().equals("")){
-				facade.getFeedsService().addCredentials(_url, authenticationRealm, username, password);
+				facade.getFeedsService().addCredentials(_url, authenticationRealm, username, password, authenticationScheme);
 			}
 			feedSubscription = facade.getFeedsService().getFeedSubscriptionFromFeedUrl(url, true);
 			if(isRememberMe() && username != null && !username.trim().equals("")){
-				SavedCredentials newCrd = facade.getFeedsService().newSavedCredentials(_url, authenticationRealm, username, password);
+				SavedCredentials newCrd = facade.getFeedsService().newSavedCredentials(_url, authenticationRealm, username, password, authenticationScheme);
 				// remove overrided credentials
 				Set<SavedCredentials> toRemove = new HashSet<SavedCredentials>();
 				for(SavedCredentials saved : savedCredentials){
@@ -435,7 +436,7 @@ public class SubscriptionsPage extends BasePage {
 		}catch(FeedAuthenticationException e) {
 			feedback.error(new StringResourceModel("err.reqauth", this, null).getString());
 			authenticationRealm = e.getRealm();
-			System.out.println("Realm: "+e.getRealm());
+			authenticationScheme = e.getScheme();
 			e.printStackTrace();
 			throw e;
 		}catch(IllegalArgumentException e){

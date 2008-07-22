@@ -5,6 +5,7 @@ public class FeedAuthenticationException extends Exception {
 	private static final long	serialVersionUID	= 1L;
 	private int 				responseCode		= 0;
 	private String				realm				= null;
+	private String				scheme				= null;
 
 	public FeedAuthenticationException(int responseCode, String msg) {
 		super(msg);
@@ -41,6 +42,14 @@ public class FeedAuthenticationException extends Exception {
 	
 	public String getRealm() {
 		return realm;
+	}
+
+	public void setScheme(String scheme) {
+		this.scheme = scheme;
+	}
+	
+	public String getScheme() {
+		return scheme;
 	}
 	
 }

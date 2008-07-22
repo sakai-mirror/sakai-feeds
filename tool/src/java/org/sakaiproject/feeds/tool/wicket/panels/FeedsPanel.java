@@ -27,7 +27,7 @@ import org.sakaiproject.feeds.api.FeedsService;
 import org.sakaiproject.feeds.api.ViewOptions;
 import org.sakaiproject.feeds.tool.facade.SakaiFacade;
 import org.sakaiproject.feeds.tool.wicket.components.AjaxIndicator;
-import org.sakaiproject.feeds.tool.wicket.components.AjaxParallelLazyLoadPanel;
+import org.sakaiproject.feeds.tool.wicket.components.AjaxParallelLazyFeedLoadPanel;
 import org.sakaiproject.feeds.tool.wicket.components.AjaxUpdatingBehaviorWithIndicator;
 import org.sakaiproject.feeds.tool.wicket.components.ExternalImage;
 import org.sakaiproject.feeds.tool.wicket.dataproviders.FeedDataProvider;
@@ -92,7 +92,7 @@ public class FeedsPanel extends Panel {
 		
         // create the DataView
 		final List<Label> feedDescriptions = new ArrayList<Label>();
-		final List<AjaxParallelLazyLoadPanel> feedEntriesAjaxPanels = new ArrayList<AjaxParallelLazyLoadPanel>();
+		final List<Panel> feedEntriesAjaxPanels = new ArrayList<Panel>();
 		final List<FeedEntriesPanel> feedEntriesPanels = new ArrayList<FeedEntriesPanel>();
 		final List<FeedDataProvider> feedEntriesProviders = new ArrayList<FeedDataProvider>();
         final DataView view = new DataView("feed", subscriptionDataProvider) {
@@ -139,7 +139,8 @@ public class FeedsPanel extends Panel {
 				AjaxIndicator entriesLoadIndicator = new AjaxIndicator("entriesLoadIndicator");
 				item.add(entriesLoadIndicator);
 				final WebMarkupContainer entriesWrapper = new WebMarkupContainer("entriesWrapper");
-				final AjaxParallelLazyLoadPanel panel = new AjaxParallelLazyLoadPanel("entries", entriesLoadIndicator) {
+				//final AjaxLazyLoadPanel panel = new AjaxLazyLoadPanel("entries", entriesLoadIndicator) {
+				final AjaxParallelLazyFeedLoadPanel panel = new AjaxParallelLazyFeedLoadPanel("entries", entriesLoadIndicator, subscription, forceExternalCheck) {
 					private static final long	serialVersionUID	= 1L;
 					@Override
 					public Component getLazyLoadComponent(String id) {
@@ -211,6 +212,8 @@ public class FeedsPanel extends Panel {
 				link.add(titleLinkLabel);
 				link.setVisible(!(subscription.isAggregateMultipleFeeds() && aggregateFeedOptions.getTitleDisplayOption() == AggregateFeedOptions.TITLE_DISPLAY_NONE));				
 				item.add(link);
+				
+				//ExternalLink jQueryTestLink = new ExternalLink("jQueryTestLink", panel.getLazyLoadComponent("entries"));
 			}
         	
         };
@@ -232,7 +235,7 @@ public class FeedsPanel extends Panel {
 				for(FeedDataProvider p : feedEntriesProviders) {
 					p.setViewDetail(viewMode);
 				}	
-				for(AjaxParallelLazyLoadPanel p : feedEntriesAjaxPanels) {
+				for(Panel p : feedEntriesAjaxPanels) {
 					target.addComponent(p);
 				}
 				target.appendJavascript("setMainFrameHeightNoScroll(window.name);");
@@ -247,7 +250,7 @@ public class FeedsPanel extends Panel {
 				for(FeedEntriesPanel p : feedEntriesPanels) {
 					p.setViewDetail(viewDetailMode);
 				}	
-				for(AjaxParallelLazyLoadPanel p : feedEntriesAjaxPanels) {
+				for(Panel p : feedEntriesAjaxPanels) {
 					if(getViewDetail().equals(ViewOptions.VIEW_DETAIL_NO_ENTRY))
 						p.add(new AttributeModifier("style", true, new Model("display: none")));
 					else

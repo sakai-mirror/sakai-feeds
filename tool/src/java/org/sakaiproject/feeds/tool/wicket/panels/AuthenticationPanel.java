@@ -85,12 +85,12 @@ public class AuthenticationPanel extends Panel {
 			protected void onSubmit(AjaxRequestTarget target, Form form) {
 				URL url = null;
 				String realm = feedDataProvider.getAuthenticationRealm();
+				String scheme = feedDataProvider.getAuthenticationScheme();
 				
 				if(getUsername() != null && !getUsername().trim().equals("")){
 					try{
 						url = new URL(affectedFeed);
-						facade.getFeedsService().addCredentials(url, realm, username, password);
-						//System.out.println("AuthenticationPanel: " + url.toString() + ", " + realm + ", " + getUsername() + ", " + getPassword());
+						facade.getFeedsService().addCredentials(url, realm, username, password, scheme);
 					}catch(Exception e){
 						e.printStackTrace();
 					}
@@ -105,7 +105,7 @@ public class AuthenticationPanel extends Panel {
 					(authSuccess 
 							|| realm.equals(feedDataProvider.getAuthenticationRealm()) && affectedFeed.equals(feedDataProvider.getAffectedFeed()) ) 
 					&& isRememberMe()) {
-					SavedCredentials newCrd = facade.getFeedsService().newSavedCredentials(url, realm, username, password);
+					SavedCredentials newCrd = facade.getFeedsService().newSavedCredentials(url, realm, username, password, scheme);
 					// remove overrided credentials
 					Set<SavedCredentials> toRemove = new HashSet<SavedCredentials>();
 					for(SavedCredentials saved : savedCredentials){

@@ -10,24 +10,18 @@ public class SavedCredentialsImpl implements SavedCredentials {
 	private String				username;
 	private String				password;
 	private String				realm;
+	private String				scheme;
 	private URL					url;
 
-	public SavedCredentialsImpl(URL url, String realm, String username, String password) {
+	public SavedCredentialsImpl(URL url, String realm, String username, String password, String scheme) {
 		this.url = url;
 		this.realm = realm;
 		this.username = username;
 		this.password = password;
+		this.scheme = scheme;
 	}
 
 	public SavedCredentialsImpl() {
-	}
-
-	public String getPassword() {
-		return password;
-	}
-
-	public String getRealm() {
-		return realm;
 	}
 
 	public URL getUrl() {
@@ -52,6 +46,22 @@ public class SavedCredentialsImpl implements SavedCredentials {
 
 	public void setUsername(String username) {
 		this.username = username;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public String getRealm() {
+		return realm;
+	}
+
+	public String getScheme() {
+		return scheme;
+	}
+
+	public void setScheme(String scheme) {
+		this.scheme = scheme;		
 	}
 
 }
