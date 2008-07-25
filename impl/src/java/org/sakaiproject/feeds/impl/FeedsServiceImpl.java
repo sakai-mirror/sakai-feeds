@@ -13,6 +13,9 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -79,7 +82,7 @@ import com.sun.syndication.io.FeedException;
 import com.sun.syndication.io.SyndFeedOutput;
 
 
-public class FeedsServiceImpl extends Observable implements FeedsService, Runnable {
+public class FeedsServiceImpl extends Observable implements FeedsService {
 	private static Log						LOG	= LogFactory.getLog(FeedsServiceImpl.class);
 	private SiteService						m_siteService;
 	private EntityBroker					m_entityBroker;
@@ -100,16 +103,14 @@ public class FeedsServiceImpl extends Observable implements FeedsService, Runnab
 	private FeedCredentialSupplier 			feedCredentialSupplier;
 	
 	
-	/** Feed cache control thread and semaphore */
-	private Thread							feedCacheRequestThread;
-	private List<FeedCacheRequest>			feedCacheRequestQueue;
-	private int								activeCachingRequests = 0;
-	private Object							feedCacheRequestThreadSemaphore	= new Object();
-	private boolean							feedCacheRequestThreadRunning = true;
-	private long							feedCacheRequestThreadInterval = 200L;
-	private int 							maxFeedCachingThreads; // Maximum number of concurrent (very short-lived) threads that performs feed caching.
+	/** Feed cache thread pool. */
+	private ThreadPoolExecutor				feedCacheThreadsExecutor;
+	/** Feed cache task queue. */
+	private LinkedBlockingQueue<Runnable>	feedCacheQueue;
+	/** Number of concurrent threads for feed caching. */
+	private int 							feedCachingThreads  = 10; 
 
-
+	
 	private Set<FeedSubscription>			institutionalFeeds;
 	private String							defaultFeedIcon;
 	private String							defaultViewDetail;
@@ -162,8 +163,8 @@ public class FeedsServiceImpl extends Observable implements FeedsService, Runnab
 	}
 	public void setInternalFeedStorageProvider(InternalFeedStorageProvider internalFeedStorageProvider) {
 		this.m_internalFeedStorageProvider = internalFeedStorageProvider;
-	}
-
+	}	
+	
 	public void init() {
 		// initialize feed fetcher
 		initFeedFetcher();
@@ -171,9 +172,16 @@ public class FeedsServiceImpl extends Observable implements FeedsService, Runnab
 		// initialize AES Cipher for encrypting saved passwords
 		initAESCipher();
 		
-		// initialize queue for feeds caching requests and controlling thread
-		feedCacheRequestQueue = new ArrayList<FeedCacheRequest>();
-		startFeedCacheControlThread();
+		// initialize queue for feeds caching requests and controlling thread~
+		long keepAliveFeedCachingThreads = /* unused */ 60L;		
+		feedCachingThreads = m_serverConfigurationService.getInt(SAK_PROP_CACHINGTHREADS, feedCachingThreads);
+		feedCacheQueue = new LinkedBlockingQueue<Runnable>();
+		feedCacheThreadsExecutor = new ThreadPoolExecutor(
+				feedCachingThreads, 
+				feedCachingThreads, 
+				(long) keepAliveFeedCachingThreads,
+				TimeUnit.SECONDS,
+				feedCacheQueue);
 		
 		// register security functions
 		FunctionManager.registerFunction(AUTH_SUBSCRIBE);
@@ -215,7 +223,7 @@ public class FeedsServiceImpl extends Observable implements FeedsService, Runnab
 	
 	public void destroy() {
 		LOG.info("destroy()");
-		stopFeedCacheControlThread();
+		feedCacheThreadsExecutor.shutdownNow();
 		if(feedFetcherAuth != null)
 			feedFetcherAuth.destroy();
 	}
@@ -285,96 +293,6 @@ public class FeedsServiceImpl extends Observable implements FeedsService, Runnab
 			bts[i] = (byte) Integer.parseInt(hex.substring(2*i, 2*i+2), 16);
 		}
 		return bts;
-	}
-
-	// ######################################################
-	// Feed cache control thread methods
-	// ######################################################
-	/** Update thread: do not call this method! */
-	public void run(){
-		try{
-			while(feedCacheRequestThreadRunning){
-				// do update job
-				while(feedCacheRequestQueue.size() > 0 && activeCachingRequests <= maxFeedCachingThreads){
-					final FeedCacheRequest fcr = feedCacheRequestQueue.remove(0);
-					final Observable me = this;
-					new Thread(/*Thread.currentThread().getThreadGroup(), */new Runnable(){
-						public void run() {
-							activeCachingRequests++;
-							// This runs in a different thread/session::
-							Session thisSession = m_sessionManager.getCurrentSession();
-							//  : load saved credentials							
-							feedCredentialSupplier.setCredentialMap(fcr.getCredentialsMap(), thisSession);
-
-							//  : load client cookies
-							addClientCookies(fcr.getCookies(), thisSession);
-							//  : store userId
-							thisSession.setAttribute(FeedsService.SESSION_ATTR_FEED_USER_ID, fcr.getUserId());
-							
-							// cache feed
-							LOG.debug("["+activeCachingRequests+"/"+maxFeedCachingThreads+"] Caching feed: "+fcr.getFeedSubscription().getUrl());
-							try {
-								EntityReference reference = getEntityReference(fcr.getFeedSubscription().getUrl());
-								getFeed(reference, fcr.isForceExternalCheck());
-								LOG.debug("["+activeCachingRequests+"/"+maxFeedCachingThreads+"] Feed is CACHED: "+fcr.getFeedSubscription().getUrl());
-							} catch (FetcherException e) {								
-								// exception will be handled by content panel in UI
-								LOG.debug("["+activeCachingRequests+"/"+maxFeedCachingThreads+"] Feed NOT CACHED: "+fcr.getFeedSubscription().getUrl(), e);
-							} catch (RuntimeException e) {								
-								// exception will be handled by content panel in UI
-								LOG.debug("["+activeCachingRequests+"/"+maxFeedCachingThreads+"] Feed NOT CACHED: "+fcr.getFeedSubscription().getUrl(), e);
-							} catch (Exception e) {								
-								// exception will be handled by content panel in UI
-								LOG.debug("["+activeCachingRequests+"/"+maxFeedCachingThreads+"] Feed NOT CACHED: "+fcr.getFeedSubscription().getUrl(), e);
-							}
-							Observer observer = fcr.getObserver();
-							if(observer != null) {
-								observer.update(me, null);
-							}
-							activeCachingRequests--;
-						}
-					}).start();
-				}
-				
-				// sleep if no work to do
-				if(!feedCacheRequestThreadRunning) break;
-				try{
-					synchronized (feedCacheRequestThreadSemaphore){
-						feedCacheRequestThreadSemaphore.wait(feedCacheRequestThreadInterval);
-					}
-				}catch(InterruptedException e){
-					LOG.warn("Failed to sleep feed cache control thread",e);
-				}
-			}
-		}catch(Throwable t){
-			LOG.debug("Failed to execute feed cache control thread",t);
-		}finally{
-			if(feedCacheRequestThreadRunning){
-				// thread was stopped by an unknown error: restart
-				LOG.debug("Feed cache control thread was stoped by an unknown error: restarting...");
-				startFeedCacheControlThread();
-			}else
-				LOG.info("Finished feed cache control thread");
-		}
-	}
-
-	/** Start the update thread */
-	private void startFeedCacheControlThread(){
-		/** Maximum number of concurrent (very short-lived) threads that performs feed caching. */
-		maxFeedCachingThreads = m_serverConfigurationService.getInt(SAK_PROP_MAXCACHINGTHREADS, 30);
-		
-		feedCacheRequestThreadRunning = true;
-		feedCacheRequestThread = null;
-		feedCacheRequestThread = new Thread(this, "org.sakaiproject.feeds.impl.FeedsServiceImpl.feedCaching");
-		feedCacheRequestThread.start();
-	}
-	
-	/** Stop the update thread */
-	private void stopFeedCacheControlThread(){
-		feedCacheRequestThreadRunning = false;
-		synchronized (feedCacheRequestThreadSemaphore){
-			feedCacheRequestThreadSemaphore.notifyAll();
-		}
 	}
 
 	// ######################################################
@@ -925,7 +843,7 @@ public class FeedsServiceImpl extends Observable implements FeedsService, Runnab
 	}
 	
 	public void cacheFeed(FeedSubscription feedSubscription, boolean forceExternalCheck, Observer observer) {
-		feedCacheRequestQueue.add(new FeedCacheRequest
+		FeedCacheTask task = new FeedCacheTask
 				(
 				feedSubscription, 
 				forceExternalCheck,
@@ -934,8 +852,8 @@ public class FeedsServiceImpl extends Observable implements FeedsService, Runnab
 				getClientCookies(),
 				m_sessionManager.getCurrentSessionUserId(),
 				observer
-				)
-		);
+				);
+		feedCacheThreadsExecutor.execute(task);		
 	}
 
 	public boolean saveFeed(Feed feed) {
@@ -1113,6 +1031,8 @@ public class FeedsServiceImpl extends Observable implements FeedsService, Runnab
 
 	public boolean entityExists(String entityPrefix, String id) {
 		LOG.debug("FeedsService.entityExists(): " + entityPrefix + ", " + id);
+		if(entityPrefix == null || id == null || id.trim().equals(""))
+			return false;
 		if(InternalFeedEntityProvider.ENTITY_PREFIX.equals(entityPrefix)){
 			// TODO Implement entityExists for Internal
 			return false;
@@ -1243,7 +1163,7 @@ public class FeedsServiceImpl extends Observable implements FeedsService, Runnab
 		}
 	}	
 	
-	class FeedCacheRequest {
+	class FeedCacheTask extends Observable implements Runnable {
 		private Observer observer;
 		private FeedSubscription feedSubscription;
 		private boolean forceExternalCheck;
@@ -1251,14 +1171,14 @@ public class FeedsServiceImpl extends Observable implements FeedsService, Runnab
 		private String userId;
 		private Map<URL,Credentials> credentialsMap;
 		
-		public FeedCacheRequest(
+		public FeedCacheTask(
 				FeedSubscription feedSubscription, 
 				boolean forceExternalCheck, 
 				Observer observer) {
 			this(feedSubscription, forceExternalCheck, null, null, null, observer);
 		}
 
-		public FeedCacheRequest(
+		public FeedCacheTask(
 				FeedSubscription feedSubscription, 
 				boolean forceExternalCheck, 
 				Map<URL,Credentials> credentialsMap,
@@ -1271,6 +1191,41 @@ public class FeedsServiceImpl extends Observable implements FeedsService, Runnab
 			this.cookies = cookies != null? cookies : getClientCookies();
 			this.userId = userId != null? userId : m_sessionManager.getCurrentSessionUserId();
 			this.observer = observer;
+		}
+
+		public void run() {
+			// This runs in a different thread/session::
+			Session thisSession = m_sessionManager.getCurrentSession();
+			//  : load saved credentials							
+			feedCredentialSupplier.setCredentialMap(getCredentialsMap(), thisSession);
+
+			//  : load client cookies
+			addClientCookies(getCookies(), thisSession);
+			//  : store userId
+			thisSession.setAttribute(FeedsService.SESSION_ATTR_FEED_USER_ID, getUserId());
+			
+			// cache feed
+			int activeTasksCount = feedCacheThreadsExecutor.getActiveCount();
+			int poolSize = feedCacheThreadsExecutor.getPoolSize();
+			LOG.debug("["+activeTasksCount+"/"+poolSize+"] Caching feed: "+getFeedSubscription().getUrl());
+			try {
+				EntityReference reference = getEntityReference(getFeedSubscription().getUrl());
+				getFeed(reference, isForceExternalCheck());
+				LOG.debug("["+activeTasksCount+"/"+poolSize+"] Feed is CACHED: "+getFeedSubscription().getUrl());
+			} catch (FetcherException e) {								
+				// exception will be handled by content panel in UI
+				LOG.debug("["+activeTasksCount+"/"+poolSize+"] Feed NOT CACHED: "+getFeedSubscription().getUrl(), e);
+			} catch (RuntimeException e) {								
+				// exception will be handled by content panel in UI
+				LOG.debug("["+activeTasksCount+"/"+poolSize+"] Feed NOT CACHED: "+getFeedSubscription().getUrl(), e);
+			} catch (Exception e) {								
+				// exception will be handled by content panel in UI
+				LOG.debug("["+activeTasksCount+"/"+poolSize+"] Feed NOT CACHED: "+getFeedSubscription().getUrl(), e);
+			}
+			Observer observer = getObserver();
+			if(observer != null) {
+				observer.update(this, null);
+			}
 		}
 
 		public FeedSubscription getFeedSubscription() {
@@ -1295,7 +1250,6 @@ public class FeedsServiceImpl extends Observable implements FeedsService, Runnab
 
 		public Observer getObserver() {
 			return observer;
-		}
-		
+		}		
 	}
 }

@@ -50,7 +50,11 @@ public abstract class AjaxParallelLazyFeedLoadPanel extends Panel implements Obs
 		loadingComponent.add(new AttributeModifier("style", new Model("display: inline")));
 		
 		// cache feed...
-		cacheFeed(subscription, forceExternalCheck);
+		if(subscription != null && !subscription.isAggregateMultipleFeeds() && subscription.getUrl() != null && !subscription.getUrl().trim().equals("")) {
+			cacheFeed(subscription, forceExternalCheck);
+		}else{
+			componentReady = true;
+		}
 		
 		// pool until feed is cached
 		abstractAjaxTimerBehavior = new AbstractAjaxTimerBehavior(Duration.milliseconds(500)) {
