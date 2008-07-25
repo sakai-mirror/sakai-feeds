@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.sun.syndication.fetcher.impl.FeedFetcherCache;
 import com.sun.syndication.fetcher.impl.SyndFeedInfo;
@@ -82,8 +83,9 @@ public class SakaiFeedFetcherCache implements FeedFetcherCache, Serializable {
 	static class CacheMap<K, V> extends LinkedHashMap<K, V> implements Serializable {
 		private static final long	serialVersionUID	= 1L;
 		private final static float	DEFAULT_LOAD_FACTOR	= 0.75f;
+		private final 				ReentrantLock lock = new ReentrantLock();
 		private int					maxCachedEntries;
-
+		
 		public CacheMap(int maxCachedEntries) {
 			super(maxCachedEntries, DEFAULT_LOAD_FACTOR, true);
 			this.maxCachedEntries = maxCachedEntries;
@@ -100,33 +102,48 @@ public class SakaiFeedFetcherCache implements FeedFetcherCache, Serializable {
 		
 		@Override
 		public V get(Object key) {
-			synchronized(this) {
+			lock.lock();
+			try{
 				return super.get(key);
-			}			
+			}finally{
+				lock.unlock();
+			}
 		}
 		public V get(Object key, String userId, String feedUsername) {
-			synchronized(this) {
+			lock.lock();
+			try{
 				return super.get(new CompoundKey(key, userId, feedUsername));
+			}finally{
+				lock.unlock();
 			}			
 		}
 
 		@Override
 		public V put(K key, V feed) {
-			synchronized(this) {
+			lock.lock();
+			try{
 				return super.put(key, feed);
+			}finally{
+				lock.unlock();
 			}		
 		}
 		@SuppressWarnings("unchecked")
 		public V put(K key, String userId, String feedUsername, V feed) {
-			synchronized(this) {
+			lock.lock();
+			try{
 				return super.put((K) new CompoundKey(key, userId, feedUsername), feed);
+			}finally{
+				lock.unlock();
 			}		
 		}
 
 		@Override
 		public Collection<V> values() {
-			synchronized(this) {
+			lock.lock();
+			try{
 				return super.values();
+			}finally{
+				lock.unlock();
 			}
 		}
 		
