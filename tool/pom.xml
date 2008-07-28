@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<parent>
 		<artifactId>sakai-feeds</artifactId>
 		<groupId>org.sakaiproject</groupId>
@@ -28,6 +26,13 @@
 		<dependency>
 			<groupId>org.sakaiproject</groupId>
 			<artifactId>sakai-feeds-api</artifactId>
+		</dependency>		
+		<dependency>
+			<groupId>org.sakaiproject</groupId>
+			<artifactId>sakai-feeds-opml</artifactId>
+			<version>1.0</version>			
+			<scope>system</scope>
+      		<systemPath>${basedir}/src/webapp/WEB-INF/lib/sakai-feeds-opml-1.0.jar</systemPath>			
 		</dependency>
 
 		<!-- Internal: Sakai -->
@@ -118,6 +123,11 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.xmlbeans</groupId>
+			<artifactId>xmlbeans</artifactId>
+			<version>2.2.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -136,4 +146,3 @@
 		</resources>
 	</build>
 </project>
-

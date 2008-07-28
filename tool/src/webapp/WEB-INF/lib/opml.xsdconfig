@@ -1,0 +1,36 @@
+<!-- An xsdconfig file must begin with a "config" element in the 
+        http://www.bea.com/2002/09/xbean/config namespace. Also, be sure
+        to declare any namespaces used to qualify types in your schema (here,
+        the namespace corresponding to the pol prefix. -->
+		
+<!-- COMPILING
+
+C:\Programas\Java\jdk1.5.0\bin>d:\DevLibs\xmlbeans-2.2.0\bin\scomp.cmd -out d:\sakai-feeds-opml-1.0.jar d:\opml.xsd d:\opml.xsdconfig
+
+
+-->		
+		
+<xb:config  
+    xmlns:xb="http://www.bea.com/2002/09/xbean/config">
+	<!--
+	xmlns:pol="http://sakaiproject.org/feeds/opml"
+	-->
+
+    <!-- Use the "namespace" element to map a namespace to the Java package
+        name that should be generated. -->
+    <!--<xb:namespace uri="http://sakaiproject.org/feeds/opml">-->
+	<xb:namespace uri="##any">
+        <xb:package>org.sakaiproject.feeds.opml</xb:package>
+    </xb:namespace>
+
+    <!-- Use the "qname" element to map schema type names to generated
+        Java type names. In these examples, the name attribute's value is the
+        XML element name; the javaname attribute's value is the Java type 
+        that should be generated. -->
+    <!--
+	<xb:qname name="pol:CUST" javaname="Customer"/>
+	<xb:qname name="pol:PURCH_ORDER" javaname="PurchaseOrder"/>
+	-->
+</xb:config>
+
+

@@ -37,8 +37,8 @@ public class MainPage extends BasePage {
 
 	@Override
 	public void renderHead(IHeaderResponse response) {
-		response.renderJavascriptReference("/sakai-feeds-tool/js/common.js");
 		response.renderJavascriptReference("/library/js/jquery.js");
+		response.renderJavascriptReference("/sakai-feeds-tool/js/common.js");
 		super.renderHead(response);
 	}
 	

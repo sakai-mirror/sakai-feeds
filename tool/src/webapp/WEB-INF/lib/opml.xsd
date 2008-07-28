@@ -1,0 +1,89 @@
+﻿<xs:schema 
+	attributeFormDefault="unqualified" 
+	elementFormDefault="qualified" 
+	xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<!--
+	xmlns="http://sakaiproject.org/feeds/opml"
+	targetNamespace="http://sakaiproject.org/feeds/opml"
+	-->
+  <xs:element name="opml">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="head" />
+        <xs:element ref="body" />
+      </xs:sequence>
+      <xs:attribute name="version" type="xs:string" />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="head">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="1" ref="text" />
+        <xs:element minOccurs="0" maxOccurs="1" ref="type"  />
+        <xs:element minOccurs="0" maxOccurs="1" ref="xmlUrl" />
+        <xs:element minOccurs="0" maxOccurs="1" ref="htmlUrl" />
+        <xs:element minOccurs="0" maxOccurs="1" ref="title" />
+        <xs:element minOccurs="0" maxOccurs="1" ref="dateCreated" />
+        <xs:element minOccurs="0" maxOccurs="1" ref="dateModified" />
+        <xs:element minOccurs="0" maxOccurs="1" ref="ownerName" />
+        <xs:element minOccurs="0" maxOccurs="1" ref="ownerEmail" />
+        <xs:element minOccurs="0" maxOccurs="1" ref="expansionState" />
+        <xs:element minOccurs="0" maxOccurs="1" ref="vertScrollState" />
+        <xs:element minOccurs="0" maxOccurs="1" ref="windowTop" />
+        <xs:element minOccurs="0" maxOccurs="1" ref="windowLeft" />
+        <xs:element minOccurs="0" maxOccurs="1" ref="windowBottom" />
+        <xs:element minOccurs="0" maxOccurs="1" ref="windowRight" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="text" type="xs:string"  />
+  <xs:element name="title" type="xs:string"  />
+  <xs:element name="type" type="xs:string"  />
+  <xs:element name="xmlUrl" type="xs:string"  />
+  <xs:element name="htmlUrl" type="xs:string"  />
+  <xs:element name="category" type="xs:string"  />
+  <xs:element name="dateCreated" type="xs:string" />
+  <xs:element name="dateModified" type="xs:string" />
+  <xs:element name="ownerName" type="xs:string" />
+  <xs:element name="ownerEmail" type="xs:string" />
+  <xs:element name="expansionState" type="xs:string" />
+  <xs:element name="vertScrollState" type="xs:string" />
+  <xs:element name="windowTop" type="xs:string" />
+  <xs:element name="windowLeft" type="xs:string" />
+  <xs:element name="windowBottom" type="xs:string" />
+  <xs:element name="windowRight" type="xs:string" />
+  <xs:element name="body">
+    <xs:complexType>
+      <xs:sequence minOccurs="1" maxOccurs="unbounded">
+        <xs:element ref="outline" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="outline">
+    <xs:complexType>
+      <xs:sequence minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="outline" />
+      </xs:sequence>
+      <xs:attribute name="text" type="xs:string" />
+      <xs:attribute name="type" type="xs:string" />
+      <xs:attribute name="xmlUrl" type="xs:string" />
+      <xs:attribute name="htmlUrl" type="xs:string" />
+      <xs:attribute default="false" name="isComment">
+        <xs:simpleType>
+          <xs:restriction base="xs:NMTOKEN">
+            <xs:enumeration value="true" />
+            <xs:enumeration value="false" />
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute default="false" name="isBreakpoint">
+        <xs:simpleType>
+          <xs:restriction base="xs:NMTOKEN">
+            <xs:enumeration value="true" />
+            <xs:enumeration value="false" />
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
