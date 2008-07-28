@@ -26,7 +26,17 @@ a.external {
 	background: url(/sakai-feeds-tool/img/external.png) right center no-repeat; 
 	padding-right: 12px; 
 }
+h4 a.collapsibleLink:link, h4 a.collapsibleLink:visited, h4 a.collapsibleLink:active {
+	text-decoration: none !important;
+}
+h4 a.collapsibleLink:hover {
+	text-decoration: underline !important;
+}
 
+/* Subscriptions page */
+.collapsibleZone {
+	background:#FAFAFA !important;
+}
    
 /* ...but not to absolute links in this domain: */ 
 /*a[href^=\"http://www.programmabilities.org\"] { 
@@ -37,14 +47,21 @@ a.external {
 
 /* Feed channel */
 .feedTitle {
-	/*padding-top: 5px;*/
-	background-color: #F3F3E5;
+	/*background-color: #F3F3E5;*/
+	background-color: #FAFAFA;
 	margin-left: 5px;
 	margin-right: 5px;
 }
 h4 a.feedTitle img {
 	text-decoration: none !important;
-	background-color: #F3F3E5 !important;
+	/*background-color: #F3F3E5 !important;*/
+	background-color: #FAFAFA !important;
+}
+h4 a.feedTitle:link, h4 a.feedTitle:visited, h4 a.feedTitle:active {
+	text-decoration: none !important;
+}
+h4 a.feedTitle:hover {
+	text-decoration: underline !important;
 }
 .feedCount {
 	/*color: #555555;*/
