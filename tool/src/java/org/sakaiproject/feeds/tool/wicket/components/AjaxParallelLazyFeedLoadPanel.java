@@ -1,5 +1,7 @@
 package org.sakaiproject.feeds.tool.wicket.components;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -15,6 +17,7 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.spring.injection.annot.SpringBean;
 import org.apache.wicket.util.time.Duration;
+import org.sakaiproject.feeds.api.FeedEntry;
 import org.sakaiproject.feeds.api.FeedSubscription;
 import org.sakaiproject.feeds.tool.facade.SakaiFacade;
 
@@ -24,6 +27,8 @@ public abstract class AjaxParallelLazyFeedLoadPanel extends Panel implements Obs
 	private static Log					LOG	= LogFactory.getLog(AjaxParallelLazyFeedLoadPanel.class);
 	private AbstractAjaxTimerBehavior	abstractAjaxTimerBehavior;
 	private Component					lazyLoadcomponent;
+	private int							feedsCount			= 0;
+	private int							feedsCached			= 0;
 	private boolean						componentReady		= false;
 
 	@SpringBean
@@ -35,14 +40,12 @@ public abstract class AjaxParallelLazyFeedLoadPanel extends Panel implements Obs
 
 	public AjaxParallelLazyFeedLoadPanel(final String id, IModel model, final Component loadingComponent, final FeedSubscription subscription, final boolean forceExternalCheck) {
 		super(id, model);
-		//super(id, model, loadingComponent);
 		setOutputMarkupId(true);
 		
 		// content to be replaced
 		final Label contents = new Label("content", "");
 		contents.setEscapeModelStrings(false);
 		contents.setRenderBodyOnly(true);
-		//contents.setRenderBodyOnly(false);
 		contents.setOutputMarkupId(true);
 		add(contents);
 		
@@ -50,8 +53,18 @@ public abstract class AjaxParallelLazyFeedLoadPanel extends Panel implements Obs
 		loadingComponent.add(new AttributeModifier("style", new Model("display: inline")));
 		
 		// cache feed...
+		componentReady = false;
 		if(subscription != null && !subscription.isAggregateMultipleFeeds() && subscription.getUrl() != null && !subscription.getUrl().trim().equals("")) {
-			cacheFeed(subscription, forceExternalCheck);
+			feedsCount = 1;
+			feedsCached = 0;
+			cacheFeed(subscription.getUrl(), forceExternalCheck);
+		}else if(subscription.isAggregateMultipleFeeds()) {
+			String[] urls = subscription.getUrls();
+			feedsCount = urls.length;
+			feedsCached = 0;
+			for(int i=0; i<urls.length; i++) {
+				cacheFeed(urls[i], forceExternalCheck);
+			}
 		}else{
 			componentReady = true;
 		}
@@ -83,13 +96,15 @@ public abstract class AjaxParallelLazyFeedLoadPanel extends Panel implements Obs
 		
 	}
 	
-	private void cacheFeed(final FeedSubscription subscription, final boolean forceExternalCheck) {
-			componentReady = false;
-			facade.getFeedsService().cacheFeed(subscription, forceExternalCheck, this);			
+	private void cacheFeed(final String feedUrl, final boolean forceExternalCheck) {
+			facade.getFeedsService().cacheFeed(feedUrl, forceExternalCheck, this);			
 	}
 
 	public void update(Observable o, Object arg) {
-		componentReady = true;
+		feedsCached++;
+		if(feedsCached == feedsCount) {
+			componentReady = true;
+		}
 	}
 
 	/**

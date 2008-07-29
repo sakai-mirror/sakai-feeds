@@ -842,10 +842,10 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 		return feedXml;
 	}
 	
-	public void cacheFeed(FeedSubscription feedSubscription, boolean forceExternalCheck, Observer observer) {
+	public void cacheFeed(String feedUrl, boolean forceExternalCheck, Observer observer) {
 		FeedCacheTask task = new FeedCacheTask
 				(
-				feedSubscription, 
+				feedUrl, 
 				forceExternalCheck,
 				feedCredentialSupplier.getCredentialsMap(),
 				/*getSavedCredentials(),*/
@@ -1165,27 +1165,27 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 	
 	class FeedCacheTask extends Observable implements Runnable {
 		private Observer observer;
-		private FeedSubscription feedSubscription;
+		private String feedUrl;
 		private boolean forceExternalCheck;
 		private Cookie[] cookies;
 		private String userId;
 		private Map<URL,Credentials> credentialsMap;
 		
 		public FeedCacheTask(
-				FeedSubscription feedSubscription, 
+				String feedUrl, 
 				boolean forceExternalCheck, 
 				Observer observer) {
-			this(feedSubscription, forceExternalCheck, null, null, null, observer);
+			this(feedUrl, forceExternalCheck, null, null, null, observer);
 		}
 
 		public FeedCacheTask(
-				FeedSubscription feedSubscription, 
+				String feedUrl, 
 				boolean forceExternalCheck, 
 				Map<URL,Credentials> credentialsMap,
 				Cookie[] cookies,
 				String userId,
 				Observer observer) {
-			this.feedSubscription = feedSubscription;
+			this.feedUrl = feedUrl;
 			this.forceExternalCheck = forceExternalCheck;
 			this.credentialsMap = credentialsMap != null? credentialsMap : feedCredentialSupplier.getCredentialsMap();
 			this.cookies = cookies != null? cookies : getClientCookies();
@@ -1207,20 +1207,20 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 			// cache feed
 			int activeTasksCount = feedCacheThreadsExecutor.getActiveCount();
 			int poolSize = feedCacheThreadsExecutor.getPoolSize();
-			LOG.debug("["+activeTasksCount+"/"+poolSize+"] Caching feed: "+getFeedSubscription().getUrl());
+			LOG.debug("["+activeTasksCount+"/"+poolSize+"] Caching feed: "+getFeedUrl());
 			try {
-				EntityReference reference = getEntityReference(getFeedSubscription().getUrl());
+				EntityReference reference = getEntityReference(getFeedUrl());
 				getFeed(reference, isForceExternalCheck());
-				LOG.debug("["+activeTasksCount+"/"+poolSize+"] Feed is CACHED: "+getFeedSubscription().getUrl());
+				LOG.debug("["+activeTasksCount+"/"+poolSize+"] Feed is CACHED: "+getFeedUrl());
 			} catch (FetcherException e) {								
 				// exception will be handled by content panel in UI
-				LOG.debug("["+activeTasksCount+"/"+poolSize+"] Feed NOT CACHED: "+getFeedSubscription().getUrl(), e);
+				LOG.debug("["+activeTasksCount+"/"+poolSize+"] Feed NOT CACHED: "+getFeedUrl(), e);
 			} catch (RuntimeException e) {								
 				// exception will be handled by content panel in UI
-				LOG.debug("["+activeTasksCount+"/"+poolSize+"] Feed NOT CACHED: "+getFeedSubscription().getUrl(), e);
+				LOG.debug("["+activeTasksCount+"/"+poolSize+"] Feed NOT CACHED: "+getFeedUrl(), e);
 			} catch (Exception e) {								
 				// exception will be handled by content panel in UI
-				LOG.debug("["+activeTasksCount+"/"+poolSize+"] Feed NOT CACHED: "+getFeedSubscription().getUrl(), e);
+				LOG.debug("["+activeTasksCount+"/"+poolSize+"] Feed NOT CACHED: "+getFeedUrl(), e);
 			}
 			Observer observer = getObserver();
 			if(observer != null) {
@@ -1228,8 +1228,8 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 			}
 		}
 
-		public FeedSubscription getFeedSubscription() {
-			return feedSubscription;
+		public String getFeedUrl() {
+			return feedUrl;
 		}
 
 		public boolean isForceExternalCheck() {
