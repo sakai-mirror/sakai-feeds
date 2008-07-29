@@ -6,9 +6,7 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -20,6 +18,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.RequestCycle;
+import org.apache.wicket.behavior.AttributeAppender;
+import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
@@ -33,7 +33,6 @@ import org.apache.wicket.markup.html.form.RadioGroup;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.form.upload.FileUpload;
 import org.apache.wicket.markup.html.form.upload.FileUploadField;
-import org.apache.wicket.markup.html.form.upload.MultiFileUploadField;
 import org.apache.wicket.markup.html.link.ExternalLink;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
@@ -65,6 +64,7 @@ import org.sakaiproject.feeds.opml.HeadDocument.Head;
 import org.sakaiproject.feeds.opml.OpmlDocument.Opml;
 import org.sakaiproject.feeds.opml.OutlineDocument.Outline;
 import org.sakaiproject.feeds.tool.facade.SakaiFacade;
+import org.sakaiproject.feeds.tool.wicket.components.AjaxIndicator;
 import org.sakaiproject.feeds.tool.wicket.components.CollapsiblePanel;
 import org.sakaiproject.feeds.tool.wicket.components.ExternalImage;
 import org.sakaiproject.feeds.tool.wicket.dataproviders.SubscriptionsDataProvider;
@@ -161,6 +161,8 @@ public class SubscriptionsPage extends BasePage {
 		subscPanel.add(otherAuthRememberMe);		
 		
 		// Buttons
+		final AjaxIndicator subscribeIndicator = new AjaxIndicator("subscribeIndicator");
+		subscPanel.add(subscribeIndicator);
 		Button subscribe = new Button("subscribe") {
 			private static final long	serialVersionUID	= 1L;
 
@@ -185,6 +187,7 @@ public class SubscriptionsPage extends BasePage {
 				super.onSubmit();
 			}
 		};
+		subscribe.add(new AttributeAppender("onclick", new Model("$('#"+subscribeIndicator.getMarkupId()+"').fadeIn();"), ";"));
 		subscPanel.add(subscribe);
 		
 		subscriptionsWithoutInstitutionalDataProvider = new SubscriptionsDataProvider(SubscriptionsDataProvider.MODE_ALL_NON_INSTITUTIONAL);
@@ -255,6 +258,8 @@ public class SubscriptionsPage extends BasePage {
 		importExportPanel.add(fileUploadField);
 		int contentUploadMax = ServerConfigurationService.getInt("content.upload.max", 20);
 		options.setMaxSize(Bytes.megabytes(contentUploadMax));
+		final AjaxIndicator importIndicator = new AjaxIndicator("importIndicator");
+		importExportPanel.add(importIndicator);
 		Button importBt = new Button("import") {
 			private static final long	serialVersionUID	= 1L;
 
@@ -272,7 +277,9 @@ public class SubscriptionsPage extends BasePage {
 				super.onSubmit();
 			}
 		};
+		importBt.add(new AttributeAppender("onclick", new Model("$('#"+importIndicator.getMarkupId()+"').fadeIn();"), ";"));
 		importExportPanel.add(importBt);
+		
 		
 		Button exportBt = new Button("export") {
 			private static final long	serialVersionUID	= 1L;

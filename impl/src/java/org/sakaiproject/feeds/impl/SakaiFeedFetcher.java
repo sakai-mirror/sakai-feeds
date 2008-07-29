@@ -316,6 +316,7 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 		for(int i=0; i<cookies.length; i++){
 			if(cookies[i].getDomain().equals(feedUrl.getHost())){
 				method.addRequestHeader("Cookie", cookies[i].toString());
+				LOG.debug("Using cookie: "+cookies[i].getDomain()+", "+cookies[i].getName()+", "+cookies[i].getPath()+", "+cookies[i].getValue());
 			}
 		}
 		statusCode = client.executeMethod(method);

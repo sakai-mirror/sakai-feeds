@@ -44,19 +44,23 @@
 			<p class="instruction">
 				<wicket:message key="other.instr">[other.instr]</wicket:message>
 			</p>
-			<table style="width: 75%" cellspacing="0">
+			<table cellspacing="0">
 				<tr>
 					<td><wicket:message key="other.url">[other.url]</wicket:message></td>
 					<td><span class="shorttext">
 						<input type="text" wicket:id="newSubscribedUrl" size="35" />
 					</span></td>
 					<td><span class="act">
-						<input type="submit" wicket:id="subscribe" wicket:message="value:subscribe"/></span>
+						<input type="submit" wicket:id="subscribe" wicket:message="value:subscribe"/>
+						</span>						
+					</td>
+					<td>
+						<img wicket:id="subscribeIndicator"/>
 					</td>
 				</tr>
 				<tr wicket:id="other.auth.details">
 					<td><wicket:message key="auth.details">[auth.details]</wicket:message></td>
-					<td colspan="2">
+					<td colspan="3">
 						<span class="shorttext"><input type="text" wicket:id="username" size="12" /></span>
 						&#47;
 						<span class="shorttext"><input type="password" wicket:id="password" size="12" /></span>
@@ -64,7 +68,7 @@
 				</tr>
 				<tr wicket:id="other.auth.rememberme">
 					<td></td>
-					<td colspan="2">
+					<td colspan="3">
 						<span class="shorttext"><input wicket:id="rememberMe" type="checkbox" /><wicket:message key="auth.rememberme">[auth.rememberme]</wicket:message></span>
 					</td>
 				</tr>
@@ -113,6 +117,7 @@
 		        	<div>
 		        		<input wicket:id="fileImport" id="upload" type="file"/>
 		        		<input type="submit" wicket:id="import" wicket:message="value:import"/>
+		        		<img wicket:id="importIndicator"/>
 		        	</div>
 		     	</fieldset>
 	     	</div>
