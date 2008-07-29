@@ -1,6 +1,7 @@
 package org.sakaiproject.feeds.tool.wicket.dataproviders;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -11,11 +12,14 @@ import java.util.List;
 
 import javax.net.ssl.SSLHandshakeException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.wicket.injection.web.InjectorHolder;
 import org.apache.wicket.markup.repeater.data.IDataProvider;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.spring.injection.annot.SpringBean;
 import org.sakaiproject.entitybroker.EntityReference;
 import org.sakaiproject.feeds.api.Feed;
@@ -30,6 +34,7 @@ import org.sakaiproject.feeds.tool.facade.SakaiFacade;
 
 public class FeedDataProvider implements IDataProvider {
 	private static final long		serialVersionUID			= 1L;
+	private static Log				LOG							= LogFactory.getLog(FeedDataProvider.class);
 	@SpringBean
 	private transient SakaiFacade	facade;
 	private	String					viewDetail;
@@ -124,37 +129,52 @@ public class FeedDataProvider implements IDataProvider {
 			authenticationScheme = e.getScheme();
 			_feed = null;
 		}catch(IllegalArgumentException e){
-			setErrorMessage((String) new ResourceModel("err.subscribing").getObject());
-			e.printStackTrace();
+			setError("err.subscribing", url, e);
 			_feed = null;
 		}catch(MalformedURLException e){
-			setErrorMessage((String) new ResourceModel("err.malformed").getObject());
-			e.printStackTrace();
+			setError("err.malformed", url, e);
 			_feed = null;
 		}catch(SSLHandshakeException e){
-			setErrorMessage((String) new ResourceModel("err.ssl").getObject());
-			e.printStackTrace();
+			setError("err.ssl", url, e);
 			_feed = null;
 		}catch(IOException e){
-			setErrorMessage((String) new ResourceModel("err.io").getObject());
-			e.printStackTrace();
+			setError("err.io", url, e);
 			_feed = null;
 		}catch(InvalidFeedException e){
-			setErrorMessage((String) new ResourceModel("err.invalid_feed").getObject());
-			e.printStackTrace();
+			setError("err.invalid_feed", url, e);
 			_feed = null;
 		}catch(FetcherException e){
 			if(e.getHttpCode() == 403)
-				setErrorMessage((String) new ResourceModel("err.forbidden").getObject());
+				setError("err.forbidden", url, e);
 			else
-				setErrorMessage((String) new ResourceModel("err.no_fetch").getObject());
-			e.printStackTrace();
+				setError("err.no_fetch", url, e);
 		}catch(Exception e){
-			setErrorMessage((String) new ResourceModel("err.subscribing").getObject());
-			e.printStackTrace();
+			setError("err.subscribing", url, e);
 			_feed = null;
 		}
 		return _feed;
+	}
+    
+	private void setError(String key, String url, Exception e) {
+		String errorMessage = new StringResourceModel(key, null, new Model(new FeedUrlModel(url))).getString();
+		setErrorMessage(errorMessage);
+		LOG.warn(errorMessage, e);
+	}
+	
+	class FeedUrlModel implements Serializable  {
+		private static final long	serialVersionUID	= 1L;
+		private String feedUrl = null;
+
+		public FeedUrlModel(String feedUrl) {
+			this.feedUrl = feedUrl;
+		}
+		
+		public String getUrl() {
+			return feedUrl;
+		}
+
+		public void detach() {			
+		}		
 	}
 
 	public List<FeedEntry> getFeedEntries() {

@@ -3,6 +3,7 @@ package org.sakaiproject.feeds.tool.wicket.pages;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -496,6 +497,7 @@ public class SubscriptionsPage extends BasePage {
 		if(url == null || url.trim().equals(""))
 			return null;
 		FeedSubscription feedSubscription = null;
+		IModel thisModel = new Model(this);
 		try{
 			URL _url = new URL(url);
 			if(username != null && !username.trim().equals("")){
@@ -519,38 +521,32 @@ public class SubscriptionsPage extends BasePage {
 				savedCredentials.add(newCrd);
 			}
 		}catch(FeedAuthenticationException e) {
-			feedback.error(new StringResourceModel("err.reqauth", this, null).getString());
+			setError("err.reqauth", url, e);
 			authenticationRealm = e.getRealm();
 			authenticationScheme = e.getScheme();
-			e.printStackTrace();
 			throw e;
 		}catch(IllegalArgumentException e){
-			feedback.error((String) new ResourceModel("err.subscribing").getObject());
-			e.printStackTrace();
+			setError("err.subscribing", url, e);
 		}catch(MalformedURLException e){
-			feedback.error((String) new ResourceModel("err.malformed").getObject());
-			e.printStackTrace();
+			setError("err.malformed", url, e);
 		}catch(SSLHandshakeException e){
-			feedback.error((String) new ResourceModel("err.ssl").getObject());
-			e.printStackTrace();
+			setError("err.ssl", url, e);
 		}catch(IOException e){
-			feedback.error((String) new ResourceModel("err.io").getObject());
-			e.printStackTrace();
+			setError("err.io", url, e);
 		}catch(InvalidFeedException e){
-			feedback.error((String) new ResourceModel("err.invalid_feed").getObject());
-			e.printStackTrace();
+			setError("err.invalid_feed", url, e);
 		}catch(FetcherException e){
 			if(e.getHttpCode() == 403)
-				feedback.error((String) new ResourceModel("err.forbidden").getObject());
+				setError("err.forbidden", url, e);
 			else
-				feedback.error((String) new ResourceModel("err.no_fetch").getObject());
-			e.printStackTrace();
+				setError("err.no_fetch", url, e);
 		}catch(Exception e){
-			feedback.error((String) new ResourceModel("err.subscribing").getObject());
-			e.printStackTrace();
+			setError("err.subscribing", url, e);
 		}
 		return feedSubscription;
 	}
+	
+	
 	
 	private Set<FeedSubscription> getDeepCopy(Set<FeedSubscription> set) {
 		Set<FeedSubscription> result = new HashSet<FeedSubscription>();
@@ -559,6 +555,27 @@ public class SubscriptionsPage extends BasePage {
 		return result;
 	}
     
+	private void setError(String key, String url, Exception e) {
+		String errorMessage = new StringResourceModel(key, this, new Model(new FeedUrlModel(url))).getString();
+		feedback.error(errorMessage);
+		LOG.warn(errorMessage, e);
+	}
+	
+	class FeedUrlModel implements Serializable  {
+		private static final long	serialVersionUID	= 1L;
+		private String feedUrl = null;
+
+		public FeedUrlModel(String feedUrl) {
+			this.feedUrl = feedUrl;
+		}
+		
+		public String getUrl() {
+			return feedUrl;
+		}
+
+		public void detach() {			
+		}		
+	}
     
 	
 	/**
