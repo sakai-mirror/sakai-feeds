@@ -109,6 +109,12 @@ a.feedEntryTitle img {
 	text-decoration: none !important;
 	background-color: white !important;
 }
+a.feedEntryTitle:link, a.feedEntryTitle:visited, a.feedEntryTitle:active {
+	text-decoration: none !important;
+}
+a.feedEntryTitle:hover {
+	text-decoration: underline !important;
+}
 .feedEntryDate { /*color:#555555;*/
 	color: black;
 	font-size: 0.8em;
