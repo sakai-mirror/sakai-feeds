@@ -48,7 +48,15 @@ public class SubscriptionsDataProvider implements IDataProvider {
 	}
 
 	public int size() {
-		return getFeedSubscriptions().size();
+		if(mode == MODE_SUBSCRIBED && facade.getFeedsService().isAggregateFeeds() && getFeedSubscriptions().size() > 0){
+			try{
+				return getFeedSubscriptions().iterator().next().getUrls().length;
+			}catch(Exception e) {
+				return 0;
+			}
+		}else{
+			return getFeedSubscriptions().size();
+		}
 	}
 
 	public void detach() {
