@@ -20,7 +20,9 @@ import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.spring.injection.annot.SpringBean;
+import org.sakaiproject.entitybroker.EntityReference;
 import org.sakaiproject.feeds.api.SavedCredentials;
+import org.sakaiproject.feeds.api.exception.FeedAuthenticationException;
 import org.sakaiproject.feeds.tool.facade.SakaiFacade;
 import org.sakaiproject.feeds.tool.wicket.dataproviders.FeedDataProvider;
 
@@ -28,26 +30,36 @@ import org.sakaiproject.feeds.tool.wicket.dataproviders.FeedDataProvider;
 /**
  * @author Nuno Fernandes
  */
-public class AuthenticationPanel extends Panel {
-	private static final long		serialVersionUID	= 1L;
-	private static Log				LOG	= LogFactory.getLog(AuthenticationPanel.class);
+public abstract class AuthenticationPanel extends Panel {
+	private static final long		serialVersionUID		= 1L;
+	private static Log				LOG						= LogFactory.getLog(AuthenticationPanel.class);
 
 	@SpringBean
 	private transient SakaiFacade	facade;
-	private Set<SavedCredentials>	savedCredentials	= null;
+	private Set<SavedCredentials>	savedCredentials		= null;
 
-	private Component				componentToRefresh;
 	private FeedDataProvider		feedDataProvider;
+	private String					authenticationRealm		= null;
+	private String					authenticationScheme	= null;
 	private String					username;
 	private String					password;
 	private boolean					rememberMe;
-	private String					affectedFeed 		= null;
+	private String					feedUrl					= null;
 
-	public AuthenticationPanel(String id, FeedDataProvider feedDataProvider, Component componentToRefresh, String affectedFeed) {
+	public AuthenticationPanel(String id, FeedDataProvider feedDataProvider, String feedUrl) {
+		this(id, feedDataProvider, feedUrl, null, null);
+	}
+	
+	public AuthenticationPanel(String id, String feedUrl, String realm, String scheme) {
+		this(id, null, feedUrl, realm, scheme);
+	}
+	
+	public AuthenticationPanel(String id, FeedDataProvider feedDataProvider, String feedUrl, String realm, String scheme) {
 		super(id);
 		this.feedDataProvider = feedDataProvider;
-		this.componentToRefresh = componentToRefresh;
-		this.affectedFeed = affectedFeed;
+		this.feedUrl = feedUrl;
+		this.authenticationRealm = realm;
+		this.authenticationScheme = scheme;
 		
 		if(savedCredentials == null)
 			savedCredentials = facade.getFeedsService().getSavedCredentials();
@@ -61,7 +73,7 @@ public class AuthenticationPanel extends Panel {
 		WebMarkupContainer divAuthPanel = new WebMarkupContainer("divAuthPanel");
 		
 		Label message = new Label("message", "");
-		if(affectedFeed == null) {
+		if(feedUrl == null) {
 			message.setModel(new StringResourceModel("provide.auth.details", this, null));
 		}else{
 			message.setModel(new StringResourceModel("provide.auth.details2", this, new Model(this)));
@@ -84,28 +96,27 @@ public class AuthenticationPanel extends Panel {
 			@Override
 			protected void onSubmit(AjaxRequestTarget target, Form form) {
 				URL url = null;
-				String realm = feedDataProvider.getAuthenticationRealm();
-				String scheme = feedDataProvider.getAuthenticationScheme();
 				
+				// get updated auth realm and scheme
+				if(feedDataProvider != null) {
+					authenticationRealm = feedDataProvider.getAuthenticationRealm();
+					authenticationScheme = feedDataProvider.getAuthenticationScheme();
+				}
+				
+				// add new provided credentials
 				if(getUsername() != null && !getUsername().trim().equals("")){
 					try{
-						url = new URL(affectedFeed);
-						facade.getFeedsService().addCredentials(url, realm, username, password, scheme);
+						url = new URL(feedUrl);
+						facade.getFeedsService().addCredentials(url, authenticationRealm, username, password, authenticationScheme);
 					}catch(Exception e){
 						e.printStackTrace();
 					}
 				}
-				if(!feedDataProvider.getFeedSubscription().isAggregateMultipleFeeds()) {
-					feedDataProvider.getFeed();
-				}else {
-					feedDataProvider.getAggregatedFeeds();
-				}
-				boolean authSuccess = !feedDataProvider.requireAuthentication();
-				if( 
-					(authSuccess 
-							|| realm.equals(feedDataProvider.getAuthenticationRealm()) && affectedFeed.equals(feedDataProvider.getAffectedFeed()) ) 
-					&& isRememberMe()) {
-					SavedCredentials newCrd = facade.getFeedsService().newSavedCredentials(url, realm, username, password, scheme);
+
+				// check with new credentials
+				boolean authSuccess = areCredentialsOk();
+				if(authSuccess && isRememberMe()) {
+					SavedCredentials newCrd = facade.getFeedsService().newSavedCredentials(url, authenticationRealm, username, password, authenticationScheme);
 					// remove overrided credentials
 					Set<SavedCredentials> toRemove = new HashSet<SavedCredentials>();
 					for(SavedCredentials saved : savedCredentials){
@@ -117,13 +128,19 @@ public class AuthenticationPanel extends Panel {
 						}
 					}
 					savedCredentials.removeAll(toRemove);
-					// add new credential
+					// add new credentials
 					savedCredentials.add(newCrd);
 					facade.getFeedsService().setSavedCredentials(savedCredentials);
 					facade.getFeedsService().loadCredentials();
 				}
-				thisComponent.setVisible(!authSuccess);
-				target.addComponent(componentToRefresh);
+				
+				//
+				if(authSuccess) {
+					onAuthSuccess(target);
+				}else{
+					onAuthFail(target);
+				}
+				thisComponent.setVisible(!authSuccess);				
 			}
 		};
 		form.add(ok);
@@ -131,6 +148,36 @@ public class AuthenticationPanel extends Panel {
 		divAuthPanel.add(form);
 		add(divAuthPanel);
 	}
+
+	/**
+	 * Reload feed and checks if it stills require authentication.
+	 * @return True it it stills require authentication, false if supplied credentials are ok.
+	 */
+	public boolean areCredentialsOk() {
+		if(feedDataProvider != null) {
+			if(!feedDataProvider.getFeedSubscription().isAggregateMultipleFeeds()) {
+				feedDataProvider.getFeed();
+			}else {
+				feedDataProvider.getAggregatedFeeds();
+			}
+			return !feedDataProvider.requireAuthentication()
+					&& authenticationRealm.equals(feedDataProvider.getAuthenticationRealm()) 
+					&& feedUrl.equals(feedDataProvider.getAffectedFeed());
+		}else{
+			EntityReference ref = facade.getFeedsService().getEntityReference(getFeedUrl());
+			try{
+				facade.getFeedsService().getFeed(ref, true);
+			}catch(FeedAuthenticationException e){
+				return false;
+			}catch(Exception e){
+				LOG.warn("An error occurred while checking credentials for feed "+getFeedUrl(), e);
+			}
+			return true;
+		}
+	}
+	
+	public abstract void onAuthSuccess(AjaxRequestTarget target);
+	public abstract void onAuthFail(AjaxRequestTarget target);
 
 
 	public String getUsername() {
@@ -157,4 +204,28 @@ public class AuthenticationPanel extends Panel {
 		this.rememberMe = rememberMe;
 	}
 
+	public String getFeedUrl() {
+		return feedUrl;
+	}
+
+	public void setFeedUrl(String feedUrl) {
+		this.feedUrl = feedUrl;
+	}
+
+	public String getAuthenticationRealm() {
+		return authenticationRealm;
+	}
+
+	public void setAuthenticationRealm(String authenticationRealm) {
+		this.authenticationRealm = authenticationRealm;
+	}
+
+	public String getAuthenticationScheme() {
+		return authenticationScheme;
+	}
+
+	public void setAuthenticationScheme(String authenticationScheme) {
+		this.authenticationScheme = authenticationScheme;
+	}
+	
 }

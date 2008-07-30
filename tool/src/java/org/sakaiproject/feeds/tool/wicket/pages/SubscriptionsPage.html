@@ -44,45 +44,44 @@
 			<p class="instruction">
 				<wicket:message key="other.instr">[other.instr]</wicket:message>
 			</p>
-			<table cellspacing="0">
-				<tr>
-					<td><wicket:message key="other.url">[other.url]</wicket:message></td>
-					<td><span class="shorttext">
-						<input type="text" wicket:id="newSubscribedUrl" size="35" />
-					</span></td>
-					<td><span class="act">
-						<input type="submit" wicket:id="subscribe" wicket:message="value:subscribe"/>
-						</span>						
-					</td>
-					<td>
-						<img wicket:id="subscribeIndicator"/>
-					</td>
-				</tr>
-				<tr wicket:id="other.auth.details">
-					<td><wicket:message key="auth.details">[auth.details]</wicket:message></td>
-					<td colspan="3">
-						<span class="shorttext"><input type="text" wicket:id="username" size="12" /></span>
-						&#47;
-						<span class="shorttext"><input type="password" wicket:id="password" size="12" /></span>
-					</td>
-				</tr>
-				<tr wicket:id="other.auth.rememberme">
-					<td></td>
-					<td colspan="3">
-						<span class="shorttext"><input wicket:id="rememberMe" type="checkbox" /><wicket:message key="auth.rememberme">[auth.rememberme]</wicket:message></span>
-					</td>
-				</tr>
-			</table>
-			<table class="listHier lines nolines" style="width: 75%" cellspacing="0">
-				<tr> 
-					<th scope="col"><wicket:message key="th.feed">[th.feed]</wicket:message></th>
-					<th scope="col"><wicket:message key="th.subscribed">[th.subscribed]</wicket:message></th>
-				</tr>
-				<tr wicket:id="otherFeeds">
-					<td style="width: auto;"><img wicket:id="iconUrl" style="margin-right:0px; border:0px; width:auto; height:16px" border="0"/>&nbsp;<a wicket:id="title" target="_blank">[title]</a></td>
-					<td><input wicket:id="selected" type="checkbox" /></td>
-				</tr>
-			</table>
+			<div wicket:id="otherFeedsHolder">
+				<table cellspacing="0">
+					<tr>
+						<td><wicket:message key="other.url">[other.url]</wicket:message></td>
+						<td><span class="shorttext">
+							<input type="text" wicket:id="newSubscribedUrl" size="35" />
+						</span></td>
+						<td><span class="act">
+							<input type="submit" wicket:id="subscribe" wicket:message="value:subscribe"/>
+							</span>						
+						</td>
+					</tr>
+					<tr wicket:id="other.auth.details">
+						<td><wicket:message key="auth.details">[auth.details]</wicket:message></td>
+						<td colspan="2">
+							<span class="shorttext"><input type="text" wicket:id="username" size="12" /></span>
+							&#47;
+							<span class="shorttext"><input type="password" wicket:id="password" size="12" /></span>
+						</td>
+					</tr>
+					<tr wicket:id="other.auth.rememberme">
+						<td></td>
+						<td colspan="2">
+							<span class="shorttext"><input wicket:id="rememberMe" type="checkbox" /><wicket:message key="auth.rememberme">[auth.rememberme]</wicket:message></span>
+						</td>
+					</tr>
+				</table>
+				<table class="listHier lines nolines" style="width: 75%" cellspacing="0">
+					<tr> 
+						<th scope="col"><wicket:message key="th.feed">[th.feed]</wicket:message></th>
+						<th scope="col"><wicket:message key="th.subscribed">[th.subscribed]</wicket:message></th>
+					</tr>
+					<tr wicket:id="otherFeeds">
+						<td style="width: auto;"><img wicket:id="iconUrl" style="margin-right:0px; border:0px; width:auto; height:16px" border="0"/>&nbsp;<a wicket:id="title" target="_blank">[title]</a></td>
+						<td><input wicket:id="selected" type="checkbox" /></td>
+					</tr>
+				</table>
+			</div>
 		</span>
 	
 

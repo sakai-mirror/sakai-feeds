@@ -1,7 +1,5 @@
 package org.sakaiproject.feeds.tool.wicket.components;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -17,7 +15,6 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.spring.injection.annot.SpringBean;
 import org.apache.wicket.util.time.Duration;
-import org.sakaiproject.feeds.api.FeedEntry;
 import org.sakaiproject.feeds.api.FeedSubscription;
 import org.sakaiproject.feeds.tool.facade.SakaiFacade;
 
@@ -97,7 +94,8 @@ public abstract class AjaxParallelLazyFeedLoadPanel extends Panel implements Obs
 	}
 	
 	private void cacheFeed(final String feedUrl, final boolean forceExternalCheck) {
-			facade.getFeedsService().cacheFeed(feedUrl, forceExternalCheck, this);			
+		facade.getFeedsService().loadCredentials();
+		facade.getFeedsService().cacheFeed(feedUrl, forceExternalCheck, this);			
 	}
 
 	public void update(Observable o, Object arg) {

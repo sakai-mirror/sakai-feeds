@@ -19,8 +19,9 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.RequestCycle;
+import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.behavior.AttributeAppender;
-import org.apache.wicket.markup.ComponentTag;
+import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
 import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
@@ -44,7 +45,6 @@ import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
-import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.protocol.http.WebResponse;
 import org.apache.wicket.request.target.basic.EmptyRequestTarget;
@@ -97,11 +97,15 @@ public class SubscriptionsPage extends BasePage {
 	private Set<FeedSubscription>		previousInstitutionalSubscriptions = null;
 	private Set<FeedSubscription>		previousUserSubscriptions 	= null;
 	
+	private final WebMarkupContainer 	otherFeedsHolder;
+	
 	private OpmlUtil 					opmlUtil 					= new OpmlUtil();
 
 	public SubscriptionsPage() {
 		final Component component = this;
 		
+		// credentials
+		facade.getFeedsService().loadCredentials();
 		if(savedCredentials == null)
 			savedCredentials = facade.getFeedsService().getSavedCredentials();
 		
@@ -109,8 +113,8 @@ public class SubscriptionsPage extends BasePage {
 		aggregateOptions = facade.getFeedsService().getAggregateFeedsOptions();
 		
 		feedback = new CSSFeedbackPanel("messages");
+		feedback.setOutputMarkupId(true);
 		add(feedback);
-		// feedback.setOutputMarkupId(true);
 
 		Form options = new Form("subscriptions");
 		setModel(new CompoundPropertyModel(this));
@@ -142,8 +146,12 @@ public class SubscriptionsPage extends BasePage {
 		
 
 		// Other subscriptions
+		otherFeedsHolder = new WebMarkupContainer("otherFeedsHolder");
+		otherFeedsHolder.setOutputMarkupId(true);
+		subscPanel.add(otherFeedsHolder);
+		
 		final FormComponent url = new TextField("newSubscribedUrl");
-		subscPanel.add(url);
+		otherFeedsHolder.add(url);
 
 		// other Auth details
 		final WebMarkupContainer otherAuthDetails = new WebMarkupContainer("other.auth.details");
@@ -152,23 +160,20 @@ public class SubscriptionsPage extends BasePage {
 		final PasswordTextField password = new PasswordTextField("password");
 		otherAuthDetails.add(password);
 		otherAuthDetails.setVisible(false);
-		subscPanel.add(otherAuthDetails);
+		otherFeedsHolder.add(otherAuthDetails);
 
 		// other Auth details - remember me
 		final WebMarkupContainer otherAuthRememberMe = new WebMarkupContainer("other.auth.rememberme");
 		final CheckBox rememberMeChk = new CheckBox("rememberMe");
 		otherAuthRememberMe.add(rememberMeChk);
 		otherAuthRememberMe.setVisible(false);
-		subscPanel.add(otherAuthRememberMe);		
+		otherFeedsHolder.add(otherAuthRememberMe);		
 		
 		// Buttons
-		final AjaxIndicator subscribeIndicator = new AjaxIndicator("subscribeIndicator");
-		subscPanel.add(subscribeIndicator);
-		Button subscribe = new Button("subscribe") {
+		IndicatingAjaxButton subscribe = new IndicatingAjaxButton("subscribe", options) {
 			private static final long	serialVersionUID	= 1L;
-
 			@Override
-			public void onSubmit() {
+			protected void onSubmit(AjaxRequestTarget target, Form form) {
 				FeedSubscription subscription = null;
 				try{
 					subscription = urlToFeedSubscription(getNewSubscribedUrl(), getUsername(), getPassword());
@@ -185,11 +190,13 @@ public class SubscriptionsPage extends BasePage {
 					setUsername("");
 					setPassword("");
 				}
-				super.onSubmit();
+
+				target.addComponent(feedback);
+				target.addComponent(otherFeedsHolder);
+				target.appendJavascript("setMainFrameHeightNoScroll(window.name);");
 			}
 		};
-		subscribe.add(new AttributeAppender("onclick", new Model("$('#"+subscribeIndicator.getMarkupId()+"').fadeIn();"), ";"));
-		subscPanel.add(subscribe);
+		otherFeedsHolder.add(subscribe);
 		
 		subscriptionsWithoutInstitutionalDataProvider = new SubscriptionsDataProvider(SubscriptionsDataProvider.MODE_ALL_NON_INSTITUTIONAL);
 		if(previousUserSubscriptions == null) {
@@ -202,12 +209,11 @@ public class SubscriptionsPage extends BasePage {
 			protected void populateItem(Item item) {
 				FeedSubscription subscription = (FeedSubscription) item.getModelObject();
 				item.add(new ExternalImage("iconUrl", subscription.getIconUrl()));
-				//item.add(new Label("title", subscription.getTitle()));
 				item.add(new ExternalLink("title", subscription.getUrl(), subscription.getTitle()));
 				item.add(new CheckBox("selected", new PropertyModel(subscription, "selected")));
 			}
 		};
-		subscPanel.add(otherView);
+		otherFeedsHolder.add(otherView);
 		
 		
 		
@@ -299,7 +305,6 @@ public class SubscriptionsPage extends BasePage {
 			}
 		};
 		importExportPanel.add(exportBt);
-		
 		
 		
 
@@ -497,7 +502,6 @@ public class SubscriptionsPage extends BasePage {
 		if(url == null || url.trim().equals(""))
 			return null;
 		FeedSubscription feedSubscription = null;
-		IModel thisModel = new Model(this);
 		try{
 			URL _url = new URL(url);
 			if(username != null && !username.trim().equals("")){

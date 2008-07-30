@@ -6,6 +6,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -34,6 +36,7 @@ import org.sakaiproject.util.Validator;
 
 public class FeedEntriesPanel extends Panel {
 	private static final long			serialVersionUID		= 1L;
+	private static Log					LOG						= LogFactory.getLog(FeedEntriesPanel.class);
 	private FeedDataProvider			feedDataProvider;
 	
 	private String						viewDetail				= ViewOptions.DEFAULT_VIEW_DETAIL;
@@ -280,8 +283,17 @@ public class FeedEntriesPanel extends Panel {
 		String errorMessage = feedDataProvider.getErrorMessage();
 		if(errorMessage != null)
 			error(errorMessage);
-		
-		AuthenticationPanel authPanel = new AuthenticationPanel("authPanel", feedDataProvider, feedEntryHolder, feedDataProvider.getAffectedFeed());
+		AuthenticationPanel authPanel = new AuthenticationPanel("authPanel", feedDataProvider, feedDataProvider.getAffectedFeed()) {
+			private static final long	serialVersionUID	= 1L;
+			@Override
+			public void onAuthSuccess(AjaxRequestTarget target) {
+				target.addComponent(feedEntryHolder);
+			}
+			@Override
+			public void onAuthFail(AjaxRequestTarget target) {
+				target.addComponent(feedEntryHolder);
+			}			
+		};
 		authPanel.setVisible(feedDataProvider.requireAuthentication());
 		authPanel.setOutputMarkupId(true);
 		feedEntryHolder.add(authPanel);
