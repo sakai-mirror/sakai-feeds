@@ -36,23 +36,18 @@ public class BasePage  extends WebPage implements IHeaderContributor {
 		response.renderCSSReference("/sakai-feeds-tool/css/style.css");	
 	}
 	
-	protected String getToolSkinCSS(String skinRepo)
-	{
+	protected String getToolSkinCSS(String skinRepo) {
 		String skin = null;
-		try
-		{
-			skin = SiteService.findTool(SessionManager.getCurrentToolSession().getPlacementId()).getSkin();			
-		}
-		catch(Exception e)
-		{
+		try{
+			skin = SiteService.findTool(SessionManager.getCurrentToolSession().getPlacementId()).getSkin();
+		}catch(Exception e){
 			skin = ServerConfigurationService.getString("skin.default");
 		}
-		
-		if(skin == null)
-		{
+
+		if(skin == null){
 			skin = ServerConfigurationService.getString("skin.default");
 		}
-		
+
 		return skinRepo + "/" + skin + "/tool.css";
 	}
 	
