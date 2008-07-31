@@ -196,7 +196,7 @@ public class FeedsPanel extends Panel {
 					private static final long	serialVersionUID	= 1L;
 					@Override
 					protected void onComponentTag(ComponentTag tag) {
-						tag.put("onclick", "showHide('"+panel.getMarkupId()+"','"+titleLinkExpandImg.getMarkupId()+"')");
+						tag.put("onclick", "showHide('"+panel.getMarkupId()+"','"+titleLinkExpandImg.getMarkupId()+"');return false;");
 						super.onComponentTag(tag);
 					}
 					@Override
