@@ -184,7 +184,7 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 		
 		// Check if feed was recently cached
 		if(getFeedInfoCache() instanceof SakaiFeedFetcherCache) {
-			SakaiFeedFetcherCache cache = (SakaiFeedFetcherCache) getFeedInfoCache();
+			SakaiFeedFetcherCache cache = (SakaiFeedFetcherCache) getFeedInfoCache();			
 			String userId = null;
 			String feedUsername = null;
 			if (credentials != null) {
@@ -199,11 +199,17 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 					// cached authenticated feed
 					LOG.debug("Authenticated feed was recently cached - returning feed from cache: "+feedUrl.toString());
 					return cache.getFeedInfo(feedUrl, userId, feedUsername).getSyndFeed();
+				}else if(forceExternalCheck) {
+					// remove feed from cache
+					cache.clearFeedInfo(feedUrl, userId, feedUsername);
 				}
 			}else if(!forceExternalCheck && cache.isRecent(feedUrl)){
 				// cached non-authenticated feed
 				LOG.debug("Feed was recently cached - returning feed from cache: "+feedUrl.toString());
 				return cache.getFeedInfo(feedUrl).getSyndFeed();
+			}else if(!forceExternalCheck) {
+				// remove feed from cache
+				cache.clearFeedInfo(feedUrl);
 			}
 		}		
 		

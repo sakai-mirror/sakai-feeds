@@ -105,7 +105,7 @@ public class SubscriptionsPage extends BasePage {
 		final Component component = this;
 		
 		// credentials
-		facade.getFeedsService().loadCredentials();
+		//facade.getFeedsService().loadCredentials();
 		if(savedCredentials == null)
 			savedCredentials = facade.getFeedsService().getSavedCredentials();
 		
@@ -352,7 +352,11 @@ public class SubscriptionsPage extends BasePage {
 	}
 	
 	public void setAggregateOptionsGroup(String s) {
-		aggregateOptions.setTitleDisplayOption(Integer.parseInt(s));
+		try{
+			aggregateOptions.setTitleDisplayOption(Integer.parseInt(s));
+		}catch(Exception e) {
+			aggregateOptions.setTitleDisplayOption(AggregateFeedOptions.TITLE_DISPLAY_NONE);
+		}
 	}
 	
 	public String getAggregateOptionsGroup() {

@@ -71,6 +71,22 @@ public class SakaiFeedFetcherCache implements FeedFetcherCache, Serializable {
 			fetchDateCache.put(uri, userId, feedUsername, new Date());
 		}
 	}
+
+	public void clearFeedInfo(URL url) {
+		URI uri = urlToUri(url);
+		if(uri != null) {
+			infoCache.remove(uri);
+			fetchDateCache.remove(uri);
+		}
+	}
+
+	public void clearFeedInfo(URL url, String userId, String feedUsername) {
+		URI uri = urlToUri(url);
+		if(uri != null) {
+			infoCache.remove(uri, userId, feedUsername);
+			fetchDateCache.remove(uri, userId, feedUsername);
+		}
+	}
 	
 	private URI urlToUri(URL url) {
 		try{
@@ -132,6 +148,25 @@ public class SakaiFeedFetcherCache implements FeedFetcherCache, Serializable {
 			lock.lock();
 			try{
 				return super.put((K) new CompoundKey(key, userId, feedUsername), feed);
+			}finally{
+				lock.unlock();
+			}		
+		}
+
+		@Override
+		public V remove(Object key) {
+			lock.lock();
+			try{
+				return super.remove(key);
+			}finally{
+				lock.unlock();
+			}		
+		}
+		@SuppressWarnings("unchecked")
+		public V remove(Object key, String userId, String feedUsername) {
+			lock.lock();
+			try{
+				return super.remove(new CompoundKey(key, userId, feedUsername));
 			}finally{
 				lock.unlock();
 			}		
