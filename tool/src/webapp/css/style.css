@@ -185,7 +185,8 @@ a.other {
 
 /* Dnd Dojo style */
 .drag {
-        background : #eee;
+		/*background-color: #F3F3E5;*/
+		background-color: #FAFAFA;
         border : 1px solid white;
         width: 75%;
         cursor: move;
