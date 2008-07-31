@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -842,7 +843,7 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 		return feedXml;
 	}
 	
-	public void cacheFeed(String feedUrl, boolean forceExternalCheck, Observer observer) {
+	public String cacheFeed(String feedUrl, boolean forceExternalCheck, Observer observer) {
 		FeedCacheTask task = new FeedCacheTask
 				(
 				feedUrl, 
@@ -853,7 +854,33 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 				m_sessionManager.getCurrentSessionUserId(),
 				observer
 				);
-		feedCacheThreadsExecutor.execute(task);		
+		feedCacheThreadsExecutor.execute(task);
+		return task.getId();
+	}
+	
+	public void cancelCacheFeed(String id) {
+		if(id == null)
+			return;
+		Runnable taskToCancel = null;
+		Iterator<Runnable> i = feedCacheThreadsExecutor.getQueue().iterator();
+		while(i.hasNext()) {
+			Runnable r = i.next();
+			if(r instanceof FeedCacheTask) {
+				FeedCacheTask fct = (FeedCacheTask) r;
+				if(fct.getId().equals(id))
+					taskToCancel = fct;
+			}
+		}
+		if(taskToCancel != null) {
+			try{
+				feedCacheThreadsExecutor.remove(taskToCancel);
+				LOG.debug("Canceled FeedCacheTask with id: "+id);
+			}catch(Exception e) {
+				LOG.debug("Unable to cancel FeedCacheTask with id: "+id);				
+			}
+		}else{
+			LOG.debug("Unable to FeedCacheTask with id: "+id+" - request being processed.");
+		}
 	}
 
 	public boolean saveFeed(Feed feed) {
@@ -1168,6 +1195,7 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 	}	
 	
 	class FeedCacheTask extends Observable implements Runnable {
+		private String id;
 		private Observer observer;
 		private String feedUrl;
 		private boolean forceExternalCheck;
@@ -1195,6 +1223,7 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 			this.cookies = cookies != null? cookies : getClientCookies();
 			this.userId = userId != null? userId : m_sessionManager.getCurrentSessionUserId();
 			this.observer = observer;
+			this.id = m_idManager.createUuid();
 		}
 
 		public void run() {
@@ -1230,6 +1259,10 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 			if(observer != null) {
 				observer.update(this, null);
 			}
+		}
+		
+		public String getId() {
+			return id;
 		}
 
 		public String getFeedUrl() {

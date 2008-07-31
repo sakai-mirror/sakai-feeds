@@ -9,6 +9,9 @@ import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.markup.ComponentTag;
+import org.apache.wicket.markup.MarkupStream;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
@@ -20,13 +23,20 @@ import org.sakaiproject.feeds.tool.facade.SakaiFacade;
 
 
 public abstract class AjaxParallelLazyFeedLoadPanel extends Panel implements Observer {
-	private static final long			serialVersionUID	= 1L;
-	private static Log					LOG	= LogFactory.getLog(AjaxParallelLazyFeedLoadPanel.class);
+	private static final long			serialVersionUID		= 1L;
+	private static final long			AJAX_TIMER_MS			= 500;
+	private static final long			CANCELBT_DELAY_MS		= 5000;
+	private static Log					LOG						= LogFactory.getLog(AjaxParallelLazyFeedLoadPanel.class);
 	private AbstractAjaxTimerBehavior	abstractAjaxTimerBehavior;
 	private Component					lazyLoadcomponent;
-	private int							feedsCount			= 0;
-	private int							feedsCached			= 0;
-	private boolean						componentReady		= false;
+	private int							feedsCount				= 0;
+	private int							feedsCached				= 0;
+	private boolean						componentReady			= false;
+	private boolean						componentAborted		= false;
+	private String						cancelFeedLoadId		= null;
+	private CharSequence				showCancelButtonJs		= "";
+	private CharSequence				hideCancelButtonJs		= "";
+	private String						feedCacheTaskId			= null;
 
 	@SpringBean
 	private transient SakaiFacade facade;
@@ -49,6 +59,26 @@ public abstract class AjaxParallelLazyFeedLoadPanel extends Panel implements Obs
 		// ajax loading indicator
 		loadingComponent.add(new AttributeModifier("style", new Model("display: inline")));
 		
+		// javascript to show/hide cancel button
+		final WebMarkupContainer showCancelButton = new WebMarkupContainer("showCancelButton", new Model("")) {
+			private static final long	serialVersionUID	= 1L;
+			@Override
+			protected void onComponentTagBody(MarkupStream markupStream, ComponentTag openTag) {
+				replaceComponentTagBody(markupStream, openTag, showCancelButtonJs);
+			}
+		};
+		showCancelButton.setOutputMarkupId(true);
+		add(showCancelButton);
+		final WebMarkupContainer hideCancelButton = new WebMarkupContainer("hideCancelButton", new Model("")) {
+			private static final long	serialVersionUID	= 1L;
+			@Override
+			protected void onComponentTagBody(MarkupStream markupStream, ComponentTag openTag) {
+				replaceComponentTagBody(markupStream, openTag, hideCancelButtonJs);
+			}
+		};
+		hideCancelButton.setOutputMarkupId(true);
+		add(hideCancelButton);
+		
 		// cache feed...
 		componentReady = false;
 		if(subscription != null && !subscription.isAggregateMultipleFeeds() && subscription.getUrl() != null && !subscription.getUrl().trim().equals("")) {
@@ -67,12 +97,24 @@ public abstract class AjaxParallelLazyFeedLoadPanel extends Panel implements Obs
 		}
 		
 		// pool until feed is cached
-		abstractAjaxTimerBehavior = new AbstractAjaxTimerBehavior(Duration.milliseconds(500)) {
+		abstractAjaxTimerBehavior = new AbstractAjaxTimerBehavior(Duration.milliseconds(AJAX_TIMER_MS)) {
 			private static final long 	serialVersionUID = 1L;
+			private long millisecondsEllapsed = 0;
+			private long startTime = System.currentTimeMillis();
 
 			@Override
 			protected void onTimer(AjaxRequestTarget target) {
-				if(componentReady) {
+				if(componentAborted) {
+					LOG.debug("Cancel loading of feed: "+subscription.getUrl());
+					// hide cancel button and loading component
+					loadingComponent.add(new AttributeModifier("style", new Model("display: none")));
+					target.addComponent(loadingComponent);
+					hideCancelButtonJs = getHideCancelButtonJs();
+					target.addComponent(hideCancelButton);
+					// stop this
+					stop();		
+					
+				}else if(componentReady) {
 					LOG.debug("About to draw component with cached feed: "+subscription.getUrl());
 					// stop this
 					stop();
@@ -80,11 +122,21 @@ public abstract class AjaxParallelLazyFeedLoadPanel extends Panel implements Obs
 					// disable loading component
 					loadingComponent.add(new AttributeModifier("style", new Model("display: none")));
 					target.addComponent(loadingComponent);
+					hideCancelButtonJs = getHideCancelButtonJs();
+					target.addComponent(hideCancelButton);
 					
 					// load content from cached feed
 					lazyLoadcomponent = getLazyLoadComponent("content");
 					AjaxParallelLazyFeedLoadPanel.this.replace(lazyLoadcomponent.setRenderBodyOnly(true));
 					target.addComponent(AjaxParallelLazyFeedLoadPanel.this);
+					
+				}else if(!subscription.isAggregateMultipleFeeds()){
+					millisecondsEllapsed = System.currentTimeMillis() - startTime;
+					// show cancel button
+					if(millisecondsEllapsed > CANCELBT_DELAY_MS && cancelFeedLoadId != null) {
+						showCancelButtonJs = getShowCancelButtonJs();
+						target.addComponent(showCancelButton);						
+					}
 				}
 			}
 
@@ -92,10 +144,33 @@ public abstract class AjaxParallelLazyFeedLoadPanel extends Panel implements Obs
 		add(abstractAjaxTimerBehavior);
 		
 	}
+
+	public void setCancelFeedLoadId(String markupId) {
+		cancelFeedLoadId = markupId;
+	}
+	
+	public void cancelFeedLoad() {
+		componentAborted = true;
+		facade.getFeedsService().cancelCacheFeed(feedCacheTaskId);
+	}
+	
+	private CharSequence getShowCancelButtonJs() {
+		if(cancelFeedLoadId != null)
+			return "try{$('#"+cancelFeedLoadId+"').fadeIn();}catch(err){}";
+		else
+			return "";
+	}	
+	
+	private CharSequence getHideCancelButtonJs() {
+		if(cancelFeedLoadId != null)
+			return "try{$('#"+cancelFeedLoadId+"').hide();}catch(err){}";
+		else
+			return "";
+	}			
 	
 	private void cacheFeed(final String feedUrl, final boolean forceExternalCheck) {
 		facade.getFeedsService().loadCredentials();
-		facade.getFeedsService().cacheFeed(feedUrl, forceExternalCheck, this);			
+		feedCacheTaskId = facade.getFeedsService().cacheFeed(feedUrl, forceExternalCheck, this);			
 	}
 
 	public void update(Observable o, Object arg) {

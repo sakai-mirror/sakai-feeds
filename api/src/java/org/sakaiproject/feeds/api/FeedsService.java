@@ -153,8 +153,11 @@ public interface FeedsService {
 	/** Get a feed in XML format by Reference. */
 	public String getFeedXml(EntityReference reference) throws IllegalArgumentException, MalformedURLException, IOException, InvalidFeedException, FetcherException;
 	
-	/** Cache feed. */
-	public void cacheFeed(String feedUrl, boolean forceExternalCheck, Observer observer);
+	/** Cache feed. Returns the task id. */
+	public String cacheFeed(String feedUrl, boolean forceExternalCheck, Observer observer);
+	
+	/** Cancel a feed cache request by task id. */
+	public void cancelCacheFeed(String id);
 	
 	/** Add site credentials for a given user. */
 	public void addCredentials(URL url, String realm, String username, String password, String scheme);

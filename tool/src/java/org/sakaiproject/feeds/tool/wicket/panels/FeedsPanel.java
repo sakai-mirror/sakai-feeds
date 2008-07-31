@@ -6,10 +6,14 @@ import java.util.List;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.ajax.markup.html.form.AjaxButton;
+import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.DropDownChoice;
+import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.IChoiceRenderer;
 import org.apache.wicket.markup.html.link.ExternalLink;
 import org.apache.wicket.markup.html.link.Link;
@@ -29,6 +33,7 @@ import org.sakaiproject.feeds.tool.facade.SakaiFacade;
 import org.sakaiproject.feeds.tool.wicket.components.AjaxIndicator;
 import org.sakaiproject.feeds.tool.wicket.components.AjaxParallelLazyFeedLoadPanel;
 import org.sakaiproject.feeds.tool.wicket.components.AjaxUpdatingBehaviorWithIndicator;
+import org.sakaiproject.feeds.tool.wicket.components.CancelIndicator;
 import org.sakaiproject.feeds.tool.wicket.components.ExternalImage;
 import org.sakaiproject.feeds.tool.wicket.dataproviders.FeedDataProvider;
 import org.sakaiproject.feeds.tool.wicket.dataproviders.SubscriptionsDataProvider;
@@ -139,14 +144,13 @@ public class FeedsPanel extends Panel {
 				AjaxIndicator entriesLoadIndicator = new AjaxIndicator("entriesLoadIndicator");
 				item.add(entriesLoadIndicator);
 				final WebMarkupContainer entriesWrapper = new WebMarkupContainer("entriesWrapper");
-				//final AjaxLazyLoadPanel panel = new AjaxLazyLoadPanel("entries", entriesLoadIndicator) {
 				final AjaxParallelLazyFeedLoadPanel panel = new AjaxParallelLazyFeedLoadPanel("entries", entriesLoadIndicator, subscription, forceExternalCheck) {
 					private static final long	serialVersionUID	= 1L;
 					@Override
 					public Component getLazyLoadComponent(String id) {
-						FeedEntriesPanel panel = new FeedEntriesPanel(id, subscription, getViewFilter(), getViewDetail(), forceExternalCheck);
+						FeedEntriesPanel panel = new FeedEntriesPanel(id, subscription, getViewFilter(), getViewDetail(), false /*already checked and cached*/);
 						FeedDataProvider provider = panel.getFeedDataProvider();
-						provider.setForceExternalCheck(forceExternalCheck);
+						provider.setForceExternalCheck(false /*already checked and cached*/);
 						feedEntriesProviders.add(provider);
 						feedEntriesPanels.add(panel);
 						return panel;
@@ -213,7 +217,24 @@ public class FeedsPanel extends Panel {
 				link.setVisible(!(subscription.isAggregateMultipleFeeds() && aggregateFeedOptions.getTitleDisplayOption() == AggregateFeedOptions.TITLE_DISPLAY_NONE));				
 				item.add(link);
 				
-				//ExternalLink jQueryTestLink = new ExternalLink("jQueryTestLink", panel.getLazyLoadComponent("entries"));
+				AjaxLink cancelFeedLoad = new AjaxLink("cancelFeedLoad") {	
+					private static final long	serialVersionUID	= 1L;
+					@Override
+					protected void onComponentTag(ComponentTag tag) {
+						panel.setCancelFeedLoadId(getMarkupId());
+						super.onComponentTag(tag);
+					}
+					@Override
+					public void onClick(AjaxRequestTarget target) {
+						panel.cancelFeedLoad();
+					}
+				};
+				cancelFeedLoad.add(new AttributeModifier("title", true, new StringResourceModel("cancel.title", parent, null)));
+				cancelFeedLoad.setOutputMarkupId(true);
+				item.add(cancelFeedLoad);
+				CancelIndicator cancelFeedLoadImg = new CancelIndicator("cancelFeedLoadImg");
+				cancelFeedLoad.add(cancelFeedLoadImg);
+
 			}
         	
         };

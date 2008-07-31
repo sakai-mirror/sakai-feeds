@@ -423,6 +423,10 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 		    SyndFeedInput syndFeedInput = new SyndFeedInput();
 		    syndFeedInput.setXmlHealerOn(true);
 			return syndFeedInput.build(reader);
+		}catch(IllegalArgumentException e){
+			throw new IOException();
+		}catch(IllegalStateException e){
+			throw new IOException();
 		}finally {
 		    if (stream != null) {
 		        stream.close();

@@ -563,16 +563,21 @@ public class SubscriptionsPage extends BasePage {
 	}
     
 	private void setError(String key, String url, Exception e) {
-		String errorMessage = new StringResourceModel(key, this, new Model(new FeedUrlModel(url))).getString();
-		feedback.error(errorMessage);
+		String errorMessage = null;
+		try{
+			errorMessage = new StringResourceModel(key, this, new Model(new FeedUrl(url))).getString();
+		}catch(Exception e1) {
+			errorMessage = key;
+		}
+		feedback.error(errorMessage);		
 		LOG.warn(errorMessage, e);
 	}
 	
-	class FeedUrlModel implements Serializable  {
+	class FeedUrl implements Serializable  {
 		private static final long	serialVersionUID	= 1L;
 		private String feedUrl = null;
 
-		public FeedUrlModel(String feedUrl) {
+		public FeedUrl(String feedUrl) {
 			this.feedUrl = feedUrl;
 		}
 		
