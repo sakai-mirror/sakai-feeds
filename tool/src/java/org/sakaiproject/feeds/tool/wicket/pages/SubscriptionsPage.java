@@ -105,7 +105,6 @@ public class SubscriptionsPage extends BasePage {
 		final Component component = this;
 		
 		// credentials
-		//facade.getFeedsService().loadCredentials();
 		if(savedCredentials == null)
 			savedCredentials = facade.getFeedsService().getSavedCredentials();
 		

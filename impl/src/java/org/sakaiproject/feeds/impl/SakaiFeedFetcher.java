@@ -199,17 +199,11 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 					// cached authenticated feed
 					LOG.debug("Authenticated feed was recently cached - returning feed from cache: "+feedUrl.toString());
 					return cache.getFeedInfo(feedUrl, userId, feedUsername).getSyndFeed();
-				}else if(forceExternalCheck) {
-					// remove feed from cache
-					cache.clearFeedInfo(feedUrl, userId, feedUsername);
 				}
 			}else if(!forceExternalCheck && cache.isRecent(feedUrl)){
 				// cached non-authenticated feed
 				LOG.debug("Feed was recently cached - returning feed from cache: "+feedUrl.toString());
 				return cache.getFeedInfo(feedUrl).getSyndFeed();
-			}else if(!forceExternalCheck) {
-				// remove feed from cache
-				cache.clearFeedInfo(feedUrl);
 			}
 		}		
 		
@@ -468,6 +462,7 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 	public interface CredentialSupplier {
 		public void addCredentials(URL url, Credentials credentials);
         public Credentials getCredentials(URL url);
+        public void clearCredentialMap();
     }
 	
 	public static class InnerFetcherException extends FetcherException {

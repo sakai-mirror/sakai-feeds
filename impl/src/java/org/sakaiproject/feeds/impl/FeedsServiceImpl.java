@@ -1139,6 +1139,10 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 			return credentials;
 		}
 		
+		public void clearCredentialMap() {
+			m_sessionManager.getCurrentSession().removeAttribute(SESSION_ATTR_CREDENTIALS);
+		}
+		
 		protected Map<URL,Credentials> getCredentialsMap() {
 			Object o = m_sessionManager.getCurrentSession().getAttribute(SESSION_ATTR_CREDENTIALS);
 			if(o != null && o instanceof Map<?,?>){
@@ -1196,7 +1200,7 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 		public void run() {
 			// This runs in a different thread/session::
 			Session thisSession = m_sessionManager.getCurrentSession();
-			//  : load saved credentials							
+			//  : load saved credentials
 			feedCredentialSupplier.setCredentialMap(getCredentialsMap(), thisSession);
 
 			//  : load client cookies
