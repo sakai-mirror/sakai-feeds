@@ -44,6 +44,8 @@ public interface FeedsService {
 	public static final String	MIGRATE_DEFAULTFEEDURL				= "http://www.sakaiproject.org/cms/index2.php?option=com_rss&amp;feed=RSS2.0&amp;no_html=1";
 	public static final String	SAK_PROP_DEFAULTVIEWDETAIL			= "feeds.defaultViewDetail";
 	public static final String	SAK_PROP_DEFAULTVIEWFILTER			= "feeds.defaultViewFilter";
+	public static final String	SAK_PROP_SHOW_CANCEL_AFTER			= "feeds.feedLoadCancel.showAfter";
+	public static final String	SAK_PROP_SHOW_CANCEL_IMG			= "feeds.feedLoadCancel.image";
 
 	public static final String	SAK_PROP_CACHINGTHREADS				= "feeds.cachingThreads";
 

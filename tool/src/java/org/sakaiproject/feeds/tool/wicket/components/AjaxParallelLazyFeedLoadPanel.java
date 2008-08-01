@@ -18,14 +18,16 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.spring.injection.annot.SpringBean;
 import org.apache.wicket.util.time.Duration;
+import org.sakaiproject.component.cover.ServerConfigurationService;
 import org.sakaiproject.feeds.api.FeedSubscription;
+import org.sakaiproject.feeds.api.FeedsService;
 import org.sakaiproject.feeds.tool.facade.SakaiFacade;
 
 
 public abstract class AjaxParallelLazyFeedLoadPanel extends Panel implements Observer {
 	private static final long			serialVersionUID		= 1L;
 	private static final long			AJAX_TIMER_MS			= 500;
-	private static final long			CANCELBT_DELAY_MS		= 5000;
+	private long						feedLoadCancelShowAfter	= ServerConfigurationService.getInt(FeedsService.SAK_PROP_SHOW_CANCEL_AFTER, 10) * 1000;
 	private static Log					LOG						= LogFactory.getLog(AjaxParallelLazyFeedLoadPanel.class);
 	private AbstractAjaxTimerBehavior	abstractAjaxTimerBehavior;
 	private Component					lazyLoadcomponent;
@@ -130,10 +132,10 @@ public abstract class AjaxParallelLazyFeedLoadPanel extends Panel implements Obs
 					AjaxParallelLazyFeedLoadPanel.this.replace(lazyLoadcomponent.setRenderBodyOnly(true));
 					target.addComponent(AjaxParallelLazyFeedLoadPanel.this);
 					
-				}else if(!subscription.isAggregateMultipleFeeds()){
+				}else if(!subscription.isAggregateMultipleFeeds() && feedLoadCancelShowAfter > -1){
 					millisecondsEllapsed = System.currentTimeMillis() - startTime;
 					// show cancel button
-					if(millisecondsEllapsed > CANCELBT_DELAY_MS && cancelFeedLoadId != null) {
+					if(millisecondsEllapsed > feedLoadCancelShowAfter && cancelFeedLoadId != null) {
 						showCancelButtonJs = getShowCancelButtonJs();
 						target.addComponent(showCancelButton);						
 					}
