@@ -49,7 +49,7 @@ public class CollapsiblePanel extends Border {
 
 			@Override
 			protected void onComponentTag(ComponentTag tag) {
-				if(content.isVisible()){
+				if(_contentVisible){
 					tag.put("src", "/sakai-feeds-tool/img/bullet_toggle_minus.png");
 					tag.put("alt", "-");
 				}else{
