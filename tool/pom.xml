@@ -1,148 +1,139 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-	<parent>
-		<artifactId>sakai-feeds</artifactId>
-		<groupId>org.sakaiproject</groupId>
-		<version>${feeds.version}</version>
-	</parent>
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <name>Sakai News Feeds Tool</name>
+  <groupId>org.sakaiproject</groupId>
+  <artifactId>sakai-feeds-tool</artifactId>
+  <organization>
+    <name>Universidade Fernando Pessoa</name>
+    <url>http://www.ufp.pt</url>
+  </organization>
+  <inceptionYear>2008</inceptionYear>
 
-	<modelVersion>4.0.0</modelVersion>
-	<name>sakai-feeds-tool</name>
-	<groupId>org.sakaiproject</groupId>
-	<artifactId>sakai-feeds-tool</artifactId>
-
-	<organization>
-		<name>Universidade Fernando Pessoa</name>
-		<url>http://www.ufp.pt</url>
-	</organization>
-	<inceptionYear>2008</inceptionYear>
-
-	<packaging>war</packaging>
+  <!-- Parent: Sakai News base -->
+  <parent>
+    <artifactId>sakai-feeds</artifactId>
+    <groupId>org.sakaiproject</groupId>
+    <version>1.1.2-SNAPSHOT</version><!-- newsfeeds.version --> 
+  </parent>
+  
+  <!-- Packaging -->
+  <packaging>war</packaging>
 
 
-	<!-- Dependencies -->
-	<dependencies>
-		<!-- Internal: Sakai Feeds -->
-		<dependency>
-			<groupId>org.sakaiproject</groupId>
-			<artifactId>sakai-feeds-api</artifactId>
-		</dependency>		
-		<dependency>
-			<groupId>org.sakaiproject</groupId>
-			<artifactId>sakai-feeds-opml</artifactId>
-			<version>1.0</version>			
-			<scope>system</scope>
-      		<systemPath>${basedir}/src/webapp/WEB-INF/lib/sakai-feeds-opml-1.0.jar</systemPath>			
-		</dependency>
+  <!-- Dependencies -->
+  <dependencies>
+    <!-- News Feeds -->
+    <dependency>
+      <groupId>org.sakaiproject</groupId>
+      <artifactId>sakai-feeds-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject</groupId>
+      <artifactId>sakai-feeds-opml</artifactId>
+      <version>1.0</version>			
+      <scope>system</scope>
+        <systemPath>${basedir}/src/webapp/WEB-INF/lib/sakai-feeds-opml-1.0.jar</systemPath>			
+    </dependency>
+  
+    <!-- Sakai -->
+    <dependency>
+      <groupId>org.sakaiproject</groupId>
+      <artifactId>sakai-entity-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject.entitybroker</groupId>
+      <artifactId>entitybroker-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject</groupId>
+      <artifactId>sakai-user-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject</groupId>
+      <artifactId>sakai-site-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject</groupId>
+      <artifactId>sakai-component-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject</groupId>
+      <artifactId>sakai-authz-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject</groupId>
+      <artifactId>sakai-tool-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject</groupId>
+      <artifactId>sakai-util</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+    </dependency>
+    
+    <!-- Apache Wicket -->
+    <dependency>
+      <groupId>org.apache.wicket</groupId>
+      <artifactId>wicket</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.wicket</groupId>
+      <artifactId>wicket-extensions</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.wicket</groupId>
+      <artifactId>wicket-ioc</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.wicket</groupId>
+      <artifactId>wicket-spring</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.wicket</groupId>
+      <artifactId>wicket-spring-annot</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.wicket</groupId>
+      <artifactId>wicket-datetime</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.wicketstuff</groupId>
+      <artifactId>wicketstuff-dojo</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+    </dependency>
+    
+    <!-- Apache others -->
+    <dependency>
+      <groupId>org.apache.xmlbeans</groupId>
+      <artifactId>xmlbeans</artifactId>
+    </dependency>
+  </dependencies>
 
-		<!-- Internal: Sakai -->
-		<dependency>
-			<groupId>org.sakaiproject</groupId>
-			<artifactId>sakai-entity-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.sakaiproject.entitybroker</groupId>
-			<artifactId>entitybroker-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.sakaiproject</groupId>
-			<artifactId>sakai-user-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.sakaiproject</groupId>
-			<artifactId>sakai-site-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.sakaiproject</groupId>
-			<artifactId>sakai-component-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.sakaiproject</groupId>
-			<artifactId>sakai-authz-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.sakaiproject</groupId>
-			<artifactId>sakai-tool-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.sakaiproject</groupId>
-			<artifactId>sakai-util</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>servlet-api</artifactId>
-			<version>2.4</version>
-			<scope>provided</scope>
-		</dependency>
-
-		<!-- External: Apache Wicket dependencies -->
-		<dependency>
-			<groupId>org.apache.wicket</groupId>
-			<artifactId>wicket</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.wicket</groupId>
-			<artifactId>wicket-extensions</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.wicket</groupId>
-			<artifactId>wicket-ioc</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.wicket</groupId>
-			<artifactId>wicket-spring</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.wicket</groupId>
-			<artifactId>wicket-spring-annot</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.wicket</groupId>
-			<artifactId>wicket-datetime</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.wicketstuff</groupId>
-			<artifactId>wicketstuff-dojo</artifactId>
-		</dependency>
-		<!-- <dependency>
-			<groupId>org.wicketstuff.jquery</groupId>
-			<artifactId>wicketstuff-jquery</artifactId>
-			</dependency> -->
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.xmlbeans</groupId>
-			<artifactId>xmlbeans</artifactId>
-			<version>2.2.0</version>
-		</dependency>
-	</dependencies>
-
-	<build>
-		<sourceDirectory>src/java</sourceDirectory>
-		<resources>
-			<resource>
-				<directory>${basedir}/src/java</directory>
-				<includes>
-					<include>**/*.html</include>
-					<include>**/*.js</include>
-					<include>**/*.properties</include>
-					<include>**/*.gif</include>
-					<include>**/*.css</include>
-				</includes>
-			</resource>
-		</resources>
-	</build>
+  <!-- Build -->
+  <build>
+    <sourceDirectory>src/java</sourceDirectory>
+    <resources>
+      <resource>
+        <directory>${basedir}/src/java</directory>
+        <includes>
+          <include>**/*.html</include>
+          <include>**/*.js</include>
+          <include>**/*.properties</include>
+          <include>**/*.gif</include>
+          <include>**/*.css</include>
+        </includes>
+      </resource>
+    </resources>
+  </build>
+  
 </project>

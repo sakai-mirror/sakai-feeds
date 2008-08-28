@@ -1,62 +1,55 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<parent>
-		<artifactId>sakai-feeds</artifactId>
-		<groupId>org.sakaiproject</groupId>
-		<version>${feeds.version}</version>
-	</parent>
-	<modelVersion>4.0.0</modelVersion>
-	<name>sakai-feeds-pack</name>
-	<groupId>org.sakaiproject</groupId>
-	<artifactId>sakai-feeds-pack</artifactId>
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <name>Sakai News Feeds Components</name>
+  <groupId>org.sakaiproject</groupId>
+  <artifactId>sakai-feeds-pack</artifactId>
+  <organization>
+    <name>Universidade Fernando Pessoa</name>
+    <url>http://www.ufp.pt</url>
+  </organization>
+  <inceptionYear>2008</inceptionYear>
 
-	<organization>
-		<name>Universidade Fernando Pessoa</name>
-		<url>http://www.ufp.pt</url>
-	</organization>
-	<inceptionYear>2008</inceptionYear>
-
-	<packaging>sakai-component</packaging>
-	<properties>
-		<deploy.target>components</deploy.target>
-	</properties>
-
-	<dependencies>
-		<!-- Internal: Sakai Feeds -->
-		<dependency>
-			<groupId>org.sakaiproject</groupId>
-			<artifactId>sakai-feeds-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.sakaiproject</groupId>
-			<artifactId>sakai-feeds-impl</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>org.sakaiproject</groupId>
-					<artifactId>sakai-feeds-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.sakaiproject</groupId>
-					<artifactId>generic-dao</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-	</dependencies>
-
-	<build>
-		<resources>
-			<resource>
-				<directory>src/webapp</directory>
-				<includes>
-					<include>**/*.xml</include>
-					<include>**/*.properties</include>
-				</includes>
-				<excludes>
-					<exclude>**/web.xml</exclude>
-				</excludes>
-			</resource>
-		</resources>
-	</build>
+  <!-- Parent: Sakai News base -->
+  <parent>
+    <artifactId>sakai-feeds</artifactId>
+    <groupId>org.sakaiproject</groupId>
+    <version>1.1.2-SNAPSHOT</version><!-- newsfeeds.version --> 
+  </parent>
+  
+  <!-- Packaging -->
+  <packaging>sakai-component</packaging>
+  <properties>
+    <deploy.target>components</deploy.target>
+  </properties>
+  
+  <!-- Dependencies -->
+  <dependencies>
+    <!-- News Feeds -->
+    <dependency>
+      <groupId>org.sakaiproject</groupId>
+      <artifactId>sakai-feeds-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject</groupId>
+      <artifactId>sakai-feeds-impl</artifactId>
+    </dependency>
+  </dependencies>
+  
+  <!-- Build -->
+  <build>
+    <resources>
+      <resource>
+        <directory>src/webapp</directory>
+        <includes>
+          <include>**/*.xml</include>
+          <include>**/*.properties</include>
+        </includes>
+        <excludes>
+          <exclude>**/web.xml</exclude>
+        </excludes>
+      </resource>
+    </resources>
+  </build>
+  
 </project>

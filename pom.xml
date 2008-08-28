@@ -1,178 +1,299 @@
 <?xml version="1.0"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0">
-	<modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <name>Sakai News Feeds</name>
+  <groupId>org.sakaiproject</groupId>
+  <artifactId>sakai-feeds</artifactId>
+  <version>1.1.2-SNAPSHOT</version><!-- newsfeeds.version --> 
+  
+  <description>News Feeds is a feed aggregator tool developed for Sakai.</description>
+  <url>http://bugs.sakaiproject.org/confluence/display/NFS</url>
+  <inceptionYear>2008</inceptionYear>
+  <organization>
+    <name>Universidade Fernando Pessoa</name>
+    <url>http://www.ufp.pt</url>
+  </organization>
+  <packaging>pom</packaging>  
+  
+  
+  <!-- Parent: Sakai master pom -->
+  <parent>
+    <artifactId>master</artifactId>
+    <groupId>org.sakaiproject</groupId>
+    <!-- EDIT ME: Sakai Version -->
+    <!--<version>2.5.2</version>--> <!-- For Official Releases -->    
+    <version>M2</version> <!-- For 2.5.x --> 
+    <!--<version>2.6.0RC1-SNAPSHOT</version>--> <!-- For TRUNK -->   
+  </parent>
+  
 
-	<parent>
-		<artifactId>master</artifactId>
-		<groupId>org.sakaiproject</groupId>
-		<version>2.5.0</version>				<!-- Version number for tagged releases (eg, 2.5.0) -->
-		<!-- <version>M2</version> -->			<!-- M2 for maintenance branches (eg, 2.5.x) -->
-		<!-- <version>SNAPSHOT</version> -->	<!-- SNAPSHOT for trunk -->
-	</parent>
+  <!-- Project versions -->
+  <properties>
+    <entitybroker.version>[1.2.0,1.4.0]</entitybroker.version>
+    <commons-codec.version>1.3</commons-codec.version>
+    <commons-httpclient.version>3.1</commons-httpclient.version>
+    <commons-httpclient-contrib.version>3.0-beta1</commons-httpclient-contrib.version>
+    <rome.version>0.9</rome.version>
+    <rome-fetcher.version>0.7</rome-fetcher.version>
+    <feeds.wicket.version>1.3.3</feeds.wicket.version>
+    <feeds.wicketstuff-dojo.version>1.3.0-beta</feeds.wicketstuff-dojo.version>
+    <feeds.slf4j.version>1.4.3</feeds.slf4j.version>
+    <xmlbeans.version>2.2.0</xmlbeans.version>
+  </properties>
+  
+  
+  <!-- Project modules -->
+  <modules>
+    <module>api</module>
+    <module>impl</module>
+    <module>pack</module>
+    <module>tool</module>
+  </modules>
+  
+  
+  <!-- Project developers -->
+  <developers>
+    <developer>
+      <id>nuno</id>
+      <name>Nuno Fernandes</name>
+      <email>nuno@ufp.edu.pt</email>
+      <url>http://confluence.sakaiproject.org/confluence/display/~nfernandes</url>
+      <organization>Universidade Fernando Pessoa</organization>
+      <organizationUrl>http://www.ufp.pt/</organizationUrl>
+      <roles>
+        <role>Project Manager</role>
+        <role>Architect</role>
+        <role>Developer</role>
+      </roles>
+      <timezone>0</timezone>
+    </developer>
+  </developers>
+  
+  
+  <!-- Project repositories -->
+  <repositories>
+    <repository>
+      <id>sakai-maven</id>
+      <name>Sakai Maven Repo</name>
+      <layout>default</layout>
+      <url>http://source.sakaiproject.org/maven2</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      </repository>
+    <repository>
+      <id>default</id>
+      <name>Maven Repository Switchboard</name>
+      <layout>default</layout>
+      <url>http://repo1.maven.org/maven2</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>wicket-stuff-repository</id>
+      <name>Wicket-Stuff Repository</name>
+      <url>http://www.wicketstuff.org/maven/repository/</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>commons-httpclient-contrib-repository</id>
+      <name>commons-httpclient-contrib Repository</name>
+      <url>http://incubator.52north.org/maven/maven-repo/releases/</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
 
-	<properties>
-		<!-- This tool VERSION -->
-		<feeds.version>SNAPSHOT</feeds.version>
-		<!-- Dependencies VERSION -->
-		<entitybroker.version>[1.2.0,1.4.0]</entitybroker.version>
-		<feeds.wicket.version>1.3.3</feeds.wicket.version>
-		<feeds.wicketstuff-dojo.version>1.3.0-beta</feeds.wicketstuff-dojo.version>
-		<feeds.slf4j.version>1.4.3</feeds.slf4j.version>
-	</properties>
-
-	<organization>
-		<name>Universidade Fernando Pessoa</name>
-		<url>http://www.ufp.pt</url>
-	</organization>
-	<inceptionYear>2008</inceptionYear>
-
-	<name>Sakai Feeds</name>
-	<groupId>org.sakaiproject</groupId>
-	<artifactId>sakai-feeds</artifactId>
-	<version>${feeds.version}</version>
-
-	<packaging>pom</packaging>
-	<modules>
-		<module>api</module>
-		<module>impl</module>
-		<module>pack</module>
-		<module>tool</module>
-	</modules>
+  
+  <!-- JIRA -->
+  <issueManagement>
+    <system>JIRA</system>
+    <url>http://jira.sakaiproject.org/jira/browse/NFS</url>
+  </issueManagement>
 
 
-	<!-- Maven repositories -->
-	<repositories>
-		<repository>
-			<id>wicket-stuff-repository</id>
-			<name>Wicket-Stuff Repository</name>
-			<url>http://www.wicketstuff.org/maven/repository/</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
+  <!-- License -->
+  <licenses>
+    <license>
+      <name>Educational Community License, Version 2.0</name>
+      <url>http://www.osedu.org/licenses/ECL-2.0</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
 
+  
+  <!-- Source code repository location -->
+  <scm>
+    <connection>scm:svn:https://source.sakaiproject.org/contrib/ufp/newsfeeds/trunk</connection>
+    <developerConnection>scm:svn:https://source.sakaiproject.org/contrib/ufp/newsfeeds/trunk</developerConnection>
+    <url>http://source.sakaiproject.org/viewsvn/ufp/newsfeeds/?root=contrib</url>
+  </scm>
 
-	<!-- Handles the management of all related dependencies -->
-	<dependencyManagement>
-		<dependencies>
-			<!-- Internal: Sakai Feeds -->
-			<dependency>
-				<groupId>org.sakaiproject</groupId>
-				<artifactId>sakai-feeds-api</artifactId>
-				<version>${feeds.version}</version>
-				<scope>provided</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.sakaiproject</groupId>
-				<artifactId>sakai-feeds-impl</artifactId>
-				<version>${feeds.version}</version>
-			</dependency>
+  
+  <!-- Project related dependencies -->
+  <dependencyManagement>
+    <dependencies>
+    <!-- News Feeds -->
+    <dependency>
+      <groupId>org.sakaiproject</groupId>
+      <artifactId>sakai-feeds-api</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject</groupId>
+      <artifactId>sakai-feeds-impl</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
-			<!-- Internal: Sakai -->
-			<dependency>
-				<groupId>org.sakaiproject.entitybroker</groupId>
-				<artifactId>entitybroker-api</artifactId>
-				<version>${entitybroker.version}</version>
-				<scope>provided</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.sakaiproject.entitybroker</groupId>
-				<artifactId>entitybroker-utils</artifactId>
-				<version>${entitybroker.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.sakaiproject</groupId>
-				<artifactId>sakai-util</artifactId>
-				<version>${sakai.version}</version>
-			</dependency>
+    <!-- Sakai -->
+    <dependency>
+      <groupId>org.sakaiproject.entitybroker</groupId>
+      <artifactId>entitybroker-api</artifactId>
+      <version>${entitybroker.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject.entitybroker</groupId>
+      <artifactId>entitybroker-utils</artifactId>
+      <version>${entitybroker.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject</groupId>
+      <artifactId>sakai-util</artifactId>
+      <version>${sakai.version}</version>
+    </dependency>
+    <!--<dependency>
+      <groupId>org.sakaiproject</groupId>
+      <artifactId>generic-dao</artifactId>
+      <scope>provided</scope>
+    </dependency>-->
+    
+    <!-- Apache Commons -->
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>${commons-codec.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-httpclient</groupId>
+      <artifactId>commons-httpclient</artifactId>
+      <version>${commons-httpclient.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-httpclient</groupId>
+      <artifactId>commons-httpclient-contrib</artifactId>
+      <version>${commons-httpclient-contrib.version}</version>
+    </dependency>
+      
+    <!-- Rome -->
+    <dependency>
+      <groupId>rome</groupId>
+      <artifactId>rome</artifactId>
+      <version>${rome.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>rome</groupId>
+      <artifactId>rome-fetcher</artifactId>
+      <version>${rome-fetcher.version}</version>
+    </dependency>
 
-			<!-- External -->
-			<dependency>
-				<groupId>commons-logging</groupId>
-				<artifactId>commons-logging</artifactId>
-				<version>1.1</version>
-			</dependency>
-			<dependency>
-				<groupId>commons-codec</groupId>
-				<artifactId>commons-codec</artifactId>
-				<version>1.3</version>
-			</dependency>
-			<dependency>
-				<groupId>commons-httpclient</groupId>
-				<artifactId>commons-httpclient</artifactId>
-				<version>3.1</version>
-			</dependency>
-			<dependency>
-				<groupId>commons-httpclient</groupId>
-				<artifactId>commons-httpclient-contrib</artifactId>
-				<version>3.0-beta1</version>
-			</dependency>
-			<dependency>
-				<groupId>rome</groupId>
-				<artifactId>rome</artifactId>
-				<version>0.9</version>
-			</dependency>
-			<dependency>
-				<groupId>rome</groupId>
-				<artifactId>rome-fetcher</artifactId>
-				<version>0.7</version>
-			</dependency>
-
-			<!-- External: Apache Wicket dependencies -->
-			<dependency>
-				<groupId>org.apache.wicket</groupId>
-				<artifactId>wicket</artifactId>
-				<version>${feeds.wicket.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.wicket</groupId>
-				<artifactId>wicket-extensions</artifactId>
-				<version>${feeds.wicket.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.wicket</groupId>
-				<artifactId>wicket-ioc</artifactId>
-				<version>${feeds.wicket.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.wicket</groupId>
-				<artifactId>wicket-spring</artifactId>
-				<version>${feeds.wicket.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.wicket</groupId>
-				<artifactId>wicket-spring-annot</artifactId>
-				<version>${feeds.wicket.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.wicket</groupId>
-				<artifactId>wicket-datetime</artifactId>
-				<version>${feeds.wicket.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.wicketstuff</groupId>
-				<artifactId>wicketstuff-dojo</artifactId>
-				<version>${feeds.wicketstuff-dojo.version}</version>
-			</dependency>
-			<!-- <dependency>
-				<groupId>org.wicketstuff.jquery</groupId>
-				<artifactId>wicketstuff-jquery</artifactId>
-				<version>0.1-SNAPSHOT</version>
-				</dependency> -->
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-api</artifactId>
-				<version>${feeds.slf4j.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-log4j12</artifactId>
-				<version>${feeds.slf4j.version}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
+    <!-- Apache Wicket -->
+    <dependency>
+      <groupId>org.apache.wicket</groupId>
+      <artifactId>wicket</artifactId>
+      <version>${feeds.wicket.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.wicket</groupId>
+      <artifactId>wicket-extensions</artifactId>
+      <version>${feeds.wicket.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.wicket</groupId>
+      <artifactId>wicket-ioc</artifactId>
+      <version>${feeds.wicket.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.wicket</groupId>
+      <artifactId>wicket-spring</artifactId>
+      <version>${feeds.wicket.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.wicket</groupId>
+      <artifactId>wicket-spring-annot</artifactId>
+      <version>${feeds.wicket.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.wicket</groupId>
+      <artifactId>wicket-datetime</artifactId>
+      <version>${feeds.wicket.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.wicketstuff</groupId>
+      <artifactId>wicketstuff-dojo</artifactId>
+      <version>${feeds.wicketstuff-dojo.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${feeds.slf4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <version>${feeds.slf4j.version}</version>
+    </dependency>
+    
+    <!-- Apache others -->
+    <dependency>
+      <groupId>org.apache.xmlbeans</groupId>
+      <artifactId>xmlbeans</artifactId>
+      <version>${xmlbeans.version}</version>
+    </dependency>
+    
+    </dependencies>
+  </dependencyManagement>
+  
+  
+  <!-- Reporting (mvn site) -->
+  <reporting>
+    <plugins>
+      <!-- JavaDocs: mvn javadoc:javadoc -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <aggregate>true</aggregate>
+          <source>1.5</source>
+          <links>
+            <link>http://java.sun.com/j2se/1.5.0/docs/api</link>
+            <link>http://java.sun.com/products/servlet/2.3/javadoc/</link>
+          </links>
+          <breakiterator>true</breakiterator>
+          <verbose>false</verbose>
+          <maxmemory>512m</maxmemory>
+          <additionalJOption>
+            -J-Xms168m -J-Xmx512m -J-XX:PermSize=128m -J-XX:NewSize=64m
+          </additionalJOption>
+        </configuration>
+      </plugin>
+      <!-- FindBugs: mvn findbugs:findbugs -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+        <version>1.2</version>
+      </plugin>
+      <!-- CheckStyle: mvn checkstyle:checkstyle -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </reporting>
+  
 </project>
