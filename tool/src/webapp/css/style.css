@@ -35,8 +35,7 @@ h4 a.collapsibleLink:hover {
 
 /* Subscriptions page */
 .collapsibleZone {
-	background-color: #F3F3E5 !important;
-	/*background:#FAFAFA !important;*/
+	background:#FAFAFA !important;
 }
    
 /* ...but not to absolute links in this domain: */ 
@@ -48,15 +47,15 @@ h4 a.collapsibleLink:hover {
 
 /* Feed channel */
 .feedTitle {
-	background-color: #F3F3E5;
-	/*background-color: #FAFAFA;*/
+	/*background-color: #F3F3E5;*/
+	background-color: #FAFAFA;
 	margin-left: 5px;
 	margin-right: 5px;
 }
 h4 a.feedTitle img {
 	text-decoration: none !important;
-	background-color: #F3F3E5 !important;
-	/*background-color: #FAFAFA !important;*/
+	/*background-color: #F3F3E5 !important;*/
+	background-color: #FAFAFA !important;
 }
 h4 a.feedTitle:link, h4 a.feedTitle:visited, h4 a.feedTitle:active {
 	text-decoration: none !important;
@@ -186,8 +185,8 @@ a.other {
 
 /* Dnd Dojo style */
 .drag {
-		background-color: #F3F3E5;
-		/*background-color: #FAFAFA;*/
+		/*background-color: #F3F3E5;*/
+		background-color: #FAFAFA;
         border : 1px solid white;
         width: 75%;
         cursor: move;
