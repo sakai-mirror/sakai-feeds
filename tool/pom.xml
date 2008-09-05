@@ -37,13 +37,25 @@
     </dependency>
   
     <!-- Sakai -->
+    <!-- K1 Sakai deps -->
+    <!--
+    <dependency>
+      <groupId>org.sakaiproject.kernel</groupId>
+      <artifactId>sakai-kernel-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject.kernel</groupId>
+      <artifactId>sakai-kernel-util</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject.kernel</groupId>
+      <artifactId>sakai-component-manager</artifactId>
+    </dependency>
+    -->
+    <!-- Pre K1 Sakai deps -->
     <dependency>
       <groupId>org.sakaiproject</groupId>
       <artifactId>sakai-entity-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.sakaiproject.entitybroker</groupId>
-      <artifactId>entitybroker-api</artifactId>
     </dependency>
     <dependency>
       <groupId>org.sakaiproject</groupId>
@@ -69,6 +81,11 @@
       <groupId>org.sakaiproject</groupId>
       <artifactId>sakai-util</artifactId>
     </dependency>
+    
+    <dependency>
+      <groupId>org.sakaiproject.entitybroker</groupId>
+      <artifactId>entitybroker-api</artifactId>
+    </dependency>    
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>servlet-api</artifactId>

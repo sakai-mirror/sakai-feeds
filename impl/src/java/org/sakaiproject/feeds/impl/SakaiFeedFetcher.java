@@ -413,20 +413,21 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 		} else {			
 			stream = method.getResponseBodyAsStream();
 		}
-		try {		
+		try {
 		    XmlReader reader = null;
 		    if (method.getResponseHeader("Content-Type") != null) {			
 				reader = new XmlReader(stream, method.getResponseHeader("Content-Type").getValue(), true);
 		    } else {			
 				reader = new XmlReader(stream, true);
 		    }
-		    SyndFeedInput syndFeedInput = new SyndFeedInput();
+			
+			SyndFeedInput syndFeedInput = new SyndFeedInput(false);
 		    syndFeedInput.setXmlHealerOn(true);
-			return syndFeedInput.build(reader);
+		    return syndFeedInput.build(new SakaiXmlInputFilter(reader));
 		}catch(IllegalArgumentException e){
-			throw new IOException();
+			throw new IOException(e.getMessage());
 		}catch(IllegalStateException e){
-			throw new IOException();
+			throw new IOException(e.getMessage());
 		}finally {
 		    if (stream != null) {
 		        stream.close();
