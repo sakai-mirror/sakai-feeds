@@ -14,7 +14,7 @@
   <parent>
     <artifactId>sakai-feeds</artifactId>
     <groupId>org.sakaiproject</groupId>
-    <version>1.1.2-SNAPSHOT</version><!-- newsfeeds.version --> 
+    <version>1.1.2</version><!-- newsfeeds.version --> 
   </parent>
   
   <!-- Packaging -->
