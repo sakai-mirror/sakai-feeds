@@ -29,7 +29,7 @@
 
   <!-- Project versions -->
   <properties>
-    <entitybroker.version>[1.2.0,1.4.0]</entitybroker.version>
+    <entitybroker.version>1.3.3</entitybroker.version>
     <commons-codec.version>1.3</commons-codec.version>
     <commons-httpclient.version>3.1</commons-httpclient.version>
     <commons-httpclient-contrib.version>3.0-beta1</commons-httpclient-contrib.version>
