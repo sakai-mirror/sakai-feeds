@@ -22,8 +22,8 @@
     <groupId>org.sakaiproject</groupId>
     <!-- EDIT ME: Sakai Version -->
     <!--<version>2.5.2</version>--> <!-- For Official Releases -->    
-    <version>M2</version> <!-- For 2.5.x --> 
-    <!--<version>2.6.0RC1-SNAPSHOT</version>--> <!-- For TRUNK -->   
+    <!--<version>M2</version>--> <!-- For 2.5.x --> 
+    <version>2.6.0RC1-SNAPSHOT</version> <!-- For TRUNK -->   
   </parent>
   
 
@@ -159,6 +159,8 @@
     </dependency>
 
     <!-- Sakai -->
+    <!-- Pre K1 Sakai deps -->
+    <!--    
     <dependency>
       <groupId>org.sakaiproject.entitybroker</groupId>
       <artifactId>entitybroker-api</artifactId>
@@ -175,11 +177,7 @@
       <artifactId>sakai-util</artifactId>
       <version>${sakai.version}</version>
     </dependency>
-    <!--<dependency>
-      <groupId>org.sakaiproject</groupId>
-      <artifactId>generic-dao</artifactId>
-      <scope>provided</scope>
-    </dependency>-->
+    -->
     
     <!-- Apache Commons -->
     <dependency>
