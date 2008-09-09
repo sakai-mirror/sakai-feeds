@@ -15,7 +15,6 @@ public class SakaiXmlInputFilter extends FilterReader {
 		int c = in.read();
 		if(Character.isIdentifierIgnorable(c) 
 			|| (c >= 0x00 && c <= 0x0F && c != 0x09 && c!= 0x10 && c!= 0x13)) {
-			System.out.println("Character "+c+" is ignorable. Returning: "+Character.getNumericValue(c));
 			return read();
 		}
 		return c;
