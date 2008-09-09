@@ -4,7 +4,7 @@
   <name>Sakai News Feeds</name>
   <groupId>org.sakaiproject</groupId>
   <artifactId>sakai-feeds</artifactId>
-  <version>M2</version><!-- newsfeeds.version --> 
+  <version>1.1.3-SNAPSHOT</version><!-- newsfeeds.version --> 
   
   <description>News Feeds is a feed aggregator tool developed for Sakai.</description>
   <url>http://bugs.sakaiproject.org/confluence/display/NFS</url>
@@ -136,9 +136,9 @@
   
   <!-- Source code repository location -->
   <scm>
-    <connection>scm:svn:https://source.sakaiproject.org/contrib/ufp/newsfeeds/branches/2.5.x</connection>
-    <developerConnection>scm:svn:https://source.sakaiproject.org/contrib/ufp/newsfeeds/branches/2.5.x</developerConnection>
-    <url>http://source.sakaiproject.org/viewsvn/ufp/newsfeeds/?root=contrib/branches/2.5.x?root=contrib</url>
+    <connection>scm:svn:https://source.sakaiproject.org/contrib/ufp/newsfeeds/trunk</connection>
+    <developerConnection>scm:svn:https://source.sakaiproject.org/contrib/ufp/newsfeeds/trunk</developerConnection>
+    <url>http://source.sakaiproject.org/viewsvn/ufp/newsfeeds/?root=contrib</url>
   </scm>
 
   
