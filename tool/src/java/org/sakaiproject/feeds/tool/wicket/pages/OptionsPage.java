@@ -216,20 +216,17 @@ public class OptionsPage extends BasePage {
 	
 	public static List<String> getViewFilterModes(){
 		List<String> modes = new ArrayList<String>();
-		modes.add(ViewOptions.VIEW_FILTER_ALL);
-		modes.add(ViewOptions.VIEW_FILTER_TODAY);
-		modes.add(ViewOptions.VIEW_FILTER_LAST_WEEK);
-		modes.add(ViewOptions.VIEW_FILTER_LAST_MONTH);
-		modes.add(ViewOptions.VIEW_FILTER_LAST_5);
-		modes.add(ViewOptions.VIEW_FILTER_LAST_10);
+		for(int i=0; i<ViewOptions.VIEW_FILTERS.length; i++) {
+			modes.add(ViewOptions.VIEW_FILTERS[i]);
+		}
 		return modes;		
 	}
 	
 	public static List<String> getViewDetailModes() {
 		List<String> modes = new ArrayList<String>();
-		modes.add(ViewOptions.VIEW_DETAIL_FULL_ENTRY);
-		modes.add(ViewOptions.VIEW_DETAIL_TITLE_ENTRY);
-		modes.add(ViewOptions.VIEW_DETAIL_NO_ENTRY);
+		for(int i=0; i<ViewOptions.VIEW_DETAILS.length; i++) {
+			modes.add(ViewOptions.VIEW_DETAILS[i]);
+		}
 		return modes;
 	}
 }
