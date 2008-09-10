@@ -95,15 +95,16 @@ public class FeedDataProvider implements IDataProvider {
 				Feed t = getFeed(urls[i]);
 				if(t == null) {
 					feed = null;
-					return null;
 				}else if(feed == null){
 					feed = t;
 				}
-				for(FeedEntry e : t.getEntries()){
-					e.setFeedTitle(t.getTitle());
-					e.setFeedLink(t.getLink());
-					e.setAggregated(true);
-					agEntries.add(e);
+				if(t != null) {
+					for(FeedEntry e : t.getEntries()){
+						e.setFeedTitle(t.getTitle());
+						e.setFeedLink(t.getLink());
+						e.setAggregated(true);
+						agEntries.add(e);
+					}
 				}
 			}
 			Collections.sort(agEntries, new FeedEntryComparator());
