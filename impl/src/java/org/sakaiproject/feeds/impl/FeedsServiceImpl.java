@@ -214,7 +214,12 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 			boolean alwaysCreateTool = m_serverConfigurationService.getBoolean(SAK_PROP_MIGRATE_ALWAYSCREATETOOL, false);
 			String sakaiDefaultUrl = m_serverConfigurationService.getString("news.feedURL", MIGRATE_DEFAULTFEEDURL);
 			String defaultFeedUrl = m_serverConfigurationService.getString(SAK_PROP_MIGRATE_DEFAULTFEEDURL, sakaiDefaultUrl);
-			int count = ToolMigration.convertFromOldNewsTool(getOnlineFeedInfo, alwaysCreateTool, defaultFeedUrl);
+			int count = 0;
+			try{
+				ToolMigration.convertFromOldNewsTool(getOnlineFeedInfo, alwaysCreateTool, defaultFeedUrl);
+			}catch(Exception e) {
+				LOG.error("Unable to convert from old news tool", e);
+			}
 			if(count > 0)
 				LOG.info("init(): feeds.convertOldNewsTool: converted old 'sakai.news' tools to new 'sakai.feeds' in "+count+" sites.");
 			else
@@ -232,8 +237,12 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 	private void initFeedFetcher() {
 		int maxCachedFeeds = m_serverConfigurationService.getInt(SAK_PROP_MAXCACHEDFEEDS, 100);
 		int cacheTimeInMin = m_serverConfigurationService.getInt(SAK_PROP_CACHETIMEINMIN, 15);
+		int feedsTimeout = m_serverConfigurationService.getInt(SAK_PROP_TIMEOUT, 30000);
 		feedInfoCache = new SakaiFeedFetcherCache(maxCachedFeeds, cacheTimeInMin * 60 * 1000L);
-		feedFetcherAuth = new SakaiFeedFetcher(feedInfoCache, 30000, m_serverConfigurationService.getBoolean(SAK_PROP_IGNORECERTERR, true));
+		feedFetcherAuth = new SakaiFeedFetcher(
+				feedInfoCache, 
+				feedsTimeout, 
+				m_serverConfigurationService.getBoolean(SAK_PROP_IGNORECERTERR, true));
 		feedFetcherAuth.setUsingDeltaEncoding(false);
 		feedFetcherAuth.setUserAgent("SakaiFeeds");
 		feedCredentialSupplier = new FeedCredentialSupplier();
@@ -551,13 +560,15 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 			LOG.warn("Unable to save view options for user "+userId, e);
 			return;
 		}
-		try{
-			ResourcePropertiesEdit props = prefsEdit.getPropertiesEdit(PREFS_VIEWOPTIONS);
-			props.addProperty(PREFS_PROP_VIEWDETAIL, viewOptions.getViewDetail());
-			props.addProperty(PREFS_PROP_VIEWFILTER, viewOptions.getViewFilter());
-		}catch(Exception e){	
-			if(prefsEdit != null)
-				m_preferencesService.cancel(prefsEdit);
+		if(prefsEdit != null) {
+			try{
+				ResourcePropertiesEdit props = prefsEdit.getPropertiesEdit(PREFS_VIEWOPTIONS);
+				props.addProperty(PREFS_PROP_VIEWDETAIL, viewOptions.getViewDetail());
+				props.addProperty(PREFS_PROP_VIEWFILTER, viewOptions.getViewFilter());
+			}catch(Exception e){	
+				if(prefsEdit != null)
+					m_preferencesService.cancel(prefsEdit);
+			}
 		}
 		m_preferencesService.commit(prefsEdit);
 	}
@@ -1020,10 +1031,6 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 		return m_serverConfigurationService.getServerUrl() + "/direct";
 	}
 	
-	private String getInternalFeedUrl(EntityReference reference) {
-		return getInternalFeedUrlPrefix() + reference.toString();
-	}
-	
 	private boolean isInternalFeed(String feedUrl) {
 		String internalFeedUrlPrefix = getInternalFeedUrlPrefix();
 		if(feedUrl.startsWith(internalFeedUrlPrefix)){
@@ -1130,7 +1137,7 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 		HttpState httpState = null;
 		if(o == null){
 			httpState = new HttpState();
-		}else if(o != null && o instanceof HttpState){
+		}else if(o instanceof HttpState){
 			httpState = (HttpState) o;
 		}
 		

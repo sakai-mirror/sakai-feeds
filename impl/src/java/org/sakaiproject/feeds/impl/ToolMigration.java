@@ -3,6 +3,7 @@ package org.sakaiproject.feeds.impl;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -32,9 +33,11 @@ public class ToolMigration {
 	
 	private static FeedsService	m_feedsService		= (FeedsService) ComponentManager.get(FeedsService.class);
 
-	public static int convertFromOldNewsTool(boolean getOnlineInfo, boolean alwaysCreateTool, String defaultFeedUrl) {
+	public static int convertFromOldNewsTool(boolean getOnlineInfo, boolean alwaysCreateTool, String defaultFeedUrl) throws SQLException {
 		int siteCount = 0;
 		Connection c = null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
 
 		// establish an admin session
 		Session sakaiSession = SessionManager.getCurrentSession();
@@ -46,11 +49,11 @@ public class ToolMigration {
 		
 		try{
 			c = SqlService.borrowConnection();
-			PreparedStatement ps = c.prepareStatement("select distinct(ST.SITE_ID) " +
+			ps = c.prepareStatement("select distinct(ST.SITE_ID) " +
 					"from SAKAI_SITE_TOOL ST " +
 					"where REGISTRATION = ?");
 			ps.setString(1, TOOLID_NEWS);
-			ResultSet rs = ps.executeQuery();
+			rs = ps.executeQuery();
 			while (rs.next()){
 				String siteId = rs.getString("ST.SITE_ID");
 				Site site = getSite(siteId, false);
@@ -138,7 +141,17 @@ public class ToolMigration {
 		}catch(Exception e){
 			LOG.error("Unable to retrieve list of placed tools with id 'sakai.news'. Conversion aborted.", e);
 		}finally{
-			if(c != null) SqlService.returnConnection(c);
+			try{
+				if(rs != null)
+					rs.close();
+			}finally{
+				try{
+					if(ps != null)
+						ps.close();
+				}finally{
+					SqlService.returnConnection(c);
+				}
+			} 
 			// restore previous session
 			sakaiSession.setUserId(currentUserId);
 			sakaiSession.setUserEid(currentUserEid);

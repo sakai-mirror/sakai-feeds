@@ -62,6 +62,7 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 		// configure connection manager
 		connectionManager = new MultiThreadedHttpConnectionManager();
 		connectionManager.getParams().setConnectionTimeout(timeout);
+		connectionManager.getParams().setSoTimeout(timeout);
 
 		// ignore SSL certificate errors
 		if(ignoreCertificateErrors) {
@@ -433,16 +434,6 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 		        stream.close();
 		    }
 		}
-	}
-
-	private static String unEscapeHtml(String value) {
-		if (value == null) return "";
-		if (value.equals("")) return "";
-		String unescaped = value.replaceAll("&lt;", "<");
-		unescaped = unescaped.replaceAll("&gt;", ">");
-		unescaped = unescaped.replaceAll("&amp;", "&");
-		unescaped = unescaped.replaceAll("&quot;", "\"");
-		return unescaped;
 	}
 
 	private SyndFeed getFeed(SyndFeedInfo syndFeedInfo, String urlStr, HttpMethod method, int statusCode) throws IOException, HttpException, FetcherException, FeedException {
