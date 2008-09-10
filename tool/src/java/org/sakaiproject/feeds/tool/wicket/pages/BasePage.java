@@ -5,6 +5,7 @@ import org.apache.wicket.markup.html.IHeaderContributor;
 import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.sakaiproject.component.cover.ServerConfigurationService;
 import org.sakaiproject.site.cover.SiteService;
@@ -53,5 +54,9 @@ public class BasePage  extends WebPage implements IHeaderContributor {
 	
 	protected Label newResourceLabel(String id, Component component) {
 		return new Label(id, new StringResourceModel(id, component, null));
+	}
+	
+	public String getResourceModel(String resourceKey, IModel model) {
+		return new StringResourceModel(resourceKey, this, model).getString();
 	}
 }
