@@ -350,12 +350,9 @@ public class FeedsPanel extends Panel {
 
 	public List<String> getViewFilterModes(){
 		List<String> modes = new ArrayList<String>();
-		modes.add(ViewOptions.VIEW_FILTER_ALL);
-		modes.add(ViewOptions.VIEW_FILTER_TODAY);
-		modes.add(ViewOptions.VIEW_FILTER_LAST_WEEK);
-		modes.add(ViewOptions.VIEW_FILTER_LAST_MONTH);
-		modes.add(ViewOptions.VIEW_FILTER_LAST_5);
-		modes.add(ViewOptions.VIEW_FILTER_LAST_10);
+		for(int i=0; i<ViewOptions.VIEW_FILTERS.length; i++) {
+			modes.add(ViewOptions.VIEW_FILTERS[i]);
+		}
 		return modes;		
 	}
 	

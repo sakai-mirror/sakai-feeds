@@ -205,6 +205,18 @@ public class FeedDataProvider implements IDataProvider {
 					}else if(ViewOptions.VIEW_FILTER_LAST_10.equals(viewDetail)){
 						for(int i =0; i< Math.min(10, temp.size()); i++)
 							entries.add(temp.get(i));
+					
+					}else if(ViewOptions.VIEW_FILTER_LAST_15.equals(viewDetail)){
+						for(int i =0; i< Math.min(15, temp.size()); i++)
+							entries.add(temp.get(i));
+					
+					}else if(ViewOptions.VIEW_FILTER_LAST_20.equals(viewDetail)){
+						for(int i =0; i< Math.min(20, temp.size()); i++)
+							entries.add(temp.get(i));
+					
+					}else if(ViewOptions.VIEW_FILTER_LAST_25.equals(viewDetail)){
+						for(int i =0; i< Math.min(25, temp.size()); i++)
+							entries.add(temp.get(i));
 						
 					}else if(ViewOptions.VIEW_FILTER_TODAY.equals(viewDetail)){
 						Calendar cal = Calendar.getInstance();
@@ -223,6 +235,21 @@ public class FeedDataProvider implements IDataProvider {
 					}else if(ViewOptions.VIEW_FILTER_LAST_WEEK.equals(viewDetail)){
 						Calendar cal = Calendar.getInstance();
 						cal.add(Calendar.DAY_OF_WEEK, -7);
+						cal.set(Calendar.HOUR_OF_DAY, 0);
+						cal.set(Calendar.MINUTE, 0);
+						cal.set(Calendar.SECOND, 0);
+						cal.set(Calendar.MILLISECOND, 0);
+						Date aWeekAgo = cal.getTime(); 
+						for(int i =0; i< temp.size(); i++){
+							FeedEntry e = temp.get(i);
+							Date feedDate = e.getPublishedDate();
+							if(feedDate == null || feedDate.after(aWeekAgo))
+								entries.add(e);
+						}
+						
+					}else if(ViewOptions.VIEW_FILTER_LAST_2WEEKS.equals(viewDetail)){
+						Calendar cal = Calendar.getInstance();
+						cal.add(Calendar.DAY_OF_WEEK, -14);
 						cal.set(Calendar.HOUR_OF_DAY, 0);
 						cal.set(Calendar.MINUTE, 0);
 						cal.set(Calendar.SECOND, 0);
