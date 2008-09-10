@@ -48,6 +48,7 @@ public interface FeedsService {
 	public static final String	SAK_PROP_SHOW_CANCEL_IMG			= "feeds.feedLoadCancel.image";
 
 	public static final String	SAK_PROP_CACHINGTHREADS				= "feeds.cachingThreads";
+	public static final String	SAK_PROP_TIMEOUT					= "feeds.timeoutMs";
 
 	public static final String	SESSION_ATTR_CREDENTIALS			= "feedCredentials";
 	public static final String	SESSION_ATTR_HTTPSTATE				= "httpState";

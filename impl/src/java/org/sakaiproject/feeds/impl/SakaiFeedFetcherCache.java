@@ -205,7 +205,11 @@ public class SakaiFeedFetcherCache implements FeedFetcherCache, Serializable {
 
 		@Override
 		public boolean equals(Object obj) {
-			return hashCode() == obj.hashCode();
+			if(obj == null) {
+				return false;
+			}else{
+				return hashCode() == obj.hashCode();
+			}
 		}
 		
 	}
