@@ -83,16 +83,20 @@ public abstract class AjaxParallelLazyFeedLoadPanel extends Panel implements Obs
 		
 		// cache feed...
 		componentReady = false;
-		if(subscription != null && !subscription.isAggregateMultipleFeeds() && subscription.getUrl() != null && !subscription.getUrl().trim().equals("")) {
-			feedsCount = 1;
-			feedsCached = 0;
-			cacheFeed(subscription.getUrl(), forceExternalCheck);
-		}else if(subscription.isAggregateMultipleFeeds()) {
-			String[] urls = subscription.getUrls();
-			feedsCount = urls.length;
-			feedsCached = 0;
-			for(int i=0; i<urls.length; i++) {
-				cacheFeed(urls[i], forceExternalCheck);
+		if(subscription != null) {
+			if(!subscription.isAggregateMultipleFeeds() && subscription.getUrl() != null && !subscription.getUrl().trim().equals("")) {
+				feedsCount = 1;
+				feedsCached = 0;
+				cacheFeed(subscription.getUrl(), forceExternalCheck);
+			}else if(subscription.isAggregateMultipleFeeds()) {
+				String[] urls = subscription.getUrls();
+				feedsCount = urls.length;
+				feedsCached = 0;
+				for(int i=0; i<urls.length; i++) {
+					cacheFeed(urls[i], forceExternalCheck);
+				}
+			}else{
+				componentReady = true;
 			}
 		}else{
 			componentReady = true;
