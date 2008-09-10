@@ -15,6 +15,7 @@ import javax.net.ssl.SSLHandshakeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.wicket.injection.web.InjectorHolder;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.repeater.data.IDataProvider;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
@@ -159,7 +160,12 @@ public class FeedDataProvider implements IDataProvider {
 		try{
 			errorMessage = new StringResourceModel(key, null, new Model(new FeedUrl(url))).getString();
 		}catch(Exception e1) {
-			errorMessage = key;
+			try{
+				errorMessage = new StringResourceModel(key, new Label("fakeid"), new Model(new FeedUrl(url))).getString();
+			}catch(Exception e2) {
+				LOG.warn("Unable to get text for bundle key '"+key+"'");
+				errorMessage = key;
+			}
 		}
 		setErrorMessage(errorMessage);
 		LOG.warn(errorMessage, e);
@@ -167,7 +173,7 @@ public class FeedDataProvider implements IDataProvider {
 	
 	class FeedUrl implements Serializable  {
 		private static final long	serialVersionUID	= 1L;
-		private String feedUrl = null;
+		private String feedUrl = "";
 
 		public FeedUrl(String feedUrl) {
 			this.feedUrl = feedUrl;

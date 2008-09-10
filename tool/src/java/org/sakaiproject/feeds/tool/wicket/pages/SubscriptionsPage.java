@@ -567,7 +567,12 @@ public class SubscriptionsPage extends BasePage {
 		try{
 			errorMessage = new StringResourceModel(key, this, new Model(new FeedUrl(url))).getString();
 		}catch(Exception e1) {
-			errorMessage = key;
+			try{
+				errorMessage = new StringResourceModel(key, new Label("fakeid"), new Model(new FeedUrl(url))).getString();
+			}catch(Exception e2) {
+				LOG.warn("Unable to get text for bundle key '"+key+"'");
+				errorMessage = key;
+			}
 		}
 		feedback.error(errorMessage);		
 		LOG.warn(errorMessage, e);
@@ -575,7 +580,7 @@ public class SubscriptionsPage extends BasePage {
 	
 	class FeedUrl implements Serializable  {
 		private static final long	serialVersionUID	= 1L;
-		private String feedUrl = null;
+		private String feedUrl = "";
 
 		public FeedUrl(String feedUrl) {
 			this.feedUrl = feedUrl;

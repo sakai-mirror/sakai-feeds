@@ -52,7 +52,7 @@ public class FeedsPanel extends Panel {
 		super(id);
 		
 		// do necessary client setup (feed auth, cookies, ...)
-		setupClient();	
+		setupClient();
 		
 		// log read event
 		doLogReadEvent(forceExternalCheck);
