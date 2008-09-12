@@ -69,6 +69,7 @@ import org.sakaiproject.feeds.tool.wicket.components.AjaxIndicator;
 import org.sakaiproject.feeds.tool.wicket.components.CollapsiblePanel;
 import org.sakaiproject.feeds.tool.wicket.components.ExternalImage;
 import org.sakaiproject.feeds.tool.wicket.dataproviders.SubscriptionsDataProvider;
+import org.sakaiproject.feeds.tool.wicket.model.FeedErrorModel;
 import org.sakaiproject.feeds.tool.wicket.panels.CSSFeedbackPanel;
 
 
@@ -87,6 +88,8 @@ public class SubscriptionsPage extends BasePage {
 	private String						username					= "";
 	private String						password					= "";
 	private boolean						rememberMe					= true;
+	private boolean						validateFeedSubscription	= true;
+	private boolean						validateImportedFeeds		= true;
 	private boolean						aggregate					= false;
 	private AggregateFeedOptions		aggregateOptions			= null;
 
@@ -96,13 +99,13 @@ public class SubscriptionsPage extends BasePage {
 	
 	private Set<FeedSubscription>		previousInstitutionalSubscriptions = null;
 	private Set<FeedSubscription>		previousUserSubscriptions 	= null;
-	
+
+	private final Component 			component 					= this;
 	private final WebMarkupContainer 	otherFeedsHolder;
 	
 	private transient OpmlUtil 			opmlUtil 					= new OpmlUtil();
 
 	public SubscriptionsPage() {
-		final Component component = this;
 		
 		// credentials
 		if(savedCredentials == null)
@@ -151,6 +154,9 @@ public class SubscriptionsPage extends BasePage {
 		
 		final FormComponent url = new TextField("newSubscribedUrl");
 		otherFeedsHolder.add(url);
+		
+		final CheckBox validateFeedSubscriptionChkBox = new CheckBox("validateFeedSubscription");
+		otherFeedsHolder.add(validateFeedSubscriptionChkBox);
 
 		// other Auth details
 		final WebMarkupContainer otherAuthDetails = new WebMarkupContainer("other.auth.details");
@@ -175,7 +181,7 @@ public class SubscriptionsPage extends BasePage {
 			protected void onSubmit(AjaxRequestTarget target, Form form) {
 				FeedSubscription subscription = null;
 				try{
-					subscription = urlToFeedSubscription(getNewSubscribedUrl(), getUsername(), getPassword());
+					subscription = urlToFeedSubscription(getNewSubscribedUrl(), getUsername(), getPassword(), isValidateFeedSubscription());
 					otherAuthDetails.setVisible(false);
 					otherAuthRememberMe.setVisible(false);
 				}catch(FeedAuthenticationException e){
@@ -265,7 +271,9 @@ public class SubscriptionsPage extends BasePage {
 		int contentUploadMax = ServerConfigurationService.getInt("content.upload.max", 20);
 		options.setMaxSize(Bytes.megabytes(contentUploadMax));
 		final AjaxIndicator importIndicator = new AjaxIndicator("importIndicator");
-		importExportPanel.add(importIndicator);
+		importExportPanel.add(importIndicator);		
+		final CheckBox validateImportedFeedsChkBox = new CheckBox("validateImportedFeeds");
+		importExportPanel.add(validateImportedFeedsChkBox);
 		Button importBt = new Button("import") {
 			private static final long	serialVersionUID	= 1L;
 
@@ -489,6 +497,22 @@ public class SubscriptionsPage extends BasePage {
 		this.rememberMe = rememberMe;
 	}
 
+	public boolean isValidateFeedSubscription() {
+		return validateFeedSubscription;
+	}
+
+	public void setValidateFeedSubscription(boolean validateFeeds) {
+		this.validateFeedSubscription = validateFeeds;
+	}
+
+	public boolean isValidateImportedFeeds() {
+		return validateImportedFeeds;
+	}
+
+	public void setValidateImportedFeeds(boolean validateImportedFeeds) {
+		this.validateImportedFeeds = validateImportedFeeds;
+	}
+
 	private boolean isAggregate() {
 		return aggregate;
 	}
@@ -501,7 +525,7 @@ public class SubscriptionsPage extends BasePage {
 		return new StringResourceModel("aggregate.title", this, null).getString();
 	}
 
-	private FeedSubscription urlToFeedSubscription(String url, String username, String password) throws FeedAuthenticationException {
+	private FeedSubscription urlToFeedSubscription(String url, String username, String password, boolean validate) throws FeedAuthenticationException {
 		if(url == null || url.trim().equals(""))
 			return null;
 		FeedSubscription feedSubscription = null;
@@ -510,7 +534,7 @@ public class SubscriptionsPage extends BasePage {
 			if(username != null && !username.trim().equals("")){
 				facade.getFeedsService().addCredentials(uri, authenticationRealm, username, password, authenticationScheme);
 			}
-			feedSubscription = facade.getFeedsService().getFeedSubscriptionFromFeedUrl(url, true);
+			feedSubscription = facade.getFeedsService().getFeedSubscriptionFromFeedUrl(url, validate);
 			if(isRememberMe() && username != null && !username.trim().equals("")){
 				SavedCredentials newCrd = facade.getFeedsService().newSavedCredentials(uri, authenticationRealm, username, password, authenticationScheme);
 				// remove overrided credentials
@@ -557,45 +581,27 @@ public class SubscriptionsPage extends BasePage {
 	
 	private Set<FeedSubscription> getDeepCopy(Set<FeedSubscription> set) {
 		Set<FeedSubscription> result = new HashSet<FeedSubscription>();
-		for(FeedSubscription fs : set)
+		for(FeedSubscription fs : set) {
 			try{
 				result.add((FeedSubscription) fs.clone());
 			}catch(CloneNotSupportedException e){
 				LOG.warn("Ops... FeedSubscription is not clonable?!?", e);
 			}
+		}
 		return result;
 	}
     
 	private void setError(String key, String url, Exception e) {
+		FeedErrorModel errorModel = new FeedErrorModel(key, url, e);
 		String errorMessage = null;
 		try{
-			errorMessage = new StringResourceModel(key, this, new Model(new FeedUrl(url))).getString();
-		}catch(Exception e1) {
-			try{
-				errorMessage = new StringResourceModel(key, new Label("fakeid"), new Model(new FeedUrl(url))).getString();
-			}catch(Exception e2) {
-				LOG.warn("Unable to get text for bundle key '"+key+"'");
-				errorMessage = key;
-			}
+			errorMessage = new StringResourceModel(errorModel.getErrorMessageKey(), this, new Model(errorModel)).getString();
+		}catch(Exception e1){
+			LOG.warn("Unable to get text for bundle key '" + errorModel.getErrorMessageKey() + "'");
+			errorMessage = errorModel.getErrorMessageKey();
 		}
-		feedback.error(errorMessage);		
-		LOG.warn(errorMessage, e);
-	}
-	
-	static class FeedUrl implements Serializable  {
-		private static final long	serialVersionUID	= 1L;
-		private String feedUrl = "";
-
-		public FeedUrl(String feedUrl) {
-			this.feedUrl = feedUrl;
-		}
-		
-		public String getUrl() {
-			return feedUrl;
-		}
-
-		public void detach() {			
-		}		
+		feedback.error(errorMessage);
+		LOG.warn(errorMessage, errorModel.getException());
 	}
     
 	
@@ -692,7 +698,7 @@ public class SubscriptionsPage extends BasePage {
 		private Set<FeedSubscription> subscribeToFeedUrl(String feedUrl) {
 			Set<FeedSubscription> subscriptions = new HashSet<FeedSubscription>();
 			try{
-				FeedSubscription fs = urlToFeedSubscription(feedUrl, null, null);
+				FeedSubscription fs = urlToFeedSubscription(feedUrl, null, null, isValidateImportedFeeds());
 				if(fs != null) {
 					subscriptions.add(fs);
 					fs.setSelected(true);

@@ -2,6 +2,8 @@ package org.sakaiproject.feeds.tool.wicket;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.wicket.Component;
+import org.apache.wicket.markup.html.WebComponent;
 import org.apache.wicket.protocol.http.HttpSessionStore;
 import org.apache.wicket.protocol.http.WebApplication;
 import org.apache.wicket.session.ISessionStore;
@@ -45,7 +47,7 @@ public class FeedsApplication extends WebApplication {
 		return facade;
 	}
 
-	public void setFacade(SakaiFacade facade) {
+	public void setFacade(final SakaiFacade facade) {
 		this.facade = facade;
 	}
 

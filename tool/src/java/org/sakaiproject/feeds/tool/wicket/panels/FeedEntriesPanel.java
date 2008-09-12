@@ -31,6 +31,7 @@ import org.sakaiproject.feeds.api.FeedEntryEnclosure;
 import org.sakaiproject.feeds.api.FeedSubscription;
 import org.sakaiproject.feeds.api.ViewOptions;
 import org.sakaiproject.feeds.tool.wicket.dataproviders.FeedDataProvider;
+import org.sakaiproject.feeds.tool.wicket.model.FeedErrorModel;
 import org.sakaiproject.util.Validator;
 
 
@@ -279,10 +280,19 @@ public class FeedEntriesPanel extends Panel {
 		
 		// error messages
 		feedback = new CSSFeedbackPanel("messages");
-		feedEntryHolder.add(feedback);		
-		String errorMessage = feedDataProvider.getErrorMessage();
-		if(errorMessage != null)
+		feedEntryHolder.add(feedback);	
+		FeedErrorModel errorModel = feedDataProvider.getFeedErrorModel();
+		if(errorModel != null) {
+			String errorMessage = null;
+			try{
+				errorMessage = new StringResourceModel(errorModel.getErrorMessageKey(), this, new Model(errorModel)).getString();
+			}catch(Exception e1) {
+				LOG.warn("Unable to get text for bundle key '"+errorModel.getErrorMessageKey()+"'");
+				errorMessage = errorModel.getErrorMessageKey();
+			}
 			error(errorMessage);
+			LOG.warn(errorMessage, errorModel.getException());			
+		}
 		AuthenticationPanel authPanel = new AuthenticationPanel("authPanel", feedDataProvider, feedDataProvider.getAffectedFeed()) {
 			private static final long	serialVersionUID	= 1L;
 			@Override
@@ -320,15 +330,33 @@ public class FeedEntriesPanel extends Panel {
 	public String getJs() {
 		StringBuilder js = new StringBuilder();
 		
-		//update feed count
+		// update feed count
 		int entryCount = 0;
 		try{
 			entryCount = getFeedDataProvider().getFeedEntries().size();			
-		}catch(Exception e){
+		}catch(RuntimeException e){
 			entryCount = 0;
 		}
 		js.append("$(\"#" + feedEntryHolder.getMarkupId() + "\").parent().parent().parent().find(\".feedCount\").html(\" ( " + entryCount + " )\");");
 
+		// update feed url
+		String feedIconUrl = getFeedDataProvider().getFeed().getImageUrl();
+		if(feedIconUrl != null && !"".equals(feedIconUrl)) {
+			js.append("$(\"#" + feedEntryHolder.getMarkupId() + "\").parent().parent().parent().find(\".feedIconUrl\").attr(\"src\", \" " + feedIconUrl.trim() + "\");");			
+		}
+		
+		// update feed title
+		String feedTitle = getFeedDataProvider().getFeed().getTitle();
+		if(feedTitle != null && !"".equals(feedTitle)) {
+			js.append("$(\"#" + feedEntryHolder.getMarkupId() + "\").parent().parent().parent().find(\".titleLinkLabel\").html(\" " + feedTitle.trim() + "\");");			
+		}
+		
+		// update feed title
+		String feedDescription = getFeedDataProvider().getFeed().getDescription();
+		if(feedDescription != null && !"".equals(feedDescription)) {
+			js.append("$(\"#" + feedEntryHolder.getMarkupId() + "\").parent().parent().parent().find(\".feedTitle\").attr(\"title\", \" " + feedDescription.trim() + "\");");			
+		}
+		
 		// adjust frame height
 		js.append("setMainFrameHeightNoScroll(window.name);");
 		
