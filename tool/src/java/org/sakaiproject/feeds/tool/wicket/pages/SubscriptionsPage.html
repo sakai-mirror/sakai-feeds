@@ -56,6 +56,12 @@
 							</span>						
 						</td>
 					</tr>
+                    <tr>
+                        <td></td>
+                        <td colspan="2">
+                            <span class="shorttext"><input wicket:id="validateFeedSubscription" type="checkbox" /><wicket:message key="other.validateFeedSubscription">[other.validateFeedSubscription]</wicket:message></span>
+                        </td>
+                    </tr>
 					<tr wicket:id="other.auth.details">
 						<td><wicket:message key="auth.details">[auth.details]</wicket:message></td>
 						<td colspan="2">
@@ -118,6 +124,7 @@
 		        		<input type="submit" wicket:id="import" wicket:message="value:import"/>
 		        		<img wicket:id="importIndicator"/>
 		        	</div>
+		        	<span class="shorttext"><input wicket:id="validateImportedFeeds" type="checkbox" /><wicket:message key="imp.validateImportedFeeds">[imp.validateImportedFeeds]</wicket:message></span>
 		     	</fieldset>
 	     	</div>
 			<h4><wicket:message key="exp.title">[exp.title]</wicket:message></h4>

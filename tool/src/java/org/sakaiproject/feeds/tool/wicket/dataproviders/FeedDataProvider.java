@@ -30,6 +30,7 @@ import org.sakaiproject.feeds.api.exception.FeedAuthenticationException;
 import org.sakaiproject.feeds.api.exception.FetcherException;
 import org.sakaiproject.feeds.api.exception.InvalidFeedException;
 import org.sakaiproject.feeds.tool.facade.SakaiFacade;
+import org.sakaiproject.feeds.tool.wicket.model.FeedErrorModel;
 
 
 public final class FeedDataProvider implements IDataProvider {
@@ -45,7 +46,7 @@ public final class FeedDataProvider implements IDataProvider {
 	private FeedSubscription 		subscription;
 	private Feed 					feed;
 	private List<FeedEntry>			entries;
-	private String					errorMessage;
+	private FeedErrorModel			feedErrorModel;
 	private boolean					forceExternalCheck;
 
 	public FeedDataProvider(FeedSubscription subscription, String viewDetail, Boolean forceExternalCheck) {
@@ -108,9 +109,11 @@ public final class FeedDataProvider implements IDataProvider {
 				}
 			}
 			Collections.sort(agEntries, new FeedEntryComparator());
-			feed.setTitle("All");
-			feed.setLink("#");
-			feed.setEntries(agEntries);
+			if(feed != null) {
+				feed.setTitle("All");
+				feed.setLink("#");
+				feed.setEntries(agEntries);
+			}
 		}
 		return feed;
 	}
@@ -122,7 +125,7 @@ public final class FeedDataProvider implements IDataProvider {
 			_feed = facade.getFeedsService().getFeed(reference, forceExternalCheck);
 			requireAuthentication = false;
 			entries = null;
-			setErrorMessage(null);
+			setFeedErrorModel(null);
 		}catch(FeedAuthenticationException e){
 			requireAuthentication = true;
 			affectedFeed = url;
@@ -130,62 +133,30 @@ public final class FeedDataProvider implements IDataProvider {
 			authenticationScheme = e.getScheme();
 			_feed = null;
 		}catch(IllegalArgumentException e){
-			setError("err.subscribing", url, e);
+			setFeedErrorModel(new FeedErrorModel("err.subscribing", url, e));
 			_feed = null;
 		}catch(MalformedURLException e){
-			setError("err.malformed", url, e);
+			setFeedErrorModel(new FeedErrorModel("err.malformed", url, e));
 			_feed = null;
 		}catch(SSLHandshakeException e){
-			setError("err.ssl", url, e);
+			setFeedErrorModel(new FeedErrorModel("err.ssl", url, e));
 			_feed = null;
 		}catch(IOException e){
-			setError("err.io", url, e);
+			setFeedErrorModel(new FeedErrorModel("err.io", url, e));
 			_feed = null;
 		}catch(InvalidFeedException e){
-			setError("err.invalid_feed", url, e);
+			setFeedErrorModel(new FeedErrorModel("err.invalid_feed", url, e));
 			_feed = null;
 		}catch(FetcherException e){
 			if(e.getHttpCode() == 403)
-				setError("err.forbidden", url, e);
+				setFeedErrorModel(new FeedErrorModel("err.forbidden", url, e));
 			else
-				setError("err.no_fetch", url, e);
+				setFeedErrorModel(new FeedErrorModel("err.no_fetch", url, e));
 		}catch(Exception e){
-			setError("err.subscribing", url, e);
+			setFeedErrorModel(new FeedErrorModel("err.subscribing", url, e));
 			_feed = null;
 		}
 		return _feed;
-	}
-    
-	private void setError(String key, String url, Exception e) {
-		String errorMessage = null;
-		try{
-			errorMessage = new StringResourceModel(key, null, new Model(new FeedUrl(url))).getString();
-		}catch(Exception e1) {
-			try{
-				errorMessage = new StringResourceModel(key, new Label("fakeid"), new Model(new FeedUrl(url))).getString();
-			}catch(Exception e2) {
-				LOG.warn("Unable to get text for bundle key '"+key+"'");
-				errorMessage = key;
-			}
-		}
-		setErrorMessage(errorMessage);
-		LOG.warn(errorMessage, e);
-	}
-	
-	static class FeedUrl implements Serializable  {
-		private static final long	serialVersionUID	= 1L;
-		private String feedUrl = "";
-
-		public FeedUrl(String feedUrl) {
-			this.feedUrl = feedUrl;
-		}
-		
-		public String getUrl() {
-			return feedUrl;
-		}
-
-		public void detach() {			
-		}		
 	}
 
 	public List<FeedEntry> getFeedEntries() {
@@ -313,12 +284,12 @@ public final class FeedDataProvider implements IDataProvider {
 		return authenticationScheme;
 	}
 
-	public String getErrorMessage() {
-		return errorMessage;
+	public FeedErrorModel getFeedErrorModel() {
+		return feedErrorModel;
 	}
 
-	public void setErrorMessage(String errorMessage) {
-		this.errorMessage = errorMessage;
+	public void setFeedErrorModel(FeedErrorModel feedErrorModel) {
+		this.feedErrorModel = feedErrorModel;
 	}
 
 	public void detach() {
