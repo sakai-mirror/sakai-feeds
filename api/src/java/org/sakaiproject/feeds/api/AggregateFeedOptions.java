@@ -13,10 +13,18 @@ public class AggregateFeedOptions implements Serializable {
 	private int					titleDisplayOption		= TITLE_DISPLAY_NONE;
 	private String				customTitle;
 
+	/**
+	 * Simple constructor.
+	 */
 	public AggregateFeedOptions() {
 	}
 
-	public AggregateFeedOptions(int titleDisplayOption, String customTitle) {
+	/**
+	 * Constructor specifying title display option and title, if appropriate.
+	 * @param titleDisplayOption One of TITLE_DISPLAY_DEFAULT, TITLE_DISPLAY_NONE, TITLE_DISPLAY_CUSTOM
+	 * @param customTitle Title to be displayed if titleDisplayOption = TITLE_DISPLAY_CUSTOM
+	 */
+	public AggregateFeedOptions(final int titleDisplayOption, final String customTitle) {
 		this.titleDisplayOption = titleDisplayOption;
 		this.customTitle = customTitle;
 	}
@@ -25,7 +33,7 @@ public class AggregateFeedOptions implements Serializable {
 		return titleDisplayOption;
 	}
 
-	public void setTitleDisplayOption(int titleDisplayOption) {
+	public void setTitleDisplayOption(final int titleDisplayOption) {
 		this.titleDisplayOption = titleDisplayOption;
 	}
 
@@ -33,7 +41,7 @@ public class AggregateFeedOptions implements Serializable {
 		return customTitle;
 	}
 
-	public void setCustomTitle(String customTitle) {
+	public void setCustomTitle(final String customTitle) {
 		this.customTitle = customTitle;
 	}
 

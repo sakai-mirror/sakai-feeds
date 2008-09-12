@@ -2,7 +2,7 @@ package org.sakaiproject.feeds.api;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
 import java.util.List;
 import java.util.Observer;
 import java.util.Properties;
@@ -133,7 +133,7 @@ public interface FeedsService {
 	public boolean isAbleToSaveCredentials();
 	
 	/** Create a new SavedCredentials object. */
-	public SavedCredentials newSavedCredentials(URL url, String realm, String username, String password, String scheme);
+	public SavedCredentials newSavedCredentials(URI uri, String realm, String username, String password, String scheme);
 	
 	/** Save feed saved credentials. */
 	public void setSavedCredentials(Set<SavedCredentials> savedCredentials);
@@ -163,7 +163,7 @@ public interface FeedsService {
 	public void cancelCacheFeed(String id);
 	
 	/** Add site credentials for a given user. */
-	public void addCredentials(URL url, String realm, String username, String password, String scheme);
+	public void addCredentials(URI uri, String realm, String username, String password, String scheme);
 	
 	/** Load site credentials for the actual session user. */
 	public void loadCredentials();

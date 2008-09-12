@@ -1,13 +1,13 @@
 package org.sakaiproject.feeds.api;
 
 import java.io.Serializable;
-import java.net.URL;
+import java.net.URI;
 
 
 public interface SavedCredentials extends Serializable {
 
-	public URL getUrl();
-	public void setUrl(URL url);
+	public URI getUri();
+	public void setUri(URI uri);
 
 	public String getUsername();
 	public void setUsername(String username);

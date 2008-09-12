@@ -7,13 +7,10 @@ import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
-import org.apache.wicket.ajax.markup.html.form.AjaxButton;
-import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.DropDownChoice;
-import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.IChoiceRenderer;
 import org.apache.wicket.markup.html.link.ExternalLink;
 import org.apache.wicket.markup.html.link.Link;
@@ -39,7 +36,7 @@ import org.sakaiproject.feeds.tool.wicket.dataproviders.FeedDataProvider;
 import org.sakaiproject.feeds.tool.wicket.dataproviders.SubscriptionsDataProvider;
 import org.sakaiproject.tool.api.Session;
 
-public class FeedsPanel extends Panel {
+public final class FeedsPanel extends Panel {
 	private static final long	serialVersionUID	= 1L;
 
 	@SpringBean

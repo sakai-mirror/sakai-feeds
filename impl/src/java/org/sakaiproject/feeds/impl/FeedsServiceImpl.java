@@ -2,7 +2,9 @@ package org.sakaiproject.feeds.impl;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
+import java.security.InvalidKeyException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,7 +20,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -265,31 +269,39 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 	}
 	
 	private String encryptData(String plain) {
+		String encryptedData = null;
 		try{
 			byte[] plainBytes = plain.getBytes();
 			cipher.init(Cipher.ENCRYPT_MODE, secretKey);
 			byte[] encrypted = cipher.doFinal(plainBytes);
-			return byteToHexString(encrypted);
+			encryptedData =  byteToHexString(encrypted);
 		}catch(Exception e){
 			LOG.error("Unable to encrypt feed password. Feed password will not be stored!", e);
 		}
-		return null;
+		return encryptedData;
 	}
 	
 	private String decryptData(String encrypted) {
+		String decryptedData = null;
 		try{
 			byte[] encryptedBytes = hexStringToByte(encrypted);
 			cipher.init(Cipher.DECRYPT_MODE, secretKey);
 			byte[] original = cipher.doFinal(encryptedBytes);
-			return new String(original);
-		}catch(Exception e){
-			LOG.warn("Unable to decrypt feed password. You may need to re-enter feed password.");
+			decryptedData =  new String(original);
+		}catch(InvalidKeyException e){
+			LOG.warn("Unable to decrypt feed password ("+e.getMessage()+" key). You may need to re-enter feed password.");
+		}catch(IllegalBlockSizeException e){
+			LOG.warn("Unable to decrypt feed password ("+e.getMessage()+"). You may need to re-enter feed password.");
+		}catch(BadPaddingException e){
+			LOG.warn("Unable to decrypt feed password ("+e.getMessage()+"). You may need to re-enter feed password.");
+		}catch(RuntimeException e){
+			LOG.warn("Unable to decrypt feed password ("+e.getMessage()+"). You may need to re-enter feed password.");
 		}
-		return null;
+		return decryptedData;
 	}
 
 	private String byteToHexString(byte buf[]) {
-		StringBuffer strbuf = new StringBuffer(buf.length * 2);
+		StringBuilder strbuf = new StringBuilder(buf.length * 2);
 		for(int i = 0; i < buf.length; i++){
 			if(((int) buf[i] & 0xff) < 0x10) strbuf.append("0");
 			strbuf.append(Long.toString((int) buf[i] & 0xff, 16));
@@ -334,6 +346,7 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 
 	public Set<FeedSubscription> getSubscribedFeeds(int mode) {
 		Set<FeedSubscription> subscriptions = new LinkedHashSet<FeedSubscription>();
+		Set<FeedSubscription> computedSubscriptions = new LinkedHashSet<FeedSubscription>();
 
 		Placement placement = ToolManager.getCurrentPlacement();
 		Properties config = placement.getPlacementConfig();
@@ -354,21 +367,24 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 		}
 		
 		if(mode == MODE_SUBSCRIBED && isAggregateFeeds()) {
-			return aggregateFeeds(subscriptions);
+			computedSubscriptions = aggregateFeeds(subscriptions);
 		}else {
 			Set<FeedSubscription> institutional = null;
 			switch(mode){
 				case MODE_SUBSCRIBED:
-					return orderFeedSubscriptions( subscriptions );
+					computedSubscriptions = orderFeedSubscriptions( subscriptions );
+					break;
 				case MODE_ALL_INSTITUTIONAL:
 					institutional = getInstitutionalFeeds();
-					return orderFeedSubscriptions( getInstitutionalMarked(institutional, subscriptions) );
+					computedSubscriptions = orderFeedSubscriptions( getInstitutionalMarked(institutional, subscriptions) );
+					break;
 				case MODE_ALL_NON_INSTITUTIONAL:
 					institutional = getInstitutionalFeeds();
-					return orderFeedSubscriptions( getSubscribedWithoutInstitutional(institutional, subscriptions) );
+					computedSubscriptions = orderFeedSubscriptions( getSubscribedWithoutInstitutional(institutional, subscriptions) );
+					break;
 			}
-			return orderFeedSubscriptions(subscriptions);
 		}
+		return computedSubscriptions;
 	}
 
 	private Set<FeedSubscription> getInstitutionalMarked(Set<FeedSubscription> institutional, Set<FeedSubscription> subscribed) {
@@ -605,7 +621,7 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 				if(!first) tmpStr += TC_PROP_LEVEL1_DELIMITER;
 				first = false;
 				
-				tmpStr += crd.getUrl();
+				tmpStr += crd.getUri();
 				tmpStr += TC_PROP_LEVEL2_DELIMITER;
 				tmpStr += crd.getRealm();
 				tmpStr += TC_PROP_LEVEL2_DELIMITER;
@@ -644,7 +660,7 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 						String[] fields = chsPair[i].split(TC_PROP_LEVEL2_DELIMITER);
 						if(fields[0] != null && !fields[0].trim().equals("")) {
 							SavedCredentials crd = new SavedCredentialsImpl();
-							crd.setUrl(new URL(fields[0]));
+							crd.setUri(new URI(fields[0]));
 							crd.setRealm(fields[1]);
 							crd.setUsername(fields[2]);
 							String password = decryptData(fields[3]);
@@ -652,12 +668,10 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 							if(fields.length >= 5) {
 								crd.setScheme(fields[4]);
 							}
-							if(crd.getUrl() != null && password != null){
+							if(crd.getUri() != null && password != null){
 								savedCredentials.add(crd);
 							}
 						}
-					}catch(MalformedURLException e){
-						LOG.warn("Saved credentials contains an invalid URL.", e);
 					}catch(Exception e){
 						LOG.warn("Invalid saved credentials.", e);
 					}
@@ -667,8 +681,8 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 		return savedCredentials;
 	}
 	
-	public SavedCredentials newSavedCredentials(URL url, String realm, String username, String password, String scheme) {
-		return new SavedCredentialsImpl(url, realm, username, password, scheme);
+	public SavedCredentials newSavedCredentials(URI uri, String realm, String username, String password, String scheme) {
+		return new SavedCredentialsImpl(uri, realm, username, password, scheme);
 	}
 
 	public Set<FeedSubscription> getInstitutionalFeeds() {
@@ -699,7 +713,7 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 			try{
 				currentSite = m_siteService.getSite(ToolManager.getCurrentPlacement().getContext());
 			}catch(IdUnusedException e1){
-				// site is null
+				currentSite = null;
 			}
 			User currentUser = m_userDirectoryService.getCurrentUser();
 			Set<String> additional = m_institutionalFeedProvider.getAdditionalInstitutionalFeeds(currentSite, currentUser);
@@ -719,16 +733,16 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 		return userInstitutionalFeeds;
 	}
 
-	public void addCredentials(URL url, String realm, String username, String password, String scheme) {
+	public void addCredentials(URI uri, String realm, String username, String password, String scheme) {
 		Credentials credentials = new UsernamePasswordRealmSchemeCredentials(username, password, realm, scheme);
-		feedFetcherAuth.addCredentials(url, credentials);
+		feedFetcherAuth.addCredentials(uri, credentials);
 	}
 	
 	public void loadCredentials() {
 		Set<SavedCredentials> saved = getSavedCredentials();
 		for(SavedCredentials crd : saved){
 			Credentials credentials = new UsernamePasswordRealmSchemeCredentials(crd.getUsername(), crd.getPassword(), crd.getRealm(), crd.getScheme());
-			feedFetcherAuth.addCredentials(crd.getUrl(), credentials);
+			feedFetcherAuth.addCredentials(crd.getUri(), credentials);
 		}
 	}
 
@@ -737,10 +751,10 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 		if(reference instanceof IdEntityReference){
 			IdEntityReference idEntityRef = (IdEntityReference) reference;
 			if(InternalFeedEntityProvider.ENTITY_PREFIX.equals(idEntityRef.prefix)){
-				if(m_internalFeedStorageProvider != null)
-					return m_internalFeedStorageProvider.getFeed(reference);
-				else
+				if(m_internalFeedStorageProvider == null)
 					return null;
+				else
+					return m_internalFeedStorageProvider.getFeed(reference);
 			}else if(ExternalFeedEntityProvider.ENTITY_PREFIX.equals(idEntityRef.prefix)){
 				String feedUrl = decodeUri(idEntityRef.id).replaceAll("feed://", "http://");
 				URL url = new URL(feedUrl);
@@ -909,7 +923,10 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 	
 	public FeedSubscription getFeedSubscriptionFromFeedUrl(String feedUrl, boolean getOnlineInfo) throws IllegalArgumentException, MalformedURLException, IOException, InvalidFeedException, FetcherException, FeedAuthenticationException {
 		EntityReference reference = getEntityReference(feedUrl);
-		Feed feed = getOnlineInfo? getFeed(reference, false) : null;
+		Feed feed = null;
+		if(getOnlineInfo) {
+			feed = getFeed(reference, false);
+		}
 		FeedSubscription subscription = new FeedSubscriptionImpl();
 		if(feed != null) {
 			subscription.setUrl(feedUrl);
@@ -1140,9 +1157,10 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 		}else if(o instanceof HttpState){
 			httpState = (HttpState) o;
 		}
-		
-		httpState.addCookies(cookies);
-		toSession.setAttribute(FeedsService.SESSION_ATTR_HTTPSTATE, httpState);
+		if(httpState != null) {
+			httpState.addCookies(cookies);
+			toSession.setAttribute(FeedsService.SESSION_ATTR_HTTPSTATE, httpState);
+		}
 	}
 
 	public void logEvent(String event, FeedSubscription feedSubscription, boolean modify) {
@@ -1162,14 +1180,14 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 		public FeedCredentialSupplier() {
 		}
 		
-		public void addCredentials(URL url, Credentials credentials) {
-			Map<URL,Credentials> credentialsMap = getCredentialsMap();
-			credentialsMap.put(url, credentials);
+		public void addCredentials(URI uri, Credentials credentials) {
+			Map<URI,Credentials> credentialsMap = getCredentialsMap();
+			credentialsMap.put(uri, credentials);
 			setCredentialsMap(credentialsMap);
 		}
 
-		public Credentials getCredentials(URL url) {
-			Credentials credentials = getCredentialsMap().get(url);
+		public Credentials getCredentials(URI uri) {
+			Credentials credentials = getCredentialsMap().get(uri);
 			return credentials;
 		}
 		
@@ -1177,26 +1195,26 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 			m_sessionManager.getCurrentSession().removeAttribute(SESSION_ATTR_CREDENTIALS);
 		}
 		
-		protected Map<URL,Credentials> getCredentialsMap() {
+		protected Map<URI,Credentials> getCredentialsMap() {
 			Object o = m_sessionManager.getCurrentSession().getAttribute(SESSION_ATTR_CREDENTIALS);
 			if(o != null && o instanceof Map<?,?>){
-				Map<URL,Credentials> credentialsMap = (Map<URL,Credentials>) o;
+				Map<URI,Credentials> credentialsMap = (Map<URI,Credentials>) o;
 				return credentialsMap;
 			}else{
-				Map<URL,Credentials> credentialsMap = new HashMap<URL,Credentials>();
+				Map<URI,Credentials> credentialsMap = new HashMap<URI,Credentials>();
 				m_sessionManager.getCurrentSession().setAttribute(SESSION_ATTR_CREDENTIALS, credentialsMap);
 				return credentialsMap;
 			}
 		}
 		
-		protected void setCredentialMap(Map<URL,Credentials> credentialsMap, Session toSession) {
+		protected void setCredentialMap(Map<URI,Credentials> credentialsMap, Session toSession) {
 			if(toSession != null) {
 				toSession.setAttribute(SESSION_ATTR_CREDENTIALS, credentialsMap);
 			} else
 				LOG.warn("copyCredentialsToSession: toSession is null");
 		}
 		
-		private void setCredentialsMap(Map<URL,Credentials> credentialsMap) {
+		private void setCredentialsMap(Map<URI,Credentials> credentialsMap) {
 			m_sessionManager.getCurrentSession().setAttribute(SESSION_ATTR_CREDENTIALS, credentialsMap);			
 		}
 	}	
@@ -1208,7 +1226,7 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 		private boolean forceExternalCheck;
 		private Cookie[] cookies;
 		private String userId;
-		private Map<URL,Credentials> credentialsMap;
+		private Map<URI,Credentials> credentialsMap;
 		
 		public FeedCacheTask(
 				String feedUrl, 
@@ -1220,7 +1238,7 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 		public FeedCacheTask(
 				String feedUrl, 
 				boolean forceExternalCheck, 
-				Map<URL,Credentials> credentialsMap,
+				Map<URI,Credentials> credentialsMap,
 				Cookie[] cookies,
 				String userId,
 				Observer observer) {
@@ -1280,7 +1298,7 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 			return forceExternalCheck;
 		}
 		
-		public Map<URL, Credentials> getCredentialsMap() {
+		public Map<URI, Credentials> getCredentialsMap() {
 			return credentialsMap;
 		}
 

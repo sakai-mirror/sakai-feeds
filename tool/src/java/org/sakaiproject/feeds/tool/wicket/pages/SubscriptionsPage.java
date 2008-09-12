@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -99,7 +99,7 @@ public class SubscriptionsPage extends BasePage {
 	
 	private final WebMarkupContainer 	otherFeedsHolder;
 	
-	private OpmlUtil 					opmlUtil 					= new OpmlUtil();
+	private transient OpmlUtil 			opmlUtil 					= new OpmlUtil();
 
 	public SubscriptionsPage() {
 		final Component component = this;
@@ -342,7 +342,7 @@ public class SubscriptionsPage extends BasePage {
 		super.renderHead(response);
 	}
 
-	public List<String> getAggregateOptions() {
+	private List<String> getAggregateOptions() {
 		List<String> options = new ArrayList<String>();
 		options.add(String.valueOf(AggregateFeedOptions.TITLE_DISPLAY_DEFAULT));
 		options.add(String.valueOf(AggregateFeedOptions.TITLE_DISPLAY_NONE));
@@ -350,9 +350,9 @@ public class SubscriptionsPage extends BasePage {
 		return options;
 	}
 	
-	public void setAggregateOptionsGroup(String s) {
+	public void setAggregateOptionsGroup(String optionNumber) {
 		try{
-			aggregateOptions.setTitleDisplayOption(Integer.parseInt(s));
+			aggregateOptions.setTitleDisplayOption(Integer.parseInt(optionNumber));
 		}catch(Exception e) {
 			aggregateOptions.setTitleDisplayOption(AggregateFeedOptions.TITLE_DISPLAY_NONE);
 		}
@@ -489,11 +489,11 @@ public class SubscriptionsPage extends BasePage {
 		this.rememberMe = rememberMe;
 	}
 
-	public boolean isAggregate() {
+	private boolean isAggregate() {
 		return aggregate;
 	}
 
-	public void setAggregate(boolean aggregate) {
+	private void setAggregate(boolean aggregate) {
 		this.aggregate = aggregate;
 	}
 	
@@ -506,21 +506,21 @@ public class SubscriptionsPage extends BasePage {
 			return null;
 		FeedSubscription feedSubscription = null;
 		try{
-			URL _url = new URL(url);
+			URI uri = new URI(url);
 			if(username != null && !username.trim().equals("")){
-				facade.getFeedsService().addCredentials(_url, authenticationRealm, username, password, authenticationScheme);
+				facade.getFeedsService().addCredentials(uri, authenticationRealm, username, password, authenticationScheme);
 			}
 			feedSubscription = facade.getFeedsService().getFeedSubscriptionFromFeedUrl(url, true);
 			if(isRememberMe() && username != null && !username.trim().equals("")){
-				SavedCredentials newCrd = facade.getFeedsService().newSavedCredentials(_url, authenticationRealm, username, password, authenticationScheme);
+				SavedCredentials newCrd = facade.getFeedsService().newSavedCredentials(uri, authenticationRealm, username, password, authenticationScheme);
 				// remove overrided credentials
 				Set<SavedCredentials> toRemove = new HashSet<SavedCredentials>();
 				for(SavedCredentials saved : savedCredentials){
 					try{
-						if(saved.getUrl().toURI().equals(newCrd.getUrl().toURI()) && saved.getRealm().equals(newCrd.getRealm()))
+						if(saved.getUri().equals(newCrd.getUri()) && saved.getRealm().equals(newCrd.getRealm()))
 							toRemove.add(saved);
 					}catch(Exception e){
-						LOG.warn("Unable to compare URLs: "+saved.getUrl().toExternalForm()+" with "+newCrd.getUrl().toExternalForm(), e);
+						LOG.warn("Unable to compare URLs: "+saved.getUri().toString()+" with "+newCrd.getUri().toString(), e);
 					}
 				}
 				savedCredentials.removeAll(toRemove);
@@ -558,7 +558,11 @@ public class SubscriptionsPage extends BasePage {
 	private Set<FeedSubscription> getDeepCopy(Set<FeedSubscription> set) {
 		Set<FeedSubscription> result = new HashSet<FeedSubscription>();
 		for(FeedSubscription fs : set)
-			result.add(fs.clone());
+			try{
+				result.add((FeedSubscription) fs.clone());
+			}catch(CloneNotSupportedException e){
+				LOG.warn("Ops... FeedSubscription is not clonable?!?", e);
+			}
 		return result;
 	}
     
@@ -578,7 +582,7 @@ public class SubscriptionsPage extends BasePage {
 		LOG.warn(errorMessage, e);
 	}
 	
-	class FeedUrl implements Serializable  {
+	static class FeedUrl implements Serializable  {
 		private static final long	serialVersionUID	= 1L;
 		private String feedUrl = "";
 

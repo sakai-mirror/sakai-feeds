@@ -1,6 +1,6 @@
 package org.sakaiproject.feeds.impl;
 
-import java.net.URL;
+import java.net.URI;
 
 import org.sakaiproject.feeds.api.SavedCredentials;
 
@@ -11,10 +11,10 @@ public class SavedCredentialsImpl implements SavedCredentials {
 	private String				password;
 	private String				realm;
 	private String				scheme;
-	private URL					url;
+	private URI					uri;
 
-	public SavedCredentialsImpl(URL url, String realm, String username, String password, String scheme) {
-		this.url = url;
+	public SavedCredentialsImpl(final URI uri, final String realm, final String username, final String password, final String scheme) {
+		this.uri = uri;
 		this.realm = realm;
 		this.username = username;
 		this.password = password;
@@ -24,8 +24,8 @@ public class SavedCredentialsImpl implements SavedCredentials {
 	public SavedCredentialsImpl() {
 	}
 
-	public URL getUrl() {
-		return url;
+	public URI getUri() {
+		return uri;
 	}
 
 	public String getUsername() {
@@ -40,8 +40,8 @@ public class SavedCredentialsImpl implements SavedCredentials {
 		this.realm = realm;
 	}
 
-	public void setUrl(URL url) {
-		this.url = url;
+	public void setUri(URI uri) {
+		this.uri = uri;
 	}
 
 	public void setUsername(String username) {

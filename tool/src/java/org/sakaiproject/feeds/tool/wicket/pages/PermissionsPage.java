@@ -50,7 +50,7 @@ public class PermissionsPage extends BasePage {
 				item.add(new Label("role", pw.getRole()));
 				CheckBox chk = new CheckBox("feeds.subscribe", new PropertyModel(pw, "feedsSubscribe"));
 				if(pw.getRole().equals(maintainRole)){
-					pw.setFeedsSubscribe(Boolean.valueOf(true));
+					pw.setFeedsSubscribe(Boolean.TRUE);
 					chk.setEnabled(false);
 				}
 				item.add(chk);

@@ -11,13 +11,13 @@ public class UsernamePasswordRealmSchemeCredentials extends UsernamePasswordCred
 	private String	scheme;
 
 	public UsernamePasswordRealmSchemeCredentials(String userName, String password, String realm, String scheme) {
-		setUserName(userName);
-		setPassword(password);
-		setRealm(realm);
-		setScheme(scheme);
+		this.userName = userName;
+		this.password = password;
+		this.realm = realm;
+		this.scheme = scheme;
 	}
 
-	/*public String getUserName() {
+	public String getUserName() {
 		return userName;
 	}
 
@@ -31,7 +31,7 @@ public class UsernamePasswordRealmSchemeCredentials extends UsernamePasswordCred
 
 	public void setPassword(String password) {
 		this.password = password;
-	}*/
+	}
 
 	public String getRealm() {
 		if(realm == null || realm.trim().equals(""))

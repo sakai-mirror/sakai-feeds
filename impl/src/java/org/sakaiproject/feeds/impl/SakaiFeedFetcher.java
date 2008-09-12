@@ -3,6 +3,8 @@ package org.sakaiproject.feeds.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.StringTokenizer;
 import java.util.zip.GZIPInputStream;
@@ -57,7 +59,7 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 		System.setProperty("org.apache.commons.httpclient", "warn");
 				
 		// configure cache
-		setFeedInfoCache(cache);
+		this.feedInfoCache = cache;
 		
 		// configure connection manager
 		connectionManager = new MultiThreadedHttpConnectionManager();
@@ -162,9 +164,9 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
         this.credentialSupplier = credentialSupplier;
     }	
     
-    public void addCredentials(URL url, Credentials credentials) {
+    public void addCredentials(URI uri, Credentials credentials) {
     	if(getCredentialSupplier() != null)
-    		getCredentialSupplier().addCredentials(url, credentials);
+    		getCredentialSupplier().addCredentials(uri, credentials);
     }
 	
 	/**
@@ -181,32 +183,35 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 		}
 		
 		SyndFeed feed = null;
-		Credentials credentials = getCredentialSupplier().getCredentials(feedUrl);
+		Credentials credentials = null;
+		try{
+			credentials = getCredentialSupplier().getCredentials(feedUrl.toURI());
+		}catch(URISyntaxException e){
+			throw new IllegalArgumentException(e);
+		}
 		
 		// Check if feed was recently cached
-		if(getFeedInfoCache() instanceof SakaiFeedFetcherCache) {
-			SakaiFeedFetcherCache cache = (SakaiFeedFetcherCache) getFeedInfoCache();			
-			String userId = null;
-			String feedUsername = null;
-			if (credentials != null) {
-				if(credentials instanceof UsernamePasswordRealmSchemeCredentials) {
-					feedUsername = ((UsernamePasswordRealmSchemeCredentials) credentials).getUserName();
-				}
-				userId = SessionManager.getCurrentSessionUserId();
-				if(userId == null){
-					userId = (String) SessionManager.getCurrentSession().getAttribute(FeedsService.SESSION_ATTR_FEED_USER_ID);
-				}
-				if(!forceExternalCheck && cache.isRecent(feedUrl, userId, feedUsername)){
-					// cached authenticated feed
-					LOG.debug("Authenticated feed was recently cached - returning feed from cache: "+feedUrl.toString());
-					return cache.getFeedInfo(feedUrl, userId, feedUsername).getSyndFeed();
-				}
-			}else if(!forceExternalCheck && cache.isRecent(feedUrl)){
-				// cached non-authenticated feed
-				LOG.debug("Feed was recently cached - returning feed from cache: "+feedUrl.toString());
-				return cache.getFeedInfo(feedUrl).getSyndFeed();
+		SakaiFeedFetcherCache cache = (SakaiFeedFetcherCache) getFeedInfoCache();
+		String userId = null;
+		String feedUsername = null;
+		if(credentials != null){
+			if(credentials instanceof UsernamePasswordRealmSchemeCredentials){
+				feedUsername = ((UsernamePasswordRealmSchemeCredentials) credentials).getUserName();
 			}
-		}		
+			userId = SessionManager.getCurrentSessionUserId();
+			if(userId == null){
+				userId = (String) SessionManager.getCurrentSession().getAttribute(FeedsService.SESSION_ATTR_FEED_USER_ID);
+			}
+			if(!forceExternalCheck && cache.isRecent(feedUrl, userId, feedUsername)){
+				// cached authenticated feed
+				LOG.debug("Authenticated feed was recently cached - returning feed from cache: " + feedUrl.toString());
+				return cache.getFeedInfo(feedUrl, userId, feedUsername).getSyndFeed();
+			}
+		}else if(!forceExternalCheck && cache.isRecent(feedUrl)){
+			// cached non-authenticated feed
+			LOG.debug("Feed was recently cached - returning feed from cache: " + feedUrl.toString());
+			return cache.getFeedInfo(feedUrl).getSyndFeed();
+		}	
 		
 		// Use an HttpState per user
 		HttpState httpState = getHttpState();
@@ -324,12 +329,10 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 		AuthState authState = method.getHostAuthState();
 
 		fireEvent(FetcherEvent.EVENT_TYPE_FEED_POLLED, feedUrl.toString());
-		switch(statusCode) {
-			case 401:
-				handleAuthenticationError(authState);
-				break;
-			default:
-				handleErrorCodes(statusCode);
+		if(statusCode == 401) {
+			handleAuthenticationError(authState);
+		}else{
+			handleErrorCodes(statusCode);
 		}
 		return statusCode;
 	}
@@ -344,8 +347,8 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
      * @throws MalformedURLException
      */
     private SyndFeedInfo buildSyndFeedInfo(URL feedUrl, String urlStr, HttpMethod method, SyndFeed feed, int statusCode, Credentials credentials) throws MalformedURLException {
-        SyndFeedInfo syndFeedInfo;
-        syndFeedInfo = new SyndFeedInfo();
+    	SyndFeed computedFeed = feed;
+        SyndFeedInfo syndFeedInfo = new SyndFeedInfo();
         
         // this may be different to feedURL because of 3XX redirects
         syndFeedInfo.setUrl(new URL(urlStr));
@@ -376,7 +379,7 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 				    SyndFeed cachedFeed = cachedInfo.getSyndFeed();
 				    
 				    // set the new feed to be the orginal feed plus the new items
-				    feed = combineFeeds(cachedFeed, feed);			        
+				    computedFeed = combineFeeds(cachedFeed, feed);			        
 			    }            
 			}
 		}
@@ -391,7 +394,7 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
             syndFeedInfo.setETag(eTagHeader.getValue());
         }
         
-        syndFeedInfo.setSyndFeed(feed);
+        syndFeedInfo.setSyndFeed(computedFeed);
         
         return syndFeedInfo;
     }
@@ -456,8 +459,8 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 
 
 	public interface CredentialSupplier {
-		public void addCredentials(URL url, Credentials credentials);
-        public Credentials getCredentials(URL url);
+		public void addCredentials(URI uri, Credentials credentials);
+        public Credentials getCredentials(URI uri);
         public void clearCredentialMap();
     }
 	
