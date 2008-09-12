@@ -195,6 +195,14 @@ public class SakaiFeedFetcherCache implements FeedFetcherCache, Serializable {
 			this.userId = userId;
 			this.feedUsername = feedUsername;
 		}
+		
+		public String getUserId() {
+			return userId;
+		}
+		
+		public String getFeedUsername() {
+			return feedUsername;
+		}
 
 		@Override
 		public int hashCode() {
@@ -205,10 +213,12 @@ public class SakaiFeedFetcherCache implements FeedFetcherCache, Serializable {
 
 		@Override
 		public boolean equals(Object obj) {
-			if(obj == null) {
+			if(obj == null || !(obj instanceof CompoundKey)) {
 				return false;
 			}else{
-				return hashCode() == obj.hashCode();
+				CompoundKey ck = (CompoundKey) obj;
+				return userId.equals(ck.getUserId())
+					&& feedUsername.equals(ck.getFeedUsername());
 			}
 		}
 		

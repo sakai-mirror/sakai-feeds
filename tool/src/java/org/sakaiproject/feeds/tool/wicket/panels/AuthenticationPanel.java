@@ -1,6 +1,6 @@
 package org.sakaiproject.feeds.tool.wicket.panels;
 
-import java.net.URL;
+import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -64,10 +64,10 @@ public abstract class AuthenticationPanel extends Panel {
 		if(savedCredentials == null)
 			savedCredentials = facade.getFeedsService().getSavedCredentials();
 		
-		init();
+		init(); // NOPMD by Nuno Fernandes on 12-09-2008 9:24
 	}
 
-	private void init() {
+	final void init() {
 		setModel(new CompoundPropertyModel(this));
 
 		WebMarkupContainer divAuthPanel = new WebMarkupContainer("divAuthPanel");
@@ -95,7 +95,7 @@ public abstract class AuthenticationPanel extends Panel {
 		IndicatingAjaxButton ok = new IndicatingAjaxButton("ok", form) {
 			@Override
 			protected void onSubmit(AjaxRequestTarget target, Form form) {
-				URL url = null;
+				URI uri = null;
 				
 				// get updated auth realm and scheme
 				if(feedDataProvider != null) {
@@ -106,8 +106,8 @@ public abstract class AuthenticationPanel extends Panel {
 				// add new provided credentials
 				if(getUsername() != null && !getUsername().trim().equals("")){
 					try{
-						url = new URL(feedUrl);
-						facade.getFeedsService().addCredentials(url, authenticationRealm, username, password, authenticationScheme);
+						uri = new URI(feedUrl);
+						facade.getFeedsService().addCredentials(uri, authenticationRealm, username, password, authenticationScheme);
 					}catch(Exception e){
 						e.printStackTrace();
 					}
@@ -116,15 +116,15 @@ public abstract class AuthenticationPanel extends Panel {
 				// check with new credentials
 				boolean authSuccess = areCredentialsOk();
 				if(authSuccess && isRememberMe()) {
-					SavedCredentials newCrd = facade.getFeedsService().newSavedCredentials(url, authenticationRealm, username, password, authenticationScheme);
+					SavedCredentials newCrd = facade.getFeedsService().newSavedCredentials(uri, authenticationRealm, username, password, authenticationScheme);
 					// remove overrided credentials
 					Set<SavedCredentials> toRemove = new HashSet<SavedCredentials>();
 					for(SavedCredentials saved : savedCredentials){
 						try{
-							if(saved.getUrl().toURI().equals(newCrd.getUrl().toURI()) && saved.getRealm().equals(newCrd.getRealm()))
+							if(saved.getUri().equals(newCrd.getUri()) && saved.getRealm().equals(newCrd.getRealm()))
 								toRemove.add(saved);
 						}catch(Exception e){
-							LOG.warn("Unable to compare URLs: "+saved.getUrl().toExternalForm()+" with "+newCrd.getUrl().toExternalForm(), e);
+							LOG.warn("Unable to compare URLs: "+saved.getUri()+" with "+newCrd.getUri(), e);
 						}
 					}
 					savedCredentials.removeAll(toRemove);
@@ -153,7 +153,7 @@ public abstract class AuthenticationPanel extends Panel {
 	 * Reload feed and checks if it stills require authentication.
 	 * @return True it it stills require authentication, false if supplied credentials are ok.
 	 */
-	public boolean areCredentialsOk() {
+	final boolean areCredentialsOk() {
 		if(feedDataProvider != null) {
 			if(!feedDataProvider.getFeedSubscription().isAggregateMultipleFeeds()) {
 				feedDataProvider.getFeed();
@@ -180,27 +180,27 @@ public abstract class AuthenticationPanel extends Panel {
 	public abstract void onAuthFail(AjaxRequestTarget target);
 
 
-	public String getUsername() {
+	private String getUsername() {
 		return username;
 	}
 
-	public void setUsername(String username) {
+	private void setUsername(String username) {
 		this.username = username;
 	}
 
-	public String getPassword() {
+	private String getPassword() {
 		return password;
 	}
 
-	public void setPassword(String password) {
+	private void setPassword(String password) {
 		this.password = password;
 	}
 
-	public boolean isRememberMe() {
+	private boolean isRememberMe() {
 		return rememberMe;
 	}
 
-	public void setRememberMe(boolean rememberMe) {
+	private void setRememberMe(boolean rememberMe) {
 		this.rememberMe = rememberMe;
 	}
 

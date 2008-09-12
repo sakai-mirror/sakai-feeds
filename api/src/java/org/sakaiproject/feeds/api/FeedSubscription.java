@@ -2,7 +2,7 @@ package org.sakaiproject.feeds.api;
 
 import java.io.Serializable;
 
-public interface FeedSubscription extends Serializable {
+public interface FeedSubscription extends Serializable, Cloneable {
 	
 	/** Set the subscription title. */
 	public void setTitle(String title);
@@ -46,6 +46,5 @@ public interface FeedSubscription extends Serializable {
 	/** Set if subscription aggregates multiple feeds. */
 	public void setAggregateMultipleFeeds(boolean aggregate);
 	
-	/** Get a deep copy of this object. */
-	public FeedSubscription clone();
+	public Object clone() throws CloneNotSupportedException;
 }

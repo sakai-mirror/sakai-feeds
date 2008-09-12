@@ -71,8 +71,8 @@ public class FeedSubscriptionImpl implements FeedSubscription {
 	}
 
 	@Override
-	public FeedSubscription clone() {
-		FeedSubscription fs = new FeedSubscriptionImpl();
+	public Object clone() throws CloneNotSupportedException {
+		FeedSubscription fs = (FeedSubscription) super.clone();
 		fs.setAggregateMultipleFeeds(isAggregateMultipleFeeds());
 		fs.setDescription(getDescription());
 		fs.setIconUrl(getIconUrl());
@@ -82,4 +82,6 @@ public class FeedSubscriptionImpl implements FeedSubscription {
 		fs.setUrls(getUrls());
 		return fs;
 	}
+
+	
 }

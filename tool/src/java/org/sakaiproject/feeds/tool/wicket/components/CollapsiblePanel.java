@@ -56,7 +56,7 @@ public class CollapsiblePanel extends Border {
 					tag.put("src", "/sakai-feeds-tool/img/bullet_toggle_plus.png");
 					tag.put("alt", "+");
 				}
-				tag.put("onclick", "showHide('" + content.getMarkupId() + "','" + this.getMarkupId() + "')");
+				tag.put("onclick", "showHide('" + content.getMarkupId() + "','" + this.getMarkupId() + "'); return false;");
 				super.onComponentTag(tag);
 			}
 		};
@@ -70,7 +70,7 @@ public class CollapsiblePanel extends Border {
 
 			@Override
 			protected void onComponentTag(ComponentTag tag) {
-				tag.put("onclick", "showHide('" + content.getMarkupId() + "','" + titleLinkExpandImg.getMarkupId() + "')");
+				tag.put("onclick", "showHide('" + content.getMarkupId() + "','" + titleLinkExpandImg.getMarkupId() + "'); return false;");
 				super.onComponentTag(tag);
 			}
 

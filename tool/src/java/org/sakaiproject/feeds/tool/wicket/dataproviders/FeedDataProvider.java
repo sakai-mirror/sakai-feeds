@@ -32,7 +32,7 @@ import org.sakaiproject.feeds.api.exception.InvalidFeedException;
 import org.sakaiproject.feeds.tool.facade.SakaiFacade;
 
 
-public class FeedDataProvider implements IDataProvider {
+public final class FeedDataProvider implements IDataProvider {
 	private static final long		serialVersionUID			= 1L;
 	private static Log				LOG							= LogFactory.getLog(FeedDataProvider.class);
 	@SpringBean
@@ -172,7 +172,7 @@ public class FeedDataProvider implements IDataProvider {
 		LOG.warn(errorMessage, e);
 	}
 	
-	class FeedUrl implements Serializable  {
+	static class FeedUrl implements Serializable  {
 		private static final long	serialVersionUID	= 1L;
 		private String feedUrl = "";
 
