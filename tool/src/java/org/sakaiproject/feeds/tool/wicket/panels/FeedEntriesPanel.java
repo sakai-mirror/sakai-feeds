@@ -26,6 +26,7 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.StringResourceModel;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.sakaiproject.feeds.api.Feed;
 import org.sakaiproject.feeds.api.FeedEntry;
 import org.sakaiproject.feeds.api.FeedEntryEnclosure;
 import org.sakaiproject.feeds.api.FeedSubscription;
@@ -339,22 +340,26 @@ public class FeedEntriesPanel extends Panel {
 		}
 		js.append("$(\"#" + feedEntryHolder.getMarkupId() + "\").parent().parent().parent().find(\".feedCount\").html(\" ( " + entryCount + " )\");");
 
-		// update feed url
-		String feedIconUrl = getFeedDataProvider().getFeed().getImageUrl();
-		if(feedIconUrl != null && !"".equals(feedIconUrl)) {
-			js.append("$(\"#" + feedEntryHolder.getMarkupId() + "\").parent().parent().parent().find(\".feedIconUrl\").attr(\"src\", \" " + feedIconUrl.trim() + "\");");			
-		}
-		
-		// update feed title
-		String feedTitle = getFeedDataProvider().getFeed().getTitle();
-		if(feedTitle != null && !"".equals(feedTitle)) {
-			js.append("$(\"#" + feedEntryHolder.getMarkupId() + "\").parent().parent().parent().find(\".titleLinkLabel\").html(\" " + feedTitle.trim() + "\");");			
-		}
-		
-		// update feed title
-		String feedDescription = getFeedDataProvider().getFeed().getDescription();
-		if(feedDescription != null && !"".equals(feedDescription)) {
-			js.append("$(\"#" + feedEntryHolder.getMarkupId() + "\").parent().parent().parent().find(\".feedTitle\").attr(\"title\", \" " + feedDescription.trim() + "\");");			
+		Feed feed = getFeedDataProvider().getFeed();
+		FeedSubscription subsc = getFeedDataProvider().getFeedSubscription();
+		if(feed != null && subsc != null && !subsc.isAggregateMultipleFeeds()){
+			// update feed url
+			String feedIconUrl = feed.getImageUrl();
+			if(feedIconUrl != null && !"".equals(feedIconUrl)) {
+				js.append("$(\"#" + feedEntryHolder.getMarkupId() + "\").parent().parent().parent().find(\".feedIconUrl\").attr(\"src\", \" " + feedIconUrl.trim() + "\");");			
+			}
+			
+			// update feed title
+			String feedTitle = feed.getTitle();
+			if(feedTitle != null && !"".equals(feedTitle)) {
+				js.append("$(\"#" + feedEntryHolder.getMarkupId() + "\").parent().parent().parent().find(\".titleLinkLabel\").html(\" " + feedTitle.trim() + "\");");			
+			}
+			
+			// update feed title
+			String feedDescription = feed.getDescription();
+			if(feedDescription != null && !"".equals(feedDescription)) {
+				js.append("$(\"#" + feedEntryHolder.getMarkupId() + "\").parent().parent().parent().find(\".feedTitle\").attr(\"title\", \" " + feedDescription.trim() + "\");");			
+			}
 		}
 		
 		// adjust frame height
