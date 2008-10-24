@@ -46,17 +46,19 @@ public class MainPage extends BasePage {
 	private void setupClientCookies() {	
 		final Cookie[] cookies = ((WebRequest)getRequestCycle().getRequest()).getCookies();
 		facade.getFeedsService().clearClientCokies();
-		for(int i=0; i<cookies.length; i++){
-			String domain = cookies[i].getDomain();
-			String path = cookies[i].getPath();
-			if(domain == null)
-				domain = ServerConfigurationService.getServerName();
-			if(path == null)
-				path = "/";
-			facade.getFeedsService().addClientCookie(
+		if(cookies != null) {
+			for(int i=0; i<cookies.length; i++){
+				String domain = cookies[i].getDomain();
+				String path = cookies[i].getPath();
+				if(domain == null)
+					domain = ServerConfigurationService.getServerName();
+				if(path == null)
+					path = "/";
+				facade.getFeedsService().addClientCookie(
 					domain, cookies[i].getName(), 
 					cookies[i].getValue(), path,
 					cookies[i].getMaxAge(), cookies[i].getSecure());
+			}
 		}
 	}
 }
