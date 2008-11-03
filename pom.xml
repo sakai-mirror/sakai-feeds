@@ -44,10 +44,10 @@
   
   <!-- Project modules -->
   <modules>
-    <module>api</module>
-    <module>impl</module>
-    <module>pack</module>
-    <module>tool</module>
+    <module>sakai-feeds-api</module>
+    <module>sakai-feeds-impl</module>
+    <module>sakai-feeds-pack</module>
+    <module>sakai-feeds-tool</module>
   </modules>
   
   
