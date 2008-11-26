@@ -26,10 +26,12 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.StringResourceModel;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.sakaiproject.component.cover.ServerConfigurationService;
 import org.sakaiproject.feeds.api.Feed;
 import org.sakaiproject.feeds.api.FeedEntry;
 import org.sakaiproject.feeds.api.FeedEntryEnclosure;
 import org.sakaiproject.feeds.api.FeedSubscription;
+import org.sakaiproject.feeds.api.FeedsService;
 import org.sakaiproject.feeds.api.ViewOptions;
 import org.sakaiproject.feeds.tool.wicket.dataproviders.FeedDataProvider;
 import org.sakaiproject.feeds.tool.wicket.model.FeedErrorModel;
@@ -281,19 +283,19 @@ public class FeedEntriesPanel extends Panel {
 		
 		// error messages
 		feedback = new CSSFeedbackPanel("messages");
-		feedEntryHolder.add(feedback);	
-		FeedErrorModel errorModel = feedDataProvider.getFeedErrorModel();
-		if(errorModel != null) {
-			String errorMessage = null;
-			try{
-				errorMessage = new StringResourceModel(errorModel.getErrorMessageKey(), this, new Model(errorModel)).getString();
-			}catch(Exception e1) {
-				LOG.warn("Unable to get text for bundle key '"+errorModel.getErrorMessageKey()+"'");
-				errorMessage = errorModel.getErrorMessageKey();
+		feedEntryHolder.add(feedback);
+		if(!subscription.isAggregateMultipleFeeds()) {
+			addErrorMessage(feedDataProvider.getFeedErrorModel());
+		}else{
+			boolean ignoreAggregatedFeedsErrors = ServerConfigurationService.getBoolean(FeedsService.SAK_PROP_SHOW_AGGRFEEDSERRORS, false);
+			if(!ignoreAggregatedFeedsErrors) {
+				for(FeedErrorModel feedErrorModel : feedDataProvider.getAggregateFeedErrorModels()) {
+					addErrorMessage(feedErrorModel);
+				}
 			}
-			error(errorMessage);
-			LOG.warn(errorMessage, errorModel.getException());			
 		}
+		
+		// authentication
 		AuthenticationPanel authPanel = new AuthenticationPanel("authPanel", feedDataProvider, feedDataProvider.getAffectedFeed()) {
 			private static final long	serialVersionUID	= 1L;
 			@Override
@@ -321,6 +323,20 @@ public class FeedEntriesPanel extends Panel {
 		
 		
 		add(feedEntryHolder);
+	}
+	
+	private void addErrorMessage(FeedErrorModel errorModel) {
+		if(errorModel != null) {
+			String errorMessage = null;
+			try{
+				errorMessage = new StringResourceModel(errorModel.getErrorMessageKey(), this, new Model(errorModel)).getString();
+			}catch(Exception e1) {
+				LOG.warn("Unable to get text for bundle key '"+errorModel.getErrorMessageKey()+"'");
+				errorMessage = errorModel.getErrorMessageKey();
+			}
+			error(errorMessage);
+			LOG.warn(errorMessage, errorModel.getException());
+		}
 	}
 	
 	private String removeOffensiveTags(String str) {
