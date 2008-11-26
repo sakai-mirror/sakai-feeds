@@ -47,6 +47,7 @@ public final class FeedDataProvider implements IDataProvider {
 	private Feed 					feed;
 	private List<FeedEntry>			entries;
 	private FeedErrorModel			feedErrorModel;
+	private List<FeedErrorModel>	aggregateFeedErrorModels;
 	private boolean					forceExternalCheck;
 
 	public FeedDataProvider(FeedSubscription subscription, String viewDetail, Boolean forceExternalCheck) {
@@ -83,6 +84,7 @@ public final class FeedDataProvider implements IDataProvider {
 
 	public Feed getFeed() {
 		if(feed == null){
+			setFeedErrorModel(null);
 			feed = getFeed(subscription.getUrl());
 		}
 		return feed;
@@ -90,13 +92,12 @@ public final class FeedDataProvider implements IDataProvider {
 
 	public Feed getAggregatedFeeds() {
 		if(feed == null){
+			setFeedErrorModel(null);			
 			String[] urls = subscription.getUrls();
 			List<FeedEntry> agEntries = new ArrayList<FeedEntry>();
 			for(int i=0; i<urls.length; i++) {
 				Feed t = getFeed(urls[i]);
-				if(t == null) {
-					feed = null;
-				}else if(feed == null){
+				if(feed == null && t != null){
 					feed = t;
 				}
 				if(t != null) {
@@ -125,7 +126,6 @@ public final class FeedDataProvider implements IDataProvider {
 			_feed = facade.getFeedsService().getFeed(reference, forceExternalCheck);
 			requireAuthentication = false;
 			entries = null;
-			setFeedErrorModel(null);
 		}catch(FeedAuthenticationException e){
 			requireAuthentication = true;
 			affectedFeed = url;
@@ -152,6 +152,7 @@ public final class FeedDataProvider implements IDataProvider {
 				setFeedErrorModel(new FeedErrorModel("err.forbidden", url, e));
 			else
 				setFeedErrorModel(new FeedErrorModel("err.no_fetch", url, e));
+			_feed = null;
 		}catch(Exception e){
 			setFeedErrorModel(new FeedErrorModel("err.subscribing", url, e));
 			_feed = null;
@@ -289,7 +290,30 @@ public final class FeedDataProvider implements IDataProvider {
 	}
 
 	public void setFeedErrorModel(FeedErrorModel feedErrorModel) {
-		this.feedErrorModel = feedErrorModel;
+		if(!subscription.isAggregateMultipleFeeds()) {
+			this.feedErrorModel = feedErrorModel;
+		}else{
+			if(feedErrorModel != null) {
+				addAggregateFeedErrorModel(feedErrorModel);
+			}else{
+				setAggregateFeedErrorModels(null);
+			}
+		}		
+	}
+
+	public void setAggregateFeedErrorModels(List<FeedErrorModel> aggregateFeedErrorModels) {
+		this.aggregateFeedErrorModels = aggregateFeedErrorModels;
+	}
+
+	public void addAggregateFeedErrorModel(FeedErrorModel feedErrorModel) {
+		if(aggregateFeedErrorModels == null) {
+			aggregateFeedErrorModels = new ArrayList<FeedErrorModel>();
+		}
+		aggregateFeedErrorModels.add(feedErrorModel);
+	}
+
+	public List<FeedErrorModel> getAggregateFeedErrorModels() {
+		return aggregateFeedErrorModels;
 	}
 
 	public void detach() {

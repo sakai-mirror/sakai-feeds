@@ -46,6 +46,7 @@ public interface FeedsService {
 	public static final String	SAK_PROP_DEFAULTVIEWFILTER			= "feeds.defaultViewFilter";
 	public static final String	SAK_PROP_SHOW_CANCEL_AFTER			= "feeds.feedLoadCancel.showAfter";
 	public static final String	SAK_PROP_SHOW_CANCEL_IMG			= "feeds.feedLoadCancel.image";
+	public static final String	SAK_PROP_SHOW_AGGRFEEDSERRORS		= "feeds.ignoreAggregatedFeedsErrors";
 
 	public static final String	SAK_PROP_CACHINGTHREADS				= "feeds.cachingThreads";
 	public static final String	SAK_PROP_TIMEOUT					= "feeds.timeoutMs";
