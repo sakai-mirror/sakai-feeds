@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" output="api/target/classes" path="api/src/java"/>
-	<classpathentry kind="src" output="impl/target/classes" path="impl/src/java"/>
-	<classpathentry excluding="**" kind="src" output="pack/target/classes" path="pack/src/webapp"/>
-	<classpathentry kind="src" output="tool/target/classes" path="tool/src/java"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre1.5.0_11"/>
+	<classpathentry kind="src" output="sakai-feeds-api/target/classes" path="sakai-feeds-api/src/java"/>
+	<classpathentry kind="src" output="sakai-feeds-impl/target/classes" path="sakai-feeds-impl/src/java"/>
+	<classpathentry excluding="**" kind="src" output="sakai-feeds-pack/target/classes" path="sakai-feeds-pack/src/webapp"/>
+	<classpathentry kind="src" output="sakai-feeds-tool/target/classes" path="sakai-feeds-tool/src/java"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5"/>
 	<classpathentry kind="con" path="org.maven.ide.eclipse.MAVEN2_CLASSPATH_CONTAINER"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
