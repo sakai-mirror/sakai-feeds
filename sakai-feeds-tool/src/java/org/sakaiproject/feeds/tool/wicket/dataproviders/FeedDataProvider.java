@@ -313,6 +313,9 @@ public final class FeedDataProvider implements IDataProvider {
 	}
 
 	public List<FeedErrorModel> getAggregateFeedErrorModels() {
+		if(aggregateFeedErrorModels == null) {
+			aggregateFeedErrorModels = new ArrayList<FeedErrorModel>();
+		}
 		return aggregateFeedErrorModels;
 	}
 
