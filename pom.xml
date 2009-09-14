@@ -23,7 +23,7 @@
     <!-- EDIT ME: Sakai Version -->
     <!--<version>2.5.2</version>--> <!-- For Official Releases -->    
     <!--<version>M2</version>--> <!-- For 2.5.x --> 
-    <version>2.6.0RC1-SNAPSHOT</version> <!-- For pre-2.6.0 -->   
+    <version>2.6-SNAPSHOT</version> <!-- For pre-2.6.0 -->   
     <!--<version>2.7.0-SNAPSHOT</version>--> <!-- For TRUNK -->
   </parent>
   
