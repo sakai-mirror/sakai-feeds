@@ -4,7 +4,7 @@
   <name>Sakai News Feeds</name>
   <groupId>org.sakaiproject</groupId>
   <artifactId>sakai-feeds</artifactId>
-  <version>1.1.4-SNAPSHOT</version><!-- newsfeeds.version --> 
+  <version>1.1.5-SNAPSHOT</version><!-- newsfeeds.version --> 
   
   <description>News Feeds is a feed aggregator tool developed for Sakai.</description>
   <url>http://bugs.sakaiproject.org/confluence/display/NFS</url>
@@ -23,7 +23,7 @@
     <!-- EDIT ME: Sakai Version -->
     <!--<version>2.5.2</version>--> <!-- For Official Releases -->    
     <!--<version>M2</version>--> <!-- For 2.5.x --> 
-    <version>2.6.0RC1-SNAPSHOT</version> <!-- For TRUNK -->   
+    <version>2.6-SNAPSHOT</version> <!-- For TRUNK -->   
   </parent>
   
 
