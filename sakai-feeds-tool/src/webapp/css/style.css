@@ -35,7 +35,7 @@ h4 a.collapsibleLink:hover {
 
 /* Subscriptions page */
 .collapsibleZone {
-	background:#FAFAFA !important;
+	background:#FAFAFA;
 }
    
 /* ...but not to absolute links in this domain: */ 
@@ -55,7 +55,7 @@ h4 a.collapsibleLink:hover {
 h4 a.feedTitle img {
 	text-decoration: none !important;
 	/*background-color: #F3F3E5 !important;*/
-	background-color: #FAFAFA !important;
+	background-color: #FAFAFA;
 }
 h4 a.feedTitle:link, h4 a.feedTitle:visited, h4 a.feedTitle:active {
 	text-decoration: none !important;
