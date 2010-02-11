@@ -13,7 +13,8 @@
 		<!-- <property name="institutionalFeedProvider" ref="my.package.MyInstitutionalFeedProviderImpl"/> -->
 		
 		<!-- Sakai services -->
-		<property name="siteService" ref="org.sakaiproject.site.api.SiteService"/>	
+		<property name="sakaiFeedFetcherCache" ref="org.sakaiproject.feeds.api.SakaiFeedFetcherCache"/>    
+        <property name="siteService" ref="org.sakaiproject.site.api.SiteService"/>	
 		<property name="preferencesService" ref="org.sakaiproject.user.api.PreferencesService"/>		
 		<property name="sessionManager" ref="org.sakaiproject.tool.api.SessionManager"/>	
 		<property name="entityBroker" ref="org.sakaiproject.entitybroker.EntityBroker"/>
@@ -28,6 +29,13 @@
 	<!-- Either: DBFeedStorage or WebServiceFeedStorage -->
 	<bean id="org.sakaiproject.feeds.api.provider.InternalFeedStorageProvider" class="org.sakaiproject.feeds.impl.provider.DBFeedsStorageImpl">
 		<!-- <property name="feedsService" ref="org.sakaiproject.feeds.api.FeedsService"/> -->		
+	</bean>
+	
+	<!-- Sakai FeedFetcher Cache __________________________________________________________________ -->
+    <bean id="org.sakaiproject.feeds.api.SakaiFeedFetcherCache" 
+		  class="org.sakaiproject.feeds.impl.SakaiFeedFetcherCache"
+          init-method="init" destroy-method="destroy">
+		<property name="memoryService" ref="org.sakaiproject.memory.api.MemoryService"/>
 	</bean>
 	
 	<!-- EntityProviders ______________________________________________________________________________ -->
