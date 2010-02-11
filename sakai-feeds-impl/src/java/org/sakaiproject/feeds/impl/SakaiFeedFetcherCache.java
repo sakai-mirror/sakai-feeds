@@ -3,11 +3,9 @@ package org.sakaiproject.feeds.impl;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URL;
-import java.util.Collection;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map.Entry;
-import java.util.concurrent.locks.ReentrantLock;
+
+import org.sakaiproject.memory.api.Cache;
+import org.sakaiproject.memory.api.MemoryService;
 
 import com.sun.syndication.fetcher.impl.FeedFetcherCache;
 import com.sun.syndication.fetcher.impl.SyndFeedInfo;
@@ -21,54 +19,59 @@ import com.sun.syndication.fetcher.impl.SyndFeedInfo;
  */
 public class SakaiFeedFetcherCache implements FeedFetcherCache, Serializable {
 	private static final long				serialVersionUID	= 1L;
-	private CacheMap<Object, SyndFeedInfo>	infoCache;
-	private CacheMap<Object, Date>			fetchDateCache;
-	private long 							recentForMs;
+	private Cache							infoCache;
 
-	public SakaiFeedFetcherCache(int maxCachedEntries, long markFeedRecentForMs) {
-		infoCache = new CacheMap<Object, SyndFeedInfo>(maxCachedEntries);
-		fetchDateCache = new CacheMap<Object, Date>(maxCachedEntries);
-		recentForMs = markFeedRecentForMs;
+	// ######################################################
+	// Spring methods
+	// ######################################################
+	private MemoryService					memoryService;
+	public void setMemoryService(MemoryService memoryService) {
+		this.memoryService = memoryService;
 	}
+	
+	public void init() {
+		infoCache = memoryService.newCache(this.getClass().getName());
+	}
+	
+	public void destroy() {
+		infoCache.clear();
+	}
+	
+	
+	// ######################################################
+	// SakaiFeedFetcherCache methods
+	// ######################################################
 
 	public SyndFeedInfo getFeedInfo(URL url) {
-		return infoCache.get(urlToUri(url));
+		return (SyndFeedInfo) infoCache.get(urlToUri(url));
 	}
 
 	public SyndFeedInfo getFeedInfo(URL url, String userId, String feedUsername) {
-		return infoCache.get(urlToUri(url), userId, feedUsername);
+		CompoundKey key = new CompoundKey(urlToUri(url), userId, feedUsername);
+		return (SyndFeedInfo) infoCache.get(key);
 	}
 
 	public boolean isRecent(URL url) {
-		Date feedFetchDate = fetchDateCache.get(urlToUri(url));
-		if(feedFetchDate != null){
-			return (feedFetchDate.getTime() + recentForMs) >= (new Date().getTime()); 
-		}
-		return false;
+		return infoCache.containsKey(urlToUri(url));
 	}
 
 	public boolean isRecent(URL url, String userId, String feedUsername) {
-		URI uri = urlToUri(url);
-		Date feedFetchDate = fetchDateCache.get(uri, userId, feedUsername);
-		if(feedFetchDate != null){
-			return (feedFetchDate.getTime() + recentForMs) >= (new Date().getTime()); 
-		}
-		return false;
+		CompoundKey key = new CompoundKey(urlToUri(url), userId, feedUsername);
+		return infoCache.containsKey(key);
 	}
 
 	public void setFeedInfo(URL url, SyndFeedInfo syndFeedInfo) {
 		URI uri = urlToUri(url);
 		if(uri != null) {
 			infoCache.put(uri, syndFeedInfo);
-			fetchDateCache.put(uri, new Date());
 		}
 	}
 
 	public void setFeedInfo(URL url, String userId, String feedUsername, SyndFeedInfo syndFeedInfo) {
 		URI uri = urlToUri(url);
 		if(uri != null) {
-			infoCache.put(uri, userId, feedUsername, syndFeedInfo);
-			fetchDateCache.put(uri, userId, feedUsername, new Date());
+			CompoundKey key = new CompoundKey(uri, userId, feedUsername);
+			infoCache.put(key, syndFeedInfo);
 		}
 	}
 
@@ -76,15 +79,14 @@ public class SakaiFeedFetcherCache implements FeedFetcherCache, Serializable {
 		URI uri = urlToUri(url);
 		if(uri != null) {
 			infoCache.remove(uri);
-			fetchDateCache.remove(uri);
 		}
 	}
 
 	public void clearFeedInfo(URL url, String userId, String feedUsername) {
 		URI uri = urlToUri(url);
 		if(uri != null) {
-			infoCache.remove(uri, userId, feedUsername);
-			fetchDateCache.remove(uri, userId, feedUsername);
+			CompoundKey key = new CompoundKey(uri, userId, feedUsername);
+			infoCache.remove(key);
 		}
 	}
 	
@@ -94,94 +96,6 @@ public class SakaiFeedFetcherCache implements FeedFetcherCache, Serializable {
 		}catch(Exception e){
 			return null;
 		}
-	}
-
-	static class CacheMap<K, V> extends LinkedHashMap<K, V> implements Serializable {
-		private static final long	serialVersionUID	= 1L;
-		private final static float	DEFAULT_LOAD_FACTOR	= 0.75f;
-		private final 				ReentrantLock lock = new ReentrantLock();
-		private int					maxCachedEntries;
-		
-		public CacheMap(int maxCachedEntries) {
-			super(maxCachedEntries, DEFAULT_LOAD_FACTOR, true);
-			this.maxCachedEntries = maxCachedEntries;
-		}
-
-		public void setMaxCachedEntries(int maxCachedEntries) {
-			this.maxCachedEntries = maxCachedEntries;
-		}
-
-		@Override
-		protected boolean removeEldestEntry(Entry<K, V> eldest) {
-			return size() > maxCachedEntries;
-		}
-		
-		@Override
-		public V get(Object key) {
-			lock.lock();
-			try{
-				return super.get(key);
-			}finally{
-				lock.unlock();
-			}
-		}
-		public V get(Object key, String userId, String feedUsername) {
-			lock.lock();
-			try{
-				return super.get(new CompoundKey(key, userId, feedUsername));
-			}finally{
-				lock.unlock();
-			}			
-		}
-
-		@Override
-		public V put(K key, V feed) {
-			lock.lock();
-			try{
-				return super.put(key, feed);
-			}finally{
-				lock.unlock();
-			}		
-		}
-		@SuppressWarnings("unchecked")
-		public V put(K key, String userId, String feedUsername, V feed) {
-			lock.lock();
-			try{
-				return super.put((K) new CompoundKey(key, userId, feedUsername), feed);
-			}finally{
-				lock.unlock();
-			}		
-		}
-
-		@Override
-		public V remove(Object key) {
-			lock.lock();
-			try{
-				return super.remove(key);
-			}finally{
-				lock.unlock();
-			}		
-		}
-		@SuppressWarnings("unchecked")
-		public V remove(Object key, String userId, String feedUsername) {
-			lock.lock();
-			try{
-				return super.remove(new CompoundKey(key, userId, feedUsername));
-			}finally{
-				lock.unlock();
-			}		
-		}
-
-		@Override
-		public Collection<V> values() {
-			lock.lock();
-			try{
-				return super.values();
-			}finally{
-				lock.unlock();
-			}
-		}
-		
 	}
 	
 	static class CompoundKey implements Serializable {

@@ -31,7 +31,6 @@ import org.sakaiproject.feeds.api.FeedsService;
 import org.sakaiproject.feeds.api.exception.FeedAuthenticationException;
 import org.sakaiproject.tool.cover.SessionManager;
 
-import com.sun.org.apache.regexp.internal.RE;
 import com.sun.syndication.feed.synd.SyndFeed;
 import com.sun.syndication.fetcher.FetcherEvent;
 import com.sun.syndication.fetcher.FetcherException;
@@ -69,7 +68,7 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 		// ignore SSL certificate errors
 		if(ignoreCertificateErrors) {
 			Protocol easyhttps = new Protocol("https", new EasySSLProtocolSocketFactory(), 443);
-			Protocol.registerProtocol("https", easyhttps);
+			Protocol.registerProtocol("https", easyhttps);			
 		}
 		
 		// configure http client
@@ -102,11 +101,8 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 				// computer.example.com? it seems to be a very common
 				// idiom for the nonProxyHosts, in that case then we want
 				// to change "^" to "^.*"
-				RE re = null;
 				try{
-					re = new RE("^.*" + nonProxiableHost + "$");
-
-					if(re.match(feedUrl.getHost())){
+					if(feedUrl.getHost().matches("^.*" + nonProxiableHost + "$")){
 						proxiableHost = false;
 						break;
 					}

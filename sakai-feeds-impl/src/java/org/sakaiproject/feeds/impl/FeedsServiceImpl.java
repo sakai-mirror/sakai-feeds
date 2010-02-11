@@ -127,6 +127,10 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 	// ######################################################
 	// Spring methods
 	// ######################################################
+	public void setSakaiFeedFetcherCache(SakaiFeedFetcherCache sakaiFeedFetcherCache) {
+		this.feedInfoCache = sakaiFeedFetcherCache;
+	}
+	
 	public void setSiteService(SiteService siteService) {
 		this.m_siteService = siteService;
 	}
@@ -239,10 +243,13 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 	}
 	
 	private void initFeedFetcher() {
-		int maxCachedFeeds = m_serverConfigurationService.getInt(SAK_PROP_MAXCACHEDFEEDS, 100);
-		int cacheTimeInMin = m_serverConfigurationService.getInt(SAK_PROP_CACHETIMEINMIN, 15);
+		int maxCachedFeeds = m_serverConfigurationService.getInt(SAK_PROP_MAXCACHEDFEEDS, -100);
+		int cacheTimeInMin = m_serverConfigurationService.getInt(SAK_PROP_CACHETIMEINMIN, -15);
 		int feedsTimeout = m_serverConfigurationService.getInt(SAK_PROP_TIMEOUT, 30000);
-		feedInfoCache = new SakaiFeedFetcherCache(maxCachedFeeds, cacheTimeInMin * 60 * 1000L);
+		if(maxCachedFeeds != -100 || cacheTimeInMin != -15) {
+			LOG.warn(SAK_PROP_MAXCACHEDFEEDS+" and "+SAK_PROP_CACHETIMEINMIN+" are no longer used (see issue NFS-47)");
+		}
+		
 		feedFetcherAuth = new SakaiFeedFetcher(
 				feedInfoCache, 
 				feedsTimeout, 
