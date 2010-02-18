@@ -33,8 +33,8 @@
     <commons-codec.version>1.3</commons-codec.version>
     <commons-httpclient.version>3.1</commons-httpclient.version>
     <commons-httpclient-contrib.version>3.0-beta1</commons-httpclient-contrib.version>
-    <rome.version>0.9</rome.version>
-    <rome-fetcher.version>0.7</rome-fetcher.version>
+    <rome.version>1.0-sakai</rome.version>
+    <rome-fetcher.version>1.0</rome-fetcher.version>
     <feeds.wicket.version>1.3.5</feeds.wicket.version>
     <feeds.wicketstuff-dojo.version>1.3.0-beta</feeds.wicketstuff-dojo.version>
     <feeds.slf4j.version>1.4.3</feeds.slf4j.version>
@@ -125,12 +125,14 @@
       </snapshots>
     </repository>
     <repository>
-      <id>additional-repo-for-latest-rome</id>
-      <name>additional-repo-for-latest-rome</name>
-      <url>http://dev.tailsweep.com/projects/repositor</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
+      <id>oucs-ox</id>
+      <name>Oucs-Ox Maven Repo</name>
+      <url>http://maven-repo.oucs.ox.ac.uk/content/repositories/releases/</url>
+    </repository>
+    <repository>
+      <id>java-net-m2</id>
+      <name>Java.net Maven Repo</name>
+      <url>http://download.java.net/maven/2/</url>
     </repository>
   </repositories>
   <pluginRepositories>
