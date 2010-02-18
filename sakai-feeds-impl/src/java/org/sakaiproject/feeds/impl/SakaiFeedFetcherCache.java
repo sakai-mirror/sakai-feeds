@@ -89,6 +89,20 @@ public class SakaiFeedFetcherCache implements FeedFetcherCache, Serializable {
 			infoCache.remove(key);
 		}
 	}
+
+	public void clear() {
+		infoCache.clear();
+	}
+
+	public SyndFeedInfo remove(URL url) {
+		URI uri = urlToUri(url);
+		if(uri != null) {
+			SyndFeedInfo feedInfo = (SyndFeedInfo) infoCache.get(uri);
+			infoCache.remove(uri);
+			return feedInfo;
+		}
+		return null;
+	}
 	
 	private URI urlToUri(URL url) {
 		try{
