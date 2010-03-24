@@ -20,10 +20,10 @@ import org.apache.commons.httpclient.HttpState;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.auth.AuthState;
-import org.apache.commons.httpclient.contrib.ssl.EasySSLProtocolSocketFactory;
 import org.apache.commons.httpclient.cookie.CookiePolicy;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.protocol.Protocol;
+import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 import org.apache.commons.httpclient.util.HttpURLConnection;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -67,8 +67,8 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 
 		// ignore SSL certificate errors
 		if(ignoreCertificateErrors) {
-			Protocol easyhttps = new Protocol("https", new EasySSLProtocolSocketFactory(), 443);
-			Protocol.registerProtocol("https", easyhttps);			
+			Protocol noCertErrorsHTTPS = new Protocol("https", (ProtocolSocketFactory) new CertIgnoreSSLProtocolSocketFactory(), 443);
+			Protocol.registerProtocol("https", noCertErrorsHTTPS);
 		}
 		
 		// configure http client
