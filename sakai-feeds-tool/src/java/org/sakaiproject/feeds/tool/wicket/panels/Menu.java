@@ -3,8 +3,7 @@ package org.sakaiproject.feeds.tool.wicket.panels;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.link.BookmarkablePageLink;
 import org.apache.wicket.markup.html.panel.Panel;
-import org.apache.wicket.spring.injection.annot.SpringBean;
-import org.sakaiproject.feeds.tool.facade.SakaiFacade;
+import org.sakaiproject.feeds.tool.facade.Locator;
 import org.sakaiproject.feeds.tool.wicket.pages.MainPage;
 import org.sakaiproject.feeds.tool.wicket.pages.OptionsPage;
 import org.sakaiproject.feeds.tool.wicket.pages.PermissionsPage;
@@ -17,9 +16,6 @@ import org.sakaiproject.feeds.tool.wicket.pages.SubscriptionsPage;
 public class Menu extends Panel {
 	private static final long		serialVersionUID	= 1L;
 	
-	@SpringBean
-	private transient SakaiFacade facade;
-	
 	private BookmarkablePageLink	refreshLink;
 	private BookmarkablePageLink	subscriptionsLink;
 	private BookmarkablePageLink	optionsLink;
@@ -28,10 +24,10 @@ public class Menu extends Panel {
 	public Menu(String id) {
 		super(id);
 
-		boolean subscriptionsVisible = facade.getFeedsService().allowSubscribeFeeds() || facade.getFeedsService().allowEditPermissions();
-		boolean isInMyWorkspace = facade.getSiteService().isUserSite(facade.getToolManager().getCurrentPlacement().getContext());
-		boolean permissionsVisible = !isInMyWorkspace && facade.getFeedsService().allowEditPermissions();	
-		boolean optionsVisible = facade.getSessionManager().getCurrentSessionUserId() != null;
+		boolean subscriptionsVisible = Locator.getFacade().getFeedsService().allowSubscribeFeeds() || Locator.getFacade().getFeedsService().allowEditPermissions();
+		boolean isInMyWorkspace = Locator.getFacade().getSiteService().isUserSite(Locator.getFacade().getToolManager().getCurrentPlacement().getContext());
+		boolean permissionsVisible = !isInMyWorkspace && Locator.getFacade().getFeedsService().allowEditPermissions();	
+		boolean optionsVisible = Locator.getFacade().getSessionManager().getCurrentSessionUserId() != null;
 
 		PageParameters params = new PageParameters();
 		params.put("forceExternalCheck", Boolean.TRUE);

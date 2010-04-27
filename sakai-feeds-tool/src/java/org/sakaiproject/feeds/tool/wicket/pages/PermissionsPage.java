@@ -14,11 +14,10 @@ import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.PropertyModel;
-import org.apache.wicket.spring.injection.annot.SpringBean;
 import org.sakaiproject.authz.api.AuthzGroup;
 import org.sakaiproject.authz.api.Role;
 import org.sakaiproject.feeds.api.FeedsService;
-import org.sakaiproject.feeds.tool.facade.SakaiFacade;
+import org.sakaiproject.feeds.tool.facade.Locator;
 
 
 /**
@@ -28,9 +27,6 @@ public class PermissionsPage extends BasePage {
 	private static final long	serialVersionUID	= 1L;
 
 	private static Log				LOG			= LogFactory.getLog(PermissionsPage.class);
-
-	@SpringBean
-	private transient SakaiFacade	facade;
 
 	private List<PermissionWrapper>	permissions;
 
@@ -91,9 +87,9 @@ public class PermissionsPage extends BasePage {
 		if(permissions == null) {
 			permissions	= new ArrayList<PermissionWrapper>();
 			try{
-				String siteId = facade.getToolManager().getCurrentPlacement().getContext();
-				String siteReference = facade.getSiteService().siteReference(siteId);
-				AuthzGroup authz = facade.getAuthzGroupService().getAuthzGroup(siteReference);
+				String siteId = Locator.getFacade().getToolManager().getCurrentPlacement().getContext();
+				String siteReference = Locator.getFacade().getSiteService().siteReference(siteId);
+				AuthzGroup authz = Locator.getFacade().getAuthzGroupService().getAuthzGroup(siteReference);
 				Iterator<Role> it = authz.getRoles().iterator();
 				while(it.hasNext()) {
 					Role r = it.next();
@@ -112,9 +108,9 @@ public class PermissionsPage extends BasePage {
 	
 	private String getMaintainRole() {
 		try{
-			String siteId = facade.getToolManager().getCurrentPlacement().getContext();
-			String siteReference = facade.getSiteService().siteReference(siteId);
-			AuthzGroup authz = facade.getAuthzGroupService().getAuthzGroup(siteReference);
+			String siteId = Locator.getFacade().getToolManager().getCurrentPlacement().getContext();
+			String siteReference = Locator.getFacade().getSiteService().siteReference(siteId);
+			AuthzGroup authz = Locator.getFacade().getAuthzGroupService().getAuthzGroup(siteReference);
 			return authz.getMaintainRole();
 		}catch(Exception e){
 			LOG.error("Unable to determine maintain role", e);
@@ -124,9 +120,9 @@ public class PermissionsPage extends BasePage {
 	
 	private void savePermissions() {
 		try{
-			String siteId = facade.getToolManager().getCurrentPlacement().getContext();
-			String siteReference = facade.getSiteService().siteReference(siteId);
-			AuthzGroup authz = facade.getAuthzGroupService().getAuthzGroup(siteReference);
+			String siteId = Locator.getFacade().getToolManager().getCurrentPlacement().getContext();
+			String siteReference = Locator.getFacade().getSiteService().siteReference(siteId);
+			AuthzGroup authz = Locator.getFacade().getAuthzGroupService().getAuthzGroup(siteReference);
 			Iterator<PermissionWrapper> it = permissions.iterator();
 			while(it.hasNext()) {
 				PermissionWrapper pw = it.next();
@@ -135,7 +131,7 @@ public class PermissionsPage extends BasePage {
 				else
 					authz.getRole(pw.getRole()).disallowFunction(FeedsService.AUTH_SUBSCRIBE);
 			}
-			facade.getAuthzGroupService().save(authz);
+			Locator.getFacade().getAuthzGroupService().save(authz);
 		}catch(Exception e){
 			LOG.error("Unable to set permission list", e);
 		}

@@ -3,7 +3,6 @@ package org.sakaiproject.feeds.tool.wicket.pages;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -48,7 +47,6 @@ import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.protocol.http.WebResponse;
 import org.apache.wicket.request.target.basic.EmptyRequestTarget;
-import org.apache.wicket.spring.injection.annot.SpringBean;
 import org.apache.wicket.util.lang.Bytes;
 import org.apache.xmlbeans.XmlException;
 import org.sakaiproject.component.cover.ServerConfigurationService;
@@ -64,7 +62,7 @@ import org.sakaiproject.feeds.opml.BodyDocument.Body;
 import org.sakaiproject.feeds.opml.HeadDocument.Head;
 import org.sakaiproject.feeds.opml.OpmlDocument.Opml;
 import org.sakaiproject.feeds.opml.OutlineDocument.Outline;
-import org.sakaiproject.feeds.tool.facade.SakaiFacade;
+import org.sakaiproject.feeds.tool.facade.Locator;
 import org.sakaiproject.feeds.tool.wicket.components.AjaxIndicator;
 import org.sakaiproject.feeds.tool.wicket.components.CollapsiblePanel;
 import org.sakaiproject.feeds.tool.wicket.components.ExternalImage;
@@ -77,8 +75,6 @@ public class SubscriptionsPage extends BasePage {
 	private static final long			serialVersionUID			= 1L;
 	private static Log					LOG	= LogFactory.getLog(SubscriptionsPage.class);
 
-	@SpringBean
-	private transient SakaiFacade		facade;
 	private SubscriptionsDataProvider	allInstitutionalDataProvider;
 	private SubscriptionsDataProvider	subscriptionsWithoutInstitutionalDataProvider;
 
@@ -109,10 +105,10 @@ public class SubscriptionsPage extends BasePage {
 		
 		// credentials
 		if(savedCredentials == null)
-			savedCredentials = facade.getFeedsService().getSavedCredentials();
+			savedCredentials = Locator.getFacade().getFeedsService().getSavedCredentials();
 		
-		setAggregate(facade.getFeedsService().isAggregateFeeds());
-		aggregateOptions = facade.getFeedsService().getAggregateFeedsOptions();
+		setAggregate(Locator.getFacade().getFeedsService().isAggregateFeeds());
+		aggregateOptions = Locator.getFacade().getFeedsService().getAggregateFeedsOptions();
 		
 		feedback = new CSSFeedbackPanel("messages");
 		feedback.setOutputMarkupId(true);
@@ -397,11 +393,11 @@ public class SubscriptionsPage extends BasePage {
 				subscribed.add(subscription);
 			}
 		}
-		facade.getFeedsService().setSubscribedFeeds(subscribed);
-		facade.getFeedsService().setAggregateFeeds(isAggregate());
-		facade.getFeedsService().setAggregateFeedsOptions(aggregateOptions);
-		facade.getFeedsService().setSavedCredentials(savedCredentials);
-		facade.getFeedsService().loadCredentials();
+		Locator.getFacade().getFeedsService().setSubscribedFeeds(subscribed);
+		Locator.getFacade().getFeedsService().setAggregateFeeds(isAggregate());
+		Locator.getFacade().getFeedsService().setAggregateFeedsOptions(aggregateOptions);
+		Locator.getFacade().getFeedsService().setSavedCredentials(savedCredentials);
+		Locator.getFacade().getFeedsService().loadCredentials();
 	}
 
 	private void logSubscribeActions() {
@@ -415,7 +411,7 @@ public class SubscriptionsPage extends BasePage {
 				}
 			}
 			if(unsubscribed)
-				facade.getFeedsService().logEvent(FeedsService.LOG_EVENT_UNSUBSCRIBE_INSTITUTIONAL, fs1, true);			
+				Locator.getFacade().getFeedsService().logEvent(FeedsService.LOG_EVENT_UNSUBSCRIBE_INSTITUTIONAL, fs1, true);			
 		}		
 		// log unsubscriptions: User
 		for(FeedSubscription fs1 : previousUserSubscriptions) {
@@ -431,7 +427,7 @@ public class SubscriptionsPage extends BasePage {
 				}
 			}
 			if(!found || unsubscribed)
-				facade.getFeedsService().logEvent(FeedsService.LOG_EVENT_UNSUBSCRIBE_USER, fs1, true);				
+				Locator.getFacade().getFeedsService().logEvent(FeedsService.LOG_EVENT_UNSUBSCRIBE_USER, fs1, true);				
 		}
 
 		
@@ -445,7 +441,7 @@ public class SubscriptionsPage extends BasePage {
 				}
 			}
 			if(subscribed)
-				facade.getFeedsService().logEvent(FeedsService.LOG_EVENT_SUBSCRIBE_INSTITUTIONAL, fs1, true);			
+				Locator.getFacade().getFeedsService().logEvent(FeedsService.LOG_EVENT_SUBSCRIBE_INSTITUTIONAL, fs1, true);			
 		}		
 		// log subscriptions: User
 		for(FeedSubscription fs1 : subscriptionsWithoutInstitutionalDataProvider.getFeedSubscriptions()) {
@@ -461,7 +457,7 @@ public class SubscriptionsPage extends BasePage {
 				}
 			}
 			if(!found || subscribed)
-				facade.getFeedsService().logEvent(FeedsService.LOG_EVENT_SUBSCRIBE_USER, fs1, true);			
+				Locator.getFacade().getFeedsService().logEvent(FeedsService.LOG_EVENT_SUBSCRIBE_USER, fs1, true);			
 		}
 	}
 
@@ -532,11 +528,11 @@ public class SubscriptionsPage extends BasePage {
 		try{
 			URI uri = new URI(url);
 			if(username != null && !username.trim().equals("")){
-				facade.getFeedsService().addCredentials(uri, authenticationRealm, username, password, authenticationScheme);
+				Locator.getFacade().getFeedsService().addCredentials(uri, authenticationRealm, username, password, authenticationScheme);
 			}
-			feedSubscription = facade.getFeedsService().getFeedSubscriptionFromFeedUrl(url, validate);
+			feedSubscription = Locator.getFacade().getFeedsService().getFeedSubscriptionFromFeedUrl(url, validate);
 			if(isRememberMe() && username != null && !username.trim().equals("")){
-				SavedCredentials newCrd = facade.getFeedsService().newSavedCredentials(uri, authenticationRealm, username, password, authenticationScheme);
+				SavedCredentials newCrd = Locator.getFacade().getFeedsService().newSavedCredentials(uri, authenticationRealm, username, password, authenticationScheme);
 				// remove overrided credentials
 				Set<SavedCredentials> toRemove = new HashSet<SavedCredentials>();
 				for(SavedCredentials saved : savedCredentials){
@@ -668,8 +664,8 @@ public class SubscriptionsPage extends BasePage {
 				Opml opml = opmlDoc.addNewOpml();
 				Head opmlHead = opml.addNewHead();
 				// Use site title as opml title
-				String context = facade.getToolManager().getCurrentPlacement().getContext();
-				opmlHead.setTitle(facade.getSiteService().getSiteDisplay(context));
+				String context = Locator.getFacade().getToolManager().getCurrentPlacement().getContext();
+				opmlHead.setTitle(Locator.getFacade().getSiteService().getSiteDisplay(context));
 				Body opmlBody = opml.addNewBody();
 				
 				if(institutionalSubscriptions != null) {
