@@ -8,36 +8,43 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.behavior.SimpleAttributeModifier;
 import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
+import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.IChoiceRenderer;
+import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
-import org.apache.wicket.spring.injection.annot.SpringBean;
+import org.sakaiproject.feeds.api.CustomTitleOptions;
 import org.sakaiproject.feeds.api.FeedSubscription;
 import org.sakaiproject.feeds.api.FeedsService;
 import org.sakaiproject.feeds.api.ViewOptions;
-import org.sakaiproject.feeds.tool.facade.SakaiFacade;
+import org.sakaiproject.feeds.tool.facade.Locator;
 import org.sakaiproject.feeds.tool.wicket.components.ExternalImage;
+import org.sakaiproject.site.api.SitePage;
+import org.sakaiproject.site.api.SiteService;
 import org.sakaiproject.tool.api.Session;
+import org.sakaiproject.tool.api.ToolSession;
 import org.wicketstuff.dojo.markup.html.list.DojoOrderableListContainer;
 import org.wicketstuff.dojo.markup.html.list.DojoOrderableRepeatingView;
 
 
 public class OptionsPage extends BasePage {
 	private static final long	serialVersionUID	= 1L;
-
-	@SpringBean
-	private transient SakaiFacade facade;
+	
+	private boolean hasSiteUpd = false;
+	
 	
 	private boolean isAggregate;
 	private ViewOptions viewOptions;
+	private CustomTitleOptions titleOptions;
 	private Set<FeedSubscription> subscriptions;
 	private List<FeedSubscription> subscriptionsList;
 	
@@ -45,18 +52,50 @@ public class OptionsPage extends BasePage {
 	private DojoOrderableListContainer container;
 	
 	public OptionsPage() {
-		viewOptions = facade.getFeedsService().getViewOptions();
-		isAggregate = facade.getFeedsService().isAggregateFeeds();
+		viewOptions = Locator.getFacade().getFeedsService().getViewOptions();
+		titleOptions = Locator.getFacade().getFeedsService().getCustomTitleOptions();
+		isAggregate = Locator.getFacade().getFeedsService().isAggregateFeeds();
+		try{
+			String userId = Locator.getFacade().getSessionManager().getCurrentSessionUserId();
+			String siteRef = Locator.getFacade().getSiteService().siteReference(Locator.getFacade().getToolManager().getCurrentPlacement().getContext());
+			hasSiteUpd = Locator.getFacade().getAuthzGroupService().isAllowed(userId, SiteService.SECURE_UPDATE_SITE, siteRef);
+		}catch(Exception e) {
+			// something wrong happened, we can assume user is not maintainer on the current context
+			hasSiteUpd = false;
+		}
 		if(isAggregate) {
 			subscriptions = new HashSet<FeedSubscription>();
 		}else{
-			subscriptions = facade.getFeedsService().getSubscribedFeeds(FeedsService.MODE_SUBSCRIBED);
+			subscriptions = Locator.getFacade().getFeedsService().getSubscribedFeeds(FeedsService.MODE_SUBSCRIBED);
 		}
 		subscriptionsList = new LinkedList<FeedSubscription>(subscriptions);
 
 		Form form = new Form("options");
 		setModel(new CompoundPropertyModel(this));
 		
+		// custom title options
+		boolean supportLocalizedPages = false;
+		try{
+			SitePage.class.getMethod("getTitleCustom", new Class[]{});
+			supportLocalizedPages = true;
+		}catch(Exception e){
+			supportLocalizedPages = false;
+		}
+		WebMarkupContainer customtitleContainer = new WebMarkupContainer("customtitle-options");
+		WebMarkupContainer customTitleChkTr = new WebMarkupContainer("customTitleChkTr");
+		customTitleChkTr.add(new CheckBox("useCustomTitle"));
+		customTitleChkTr.setVisible(supportLocalizedPages);
+		customtitleContainer.add(customTitleChkTr);
+		TextField customToolTitleTxt = new TextField("customToolTitle");
+		TextField customPageTitleTxt = new TextField("customPageTitle");
+		if(!getUseCustomTitle()) {
+			customToolTitleTxt.add(new SimpleAttributeModifier("disabled", "disabled"));
+			customPageTitleTxt.add(new SimpleAttributeModifier("disabled", "disabled"));
+		}
+		customtitleContainer.add(customToolTitleTxt);
+		customtitleContainer.add(customPageTitleTxt);
+		customtitleContainer.setVisible(hasSiteUpd);
+		form.add(customtitleContainer);
 		
 		// view options
 		final DropDownChoice viewFilter = new DropDownChoice("viewFilter", getViewFilterModes(), new IChoiceRenderer(){
@@ -160,24 +199,30 @@ public class OptionsPage extends BasePage {
 		
 		add(form);
 	}
-	
-	
-	
+
 	@Override
 	public void renderHead(IHeaderResponse response) {
-		// TODO Auto-generated method stub
-		//org.wicketstuff.dojo.
+		response.renderJavascriptReference("/library/js/jquery.js");
 		super.renderHead(response);
 	}
 
-
-
-	private void saveOptions() {		
+	private void saveOptions() {
+		if(hasSiteUpd) {
+			// custom titles
+			Locator.getFacade().getFeedsService().setCustomTitleOptions(titleOptions);
+			
+			// schedule a top refresh - vm prop, currently has no effect!
+			ToolSession session = Locator.getFacade().getSessionManager().getCurrentToolSession();
+			if(session.getAttribute(MainPage.FORCE_TOP_REFRESH) == null){
+				session.setAttribute(MainPage.FORCE_TOP_REFRESH, Boolean.TRUE);
+			}
+		}
+		
 		// view options
-		facade.getFeedsService().setViewOptions(viewOptions);
+		Locator.getFacade().getFeedsService().setViewOptions(viewOptions);
 		
 		// save in session
-		Session session = facade.getSessionManager().getCurrentSession();
+		Session session = Locator.getFacade().getSessionManager().getCurrentSession();
 		session.setAttribute(FeedsService.SESSION_ATTR_VIEWOPTIONS, viewOptions);
 		
 		// subscriptions order
@@ -186,7 +231,7 @@ public class OptionsPage extends BasePage {
 			for(FeedSubscription fs : subscriptionsList){
 				urls.add(fs.getUrl());
 			}		
-			facade.getFeedsService().setSubscriptionsOrder(urls);
+			Locator.getFacade().getFeedsService().setSubscriptionsOrder(urls);
 		}
 	}
 	
@@ -228,5 +273,29 @@ public class OptionsPage extends BasePage {
 			modes.add(ViewOptions.VIEW_DETAILS[i]);
 		}
 		return modes;
+	}
+	
+	public boolean getUseCustomTitle() {
+		return titleOptions.getUseCustomTitle();
+	}
+	
+	public void setUseCustomTitle(boolean useCustom) {
+		titleOptions.setUseCustomTitle(useCustom);
+	}
+	
+	public String getCustomToolTitle() {
+		return titleOptions.getCustomToolTitle();
+	}
+	
+	public void setCustomToolTitle(String title) {
+		titleOptions.setCustomToolTitle(title);
+	}
+	
+	public String getCustomPageTitle() {
+		return titleOptions.getCustomPageTitle();
+	}
+	
+	public void setCustomPageTitle(String title) {
+		titleOptions.setCustomPageTitle(title);
 	}
 }

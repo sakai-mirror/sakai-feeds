@@ -16,7 +16,7 @@ import org.sakaiproject.feeds.tool.wicket.pages.MainPage;
 public class FeedsApplication extends WebApplication {
 	private static Log LOG = LogFactory.getLog(FeedsApplication.class);
 
-	private SakaiFacade facade;
+	private transient SakaiFacade facade;
 	
 	protected void init() {
 		super.init();

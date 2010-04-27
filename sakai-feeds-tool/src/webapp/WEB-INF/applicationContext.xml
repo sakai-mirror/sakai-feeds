@@ -16,9 +16,7 @@
 
 	<!-- The id of this bean needs to match the param 'applicationBean' under your web.xml -->
 	<bean id="feedsApplication" class="org.sakaiproject.feeds.tool.wicket.FeedsApplication">
-    	<property name="facade">
-			<ref bean="org.sakaiproject.feeds.tool.facade.SakaiFacade"/>
-		</property>
+    	<property name="facade" ref="org.sakaiproject.feeds.tool.facade.SakaiFacade"/>
     </bean>
     
 </beans>

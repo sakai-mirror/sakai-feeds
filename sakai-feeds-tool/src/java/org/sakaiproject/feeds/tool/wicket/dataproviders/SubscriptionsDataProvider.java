@@ -3,13 +3,11 @@ package org.sakaiproject.feeds.tool.wicket.dataproviders;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.apache.wicket.injection.web.InjectorHolder;
 import org.apache.wicket.markup.repeater.data.IDataProvider;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.spring.injection.annot.SpringBean;
 import org.sakaiproject.feeds.api.FeedSubscription;
-import org.sakaiproject.feeds.tool.facade.SakaiFacade;
+import org.sakaiproject.feeds.tool.facade.Locator;
 
 
 public class SubscriptionsDataProvider implements IDataProvider {
@@ -17,20 +15,16 @@ public class SubscriptionsDataProvider implements IDataProvider {
 	public static final int			MODE_SUBSCRIBED				= 0;
 	public static final int			MODE_ALL_INSTITUTIONAL		= 1;
 	public static final int			MODE_ALL_NON_INSTITUTIONAL	= 2;
-	@SpringBean
-	private transient SakaiFacade	facade;
 	private Set<FeedSubscription>	feeds;
 	private int						mode;
 
 	public SubscriptionsDataProvider(int mode) {
-		if(facade == null)
-			InjectorHolder.getInjector().inject(this);
 		this.mode = mode;
 	}
 
 	public Set<FeedSubscription> getFeedSubscriptions() {
 		if(feeds == null){
-			feeds = facade.getFeedsService().getSubscribedFeeds(mode);
+			feeds = Locator.getFacade().getFeedsService().getSubscribedFeeds(mode);
 		}
 		return feeds;
 	}
@@ -48,7 +42,7 @@ public class SubscriptionsDataProvider implements IDataProvider {
 	}
 
 	public int size() {
-		if(mode == MODE_SUBSCRIBED && facade.getFeedsService().isAggregateFeeds() && getFeedSubscriptions().size() > 0){
+		if(mode == MODE_SUBSCRIBED && Locator.getFacade().getFeedsService().isAggregateFeeds() && getFeedSubscriptions().size() > 0){
 			try{
 				return getFeedSubscriptions().iterator().next().getUrls().length;
 			}catch(Exception e) {

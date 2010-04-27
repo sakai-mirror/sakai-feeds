@@ -19,11 +19,10 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.StringResourceModel;
-import org.apache.wicket.spring.injection.annot.SpringBean;
 import org.sakaiproject.entitybroker.EntityReference;
 import org.sakaiproject.feeds.api.SavedCredentials;
 import org.sakaiproject.feeds.api.exception.FeedAuthenticationException;
-import org.sakaiproject.feeds.tool.facade.SakaiFacade;
+import org.sakaiproject.feeds.tool.facade.Locator;
 import org.sakaiproject.feeds.tool.wicket.dataproviders.FeedDataProvider;
 
 
@@ -34,8 +33,6 @@ public abstract class AuthenticationPanel extends Panel {
 	private static final long		serialVersionUID		= 1L;
 	private static Log				LOG						= LogFactory.getLog(AuthenticationPanel.class);
 
-	@SpringBean
-	private transient SakaiFacade	facade;
 	private Set<SavedCredentials>	savedCredentials		= null;
 
 	private FeedDataProvider		feedDataProvider;
@@ -62,7 +59,7 @@ public abstract class AuthenticationPanel extends Panel {
 		this.authenticationScheme = scheme;
 		
 		if(savedCredentials == null)
-			savedCredentials = facade.getFeedsService().getSavedCredentials();
+			savedCredentials = Locator.getFacade().getFeedsService().getSavedCredentials();
 		
 		init(); // NOPMD by Nuno Fernandes on 12-09-2008 9:24
 	}
@@ -107,7 +104,7 @@ public abstract class AuthenticationPanel extends Panel {
 				if(getUsername() != null && !getUsername().trim().equals("")){
 					try{
 						uri = new URI(feedUrl);
-						facade.getFeedsService().addCredentials(uri, authenticationRealm, username, password, authenticationScheme);
+						Locator.getFacade().getFeedsService().addCredentials(uri, authenticationRealm, username, password, authenticationScheme);
 					}catch(Exception e){
 						e.printStackTrace();
 					}
@@ -116,7 +113,7 @@ public abstract class AuthenticationPanel extends Panel {
 				// check with new credentials
 				boolean authSuccess = areCredentialsOk();
 				if(authSuccess && isRememberMe()) {
-					SavedCredentials newCrd = facade.getFeedsService().newSavedCredentials(uri, authenticationRealm, username, password, authenticationScheme);
+					SavedCredentials newCrd = Locator.getFacade().getFeedsService().newSavedCredentials(uri, authenticationRealm, username, password, authenticationScheme);
 					// remove overrided credentials
 					Set<SavedCredentials> toRemove = new HashSet<SavedCredentials>();
 					for(SavedCredentials saved : savedCredentials){
@@ -130,8 +127,8 @@ public abstract class AuthenticationPanel extends Panel {
 					savedCredentials.removeAll(toRemove);
 					// add new credentials
 					savedCredentials.add(newCrd);
-					facade.getFeedsService().setSavedCredentials(savedCredentials);
-					facade.getFeedsService().loadCredentials();
+					Locator.getFacade().getFeedsService().setSavedCredentials(savedCredentials);
+					Locator.getFacade().getFeedsService().loadCredentials();
 				}
 				
 				//
@@ -164,9 +161,9 @@ public abstract class AuthenticationPanel extends Panel {
 					&& authenticationRealm.equals(feedDataProvider.getAuthenticationRealm()) 
 					&& feedUrl.equals(feedDataProvider.getAffectedFeed());
 		}else{
-			EntityReference ref = facade.getFeedsService().getEntityReference(getFeedUrl());
+			EntityReference ref = Locator.getFacade().getFeedsService().getEntityReference(getFeedUrl());
 			try{
-				facade.getFeedsService().getFeed(ref, true);
+				Locator.getFacade().getFeedsService().getFeed(ref, true);
 			}catch(FeedAuthenticationException e){
 				return false;
 			}catch(Exception e){

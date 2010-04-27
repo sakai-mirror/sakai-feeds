@@ -118,6 +118,12 @@ public interface FeedsService {
 	/** Load feed view options. */	
 	public ViewOptions getViewOptions();
 	
+	/** Get options related with custom page/tool titles */
+	public CustomTitleOptions getCustomTitleOptions();
+	
+	/** Set custom page/tool titles options. */
+	public void setCustomTitleOptions(CustomTitleOptions options);
+	
 	/** Check if feeds will be aggregated in a single feed. */
 	public boolean isAggregateFeeds();
 	

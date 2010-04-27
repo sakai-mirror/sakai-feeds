@@ -1,6 +1,8 @@
 package org.sakaiproject.feeds.impl;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -47,6 +49,7 @@ import org.sakaiproject.exception.IdUnusedException;
 import org.sakaiproject.exception.InUseException;
 import org.sakaiproject.exception.PermissionException;
 import org.sakaiproject.feeds.api.AggregateFeedOptions;
+import org.sakaiproject.feeds.api.CustomTitleOptions;
 import org.sakaiproject.feeds.api.Feed;
 import org.sakaiproject.feeds.api.FeedEntry;
 import org.sakaiproject.feeds.api.FeedEntryEnclosure;
@@ -66,7 +69,9 @@ import org.sakaiproject.feeds.impl.SakaiFeedFetcher.InnerFetcherException;
 import org.sakaiproject.feeds.impl.entity.ExternalFeedEntityProviderImpl;
 import org.sakaiproject.id.api.IdManager;
 import org.sakaiproject.site.api.Site;
+import org.sakaiproject.site.api.SitePage;
 import org.sakaiproject.site.api.SiteService;
+import org.sakaiproject.site.api.ToolConfiguration;
 import org.sakaiproject.tool.api.Placement;
 import org.sakaiproject.tool.api.Session;
 import org.sakaiproject.tool.api.SessionManager;
@@ -611,6 +616,70 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 		}
 		
 		return viewOptions;
+	}
+	
+	public CustomTitleOptions getCustomTitleOptions() {
+		Placement placement = ToolManager.getCurrentPlacement();
+		ToolConfiguration toolConfig = m_siteService.findTool(placement.getId());
+		SitePage page = toolConfig.getContainingPage();
+		
+		CustomTitleOptions options = new CustomTitleOptionsImpl();
+		options.setCustomPageTitle(page.getTitle());
+		options.setCustomToolTitle(placement.getTitle());
+		
+		try{
+			Method method = SitePage.class.getMethod("getTitleCustom", new Class[]{});
+			Boolean useCustom = (Boolean) method.invoke(page, new Object[]{});
+			options.setUseCustomTitle(useCustom);
+		}catch(Exception e){
+			options.setUseCustomTitle(true);
+		}
+		
+		return options;
+	}
+	
+	public void setCustomTitleOptions(CustomTitleOptions options) {
+		Placement placement = ToolManager.getCurrentPlacement();
+		ToolConfiguration toolConfig = m_siteService.findTool(placement.getId());
+		SitePage page = toolConfig.getContainingPage();
+		boolean customTitle = true;
+		
+		try{
+			// 2.7+
+			// page.setTitleCustom(true);
+			Method method = SitePage.class.getMethod("setTitleCustom", new Class[]{boolean.class});
+			method.invoke(page, new Object[]{options.getUseCustomTitle()});
+			customTitle = options.getUseCustomTitle();
+		}catch(Exception e){
+			// < 2.7, set titles anyway
+			customTitle = true;
+		}
+
+		if(customTitle) {
+			try{
+				// common code: save page title
+				page.setTitle(options.getCustomPageTitle());
+				m_siteService.save( m_siteService.getSite(toolConfig.getSiteId()) );				
+			}catch(Exception e){
+				LOG.warn("Unable to set page title", e);
+			}
+			try{
+				// common code: save tool title
+				placement.setTitle(options.getCustomToolTitle());
+				placement.save();
+			}catch(Exception e){				
+				LOG.warn("Unable to set tool title", e);
+			}
+		}else{
+			// 2.7+
+			try{
+				// page.localizePage();				
+				SitePage.class.getMethod("localizePage", new Class[]{}).invoke(page, new Object[]{});
+				m_siteService.save( m_siteService.getSite(toolConfig.getSiteId()) );
+			}catch(Exception e){
+				LOG.warn("Unable to set localized page title", e);
+			}
+		}
 	}
 	
 	public boolean isAbleToSaveCredentials() {

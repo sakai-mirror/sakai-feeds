@@ -16,12 +16,11 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.spring.injection.annot.SpringBean;
 import org.apache.wicket.util.time.Duration;
 import org.sakaiproject.component.cover.ServerConfigurationService;
 import org.sakaiproject.feeds.api.FeedSubscription;
 import org.sakaiproject.feeds.api.FeedsService;
-import org.sakaiproject.feeds.tool.facade.SakaiFacade;
+import org.sakaiproject.feeds.tool.facade.Locator;
 
 
 public abstract class AjaxParallelLazyFeedLoadPanel extends Panel implements Observer {
@@ -40,9 +39,6 @@ public abstract class AjaxParallelLazyFeedLoadPanel extends Panel implements Obs
 	private CharSequence				hideCancelButtonJs		= "";
 	private String						feedCacheTaskId			= null;
 
-	@SpringBean
-	private transient SakaiFacade facade;
-	
 	public AjaxParallelLazyFeedLoadPanel(String id, final Component loadingComponent, FeedSubscription subscription, boolean forceExternalCheck) {
 		this(id, null, loadingComponent, subscription, forceExternalCheck);
 	}
@@ -157,7 +153,7 @@ public abstract class AjaxParallelLazyFeedLoadPanel extends Panel implements Obs
 	
 	public void cancelFeedLoad() {
 		componentAborted = true;
-		facade.getFeedsService().cancelCacheFeed(feedCacheTaskId);
+		Locator.getFacade().getFeedsService().cancelCacheFeed(feedCacheTaskId);
 	}
 	
 	private CharSequence getShowCancelButtonJs() {
@@ -175,8 +171,8 @@ public abstract class AjaxParallelLazyFeedLoadPanel extends Panel implements Obs
 	}			
 	
 	private void cacheFeed(final String feedUrl, final boolean forceExternalCheck) {
-		facade.getFeedsService().loadCredentials();
-		feedCacheTaskId = facade.getFeedsService().cacheFeed(feedUrl, forceExternalCheck, this);			
+		Locator.getFacade().getFeedsService().loadCredentials();
+		feedCacheTaskId = Locator.getFacade().getFeedsService().cacheFeed(feedUrl, forceExternalCheck, this);			
 	}
 
 	public void update(Observable o, Object arg) {

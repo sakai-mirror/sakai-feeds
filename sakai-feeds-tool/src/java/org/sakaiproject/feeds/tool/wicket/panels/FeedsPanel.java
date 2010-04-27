@@ -21,12 +21,11 @@ import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
-import org.apache.wicket.spring.injection.annot.SpringBean;
 import org.sakaiproject.feeds.api.AggregateFeedOptions;
 import org.sakaiproject.feeds.api.FeedSubscription;
 import org.sakaiproject.feeds.api.FeedsService;
 import org.sakaiproject.feeds.api.ViewOptions;
-import org.sakaiproject.feeds.tool.facade.SakaiFacade;
+import org.sakaiproject.feeds.tool.facade.Locator;
 import org.sakaiproject.feeds.tool.wicket.components.AjaxIndicator;
 import org.sakaiproject.feeds.tool.wicket.components.AjaxParallelLazyFeedLoadPanel;
 import org.sakaiproject.feeds.tool.wicket.components.AjaxUpdatingBehaviorWithIndicator;
@@ -38,9 +37,6 @@ import org.sakaiproject.tool.api.Session;
 
 public final class FeedsPanel extends Panel {
 	private static final long	serialVersionUID	= 1L;
-
-	@SpringBean
-	private transient SakaiFacade facade;
 	
 	private ViewOptions viewOptions;
 	private AggregateFeedOptions aggregateFeedOptions;
@@ -285,12 +281,12 @@ public final class FeedsPanel extends Panel {
 	}
 
 	private void doLogReadEvent(final Boolean forceExternalCheck) {
-		Session session = facade.getSessionManager().getCurrentSession();
-		String contextId = facade.getToolManager().getCurrentPlacement().getContext();
+		Session session = Locator.getFacade().getSessionManager().getCurrentSession();
+		String contextId = Locator.getFacade().getToolManager().getCurrentPlacement().getContext();
 		List<String> readEventLoggedInContexts = (List<String>) session.getAttribute(FeedsService.SESSION_ATTR_LOG_READ_EVENT);
 		
 		if(readEventLoggedInContexts == null || !readEventLoggedInContexts.contains(contextId) || forceExternalCheck) {
-			facade.getFeedsService().logEvent(FeedsService.LOG_EVENT_READ, null, false);
+			Locator.getFacade().getFeedsService().logEvent(FeedsService.LOG_EVENT_READ, null, false);
 			if(readEventLoggedInContexts == null)
 				readEventLoggedInContexts = new ArrayList<String>();
 			readEventLoggedInContexts.add(contextId);
@@ -300,19 +296,19 @@ public final class FeedsPanel extends Panel {
 
 	private void setupClient() {
 		// load saved credentials
-		facade.getFeedsService().loadCredentials();
+		Locator.getFacade().getFeedsService().loadCredentials();
 		
 		// load viewOptions
-		Session session = facade.getSessionManager().getCurrentSession();
+		Session session = Locator.getFacade().getSessionManager().getCurrentSession();
 		viewOptions = (ViewOptions) session.getAttribute(FeedsService.SESSION_ATTR_VIEWOPTIONS); 
 		if(viewOptions == null) {
-			viewOptions = facade.getFeedsService().getViewOptions();
+			viewOptions = Locator.getFacade().getFeedsService().getViewOptions();
 			session.setAttribute(FeedsService.SESSION_ATTR_VIEWOPTIONS, viewOptions);
 		}
 		
 		// load aggregateFeedOptions
-		if(facade.getFeedsService().isAggregateFeeds()) {
-			aggregateFeedOptions = facade.getFeedsService().getAggregateFeedsOptions();
+		if(Locator.getFacade().getFeedsService().isAggregateFeeds()) {
+			aggregateFeedOptions = Locator.getFacade().getFeedsService().getAggregateFeedsOptions();
 			if(aggregateFeedOptions.getTitleDisplayOption() == AggregateFeedOptions.TITLE_DISPLAY_NONE) {
 				viewOptions.setViewDetail(ViewOptions.VIEW_DETAIL_TITLE_ENTRY);
 				session.setAttribute(FeedsService.SESSION_ATTR_VIEWOPTIONS, viewOptions);
@@ -328,7 +324,7 @@ public final class FeedsPanel extends Panel {
 		viewOptions.setViewFilter(viewFilter);
 		
 		// save in session
-		Session session = facade.getSessionManager().getCurrentSession();
+		Session session = Locator.getFacade().getSessionManager().getCurrentSession();
 		session.setAttribute(FeedsService.SESSION_ATTR_VIEWOPTIONS, viewOptions);
 	}
 
@@ -340,7 +336,7 @@ public final class FeedsPanel extends Panel {
 		viewOptions.setViewDetail(viewDetail);
 		
 		// save in session
-		Session session = facade.getSessionManager().getCurrentSession();
+		Session session = Locator.getFacade().getSessionManager().getCurrentSession();
 		session.setAttribute(FeedsService.SESSION_ATTR_VIEWOPTIONS, viewOptions);
 	}
 	
@@ -359,7 +355,7 @@ public final class FeedsPanel extends Panel {
 		List<String> modes = new ArrayList<String>();
 		modes.add(ViewOptions.VIEW_DETAIL_FULL_ENTRY);
 		modes.add(ViewOptions.VIEW_DETAIL_TITLE_ENTRY);
-		if(!(facade.getFeedsService().isAggregateFeeds() && aggregateFeedOptions.getTitleDisplayOption() == AggregateFeedOptions.TITLE_DISPLAY_NONE)) {
+		if(!(Locator.getFacade().getFeedsService().isAggregateFeeds() && aggregateFeedOptions.getTitleDisplayOption() == AggregateFeedOptions.TITLE_DISPLAY_NONE)) {
 			modes.add(ViewOptions.VIEW_DETAIL_NO_ENTRY);
 		}
 		return modes;
