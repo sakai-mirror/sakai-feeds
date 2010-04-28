@@ -14,7 +14,7 @@
   <parent>
     <artifactId>sakai-feeds</artifactId>
     <groupId>org.sakaiproject</groupId>
-    <version>1.1.4-SNAPSHOT</version><!-- newsfeeds.version --> 
+    <version>M2</version><!-- newsfeeds.version --> 
   </parent>
   
   <!-- Packaging -->
@@ -30,6 +30,7 @@
     
     <!-- Sakai -->
     <!-- K1 Sakai deps -->
+    <!--
     <dependency>
       <groupId>org.sakaiproject.kernel</groupId>
       <artifactId>sakai-kernel-api</artifactId>
@@ -41,9 +42,8 @@
     <dependency>
       <groupId>org.sakaiproject.kernel</groupId>
       <artifactId>sakai-component-manager</artifactId>
-    </dependency>
+    </dependency>-->
     <!-- Pre K1 Sakai deps -->
-    <!--
     <dependency>
       <groupId>org.sakaiproject</groupId>
       <artifactId>sakai-component</artifactId>
@@ -90,13 +90,18 @@
     </dependency>
     <dependency>
       <groupId>org.sakaiproject</groupId>
+      <artifactId>sakai-memory-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.sakaiproject</groupId>
       <artifactId>sakai-util-api</artifactId>
     </dependency>
     <dependency>
       <groupId>org.sakaiproject</groupId>
       <artifactId>sakai-util</artifactId>
     </dependency>
-    -->    
+    
+    
     <dependency>
       <groupId>org.sakaiproject.entitybroker</groupId>
       <artifactId>entitybroker-api</artifactId>
