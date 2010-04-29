@@ -7,8 +7,6 @@
 	<display-name>sakai-feeds</display-name>
 	<description>Sakai Feeds</description>
 
-	<distributable />
-
 	<context-param>
 	 	<param-name>configuration</param-name>
 <!--  		<param-value>development</param-value> -->
@@ -66,7 +64,7 @@
 
 	<session-config>
 		<!-- Default to 5 minute session timeouts -->
-		<session-timeout>5</session-timeout>
+		<session-timeout>0</session-timeout>
 	</session-config>
 	
 	<welcome-file-list>

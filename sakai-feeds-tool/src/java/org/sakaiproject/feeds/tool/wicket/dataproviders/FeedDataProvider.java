@@ -29,6 +29,7 @@ import org.sakaiproject.feeds.api.ViewOptions;
 import org.sakaiproject.feeds.api.exception.FeedAuthenticationException;
 import org.sakaiproject.feeds.api.exception.FetcherException;
 import org.sakaiproject.feeds.api.exception.InvalidFeedException;
+import org.sakaiproject.feeds.tool.facade.Locator;
 import org.sakaiproject.feeds.tool.facade.SakaiFacade;
 import org.sakaiproject.feeds.tool.wicket.model.FeedErrorModel;
 
@@ -36,8 +37,7 @@ import org.sakaiproject.feeds.tool.wicket.model.FeedErrorModel;
 public final class FeedDataProvider implements IDataProvider {
 	private static final long		serialVersionUID			= 1L;
 	private static Log				LOG							= LogFactory.getLog(FeedDataProvider.class);
-	@SpringBean
-	private transient SakaiFacade	facade;
+	
 	private	String					viewDetail;
 	private boolean					requireAuthentication		= false;
 	private String					affectedFeed				= null;
@@ -51,8 +51,6 @@ public final class FeedDataProvider implements IDataProvider {
 	private boolean					forceExternalCheck;
 
 	public FeedDataProvider(FeedSubscription subscription, String viewDetail, Boolean forceExternalCheck) {
-		if(facade == null)
-			InjectorHolder.getInjector().inject(this);
 		this.subscription = subscription;
 		this.viewDetail = viewDetail;
 		this.forceExternalCheck = forceExternalCheck.booleanValue();
@@ -120,10 +118,10 @@ public final class FeedDataProvider implements IDataProvider {
 	}
 
 	private Feed getFeed(String url) {
-		EntityReference reference = facade.getFeedsService().getEntityReference(url);
+		EntityReference reference = Locator.getFacade().getFeedsService().getEntityReference(url);
 		Feed _feed = null;
 		try{
-			_feed = facade.getFeedsService().getFeed(reference, forceExternalCheck);
+			_feed = Locator.getFacade().getFeedsService().getFeed(reference, forceExternalCheck);
 			requireAuthentication = false;
 			entries = null;
 		}catch(FeedAuthenticationException e){

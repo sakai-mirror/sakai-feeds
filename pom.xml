@@ -1,11 +1,11 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
+  
   <name>Sakai News Feeds</name>
   <groupId>org.sakaiproject</groupId>
   <artifactId>sakai-feeds</artifactId>
-  <version>M2</version><!-- newsfeeds.version --> 
-  
+  <version>1.1.5</version><!-- newsfeeds.version --> 
   <description>News Feeds is a feed aggregator tool developed for Sakai.</description>
   <url>http://bugs.sakaiproject.org/confluence/display/NFS</url>
   <inceptionYear>2008</inceptionYear>
@@ -14,8 +14,7 @@
     <url>http://www.ufp.pt</url>
   </organization>
   <packaging>pom</packaging>  
-  
-  
+   
   <!-- Parent: Sakai master pom -->
   <parent>
     <artifactId>master</artifactId>
@@ -26,20 +25,21 @@
     <version>2.6-SNAPSHOT</version> <!-- For pre-2.6.0 -->   
     <!--<version>2.7.0-SNAPSHOT</version>--> <!-- For TRUNK -->
   </parent>
-  
+
 
   <!-- Project versions -->
   <properties>
     <entitybroker.version>1.3.3</entitybroker.version>
     <commons-codec.version>1.3</commons-codec.version>
     <commons-httpclient.version>3.1</commons-httpclient.version>
-    <commons-httpclient-contrib.version>3.0-beta1</commons-httpclient-contrib.version>
-    <rome.version>0.9</rome.version>
-    <rome-fetcher.version>0.7</rome-fetcher.version>
+    <rome.version>1.0-sakai</rome.version>
+    <rome-fetcher.version>1.0</rome-fetcher.version>
     <feeds.wicket.version>1.3.5</feeds.wicket.version>
     <feeds.wicketstuff-dojo.version>1.3.0-beta</feeds.wicketstuff-dojo.version>
     <feeds.slf4j.version>1.4.3</feeds.slf4j.version>
     <xmlbeans.version>2.2.0</xmlbeans.version>
+	<url.localsite>scp://source.sakaiproject.org/var/www/html/release/sakai-feeds/${project.version}</url.localsite>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   
   
@@ -49,6 +49,7 @@
     <module>sakai-feeds-impl</module>
     <module>sakai-feeds-pack</module>
     <module>sakai-feeds-tool</module>
+    <module>sakai-feeds-assembly</module>
   </modules>
   
   
@@ -74,14 +75,29 @@
   <!-- Project repositories -->
   <repositories>
     <repository>
-      <id>sakai-maven</id>
+      <id>sakai-maven2</id>
       <name>Sakai Maven Repo</name>
       <layout>default</layout>
       <url>http://source.sakaiproject.org/maven2</url>
-      <snapshots>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+	  <snapshots>
         <enabled>false</enabled>
       </snapshots>
-      </repository>
+    </repository>
+    <repository>
+      <id>sakai-maven2-snapshots</id>
+      <name>Sakai Maven Repo Snapshots</name>
+      <layout>default</layout>
+      <url>http://source.sakaiproject.org/maven2-snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+	  <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
     <repository>
       <id>default</id>
       <name>Maven Repository Switchboard</name>
@@ -100,22 +116,39 @@
       </snapshots>
     </repository>
     <repository>
-      <id>commons-httpclient-contrib-repository</id>
-      <name>commons-httpclient-contrib Repository</name>
-      <url>http://incubator.52north.org/maven/maven-repo/releases/</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
+      <id>oucs-ox</id>
+      <name>Oucs-Ox Maven Repo</name>
+      <url>http://maven-repo.oucs.ox.ac.uk/content/repositories/releases/</url>
     </repository>
     <repository>
-      <id>additional-repo-for-latest-rome</id>
-      <name>additional-repo-for-latest-rome</name>
-      <url>http://dev.tailsweep.com/projects/repositor</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
+      <id>java-net-m2</id>
+      <name>Java.net Maven Repo</name>
+      <url>http://download.java.net/maven/2/</url>
     </repository>
   </repositories>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>maven2-central-repo</id>
+      <name>Maven2 Central Repo</name>
+      <url>http://repo1.maven.org/maven2/</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </pluginRepository>
+    <pluginRepository>
+      <id>Sakai Plugin Repo</id>
+      <url>http://source.sakaiproject.org/maven2</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </pluginRepository>
+  </pluginRepositories>
 
   
   <!-- JIRA -->
@@ -137,10 +170,35 @@
   
   <!-- Source code repository location -->
   <scm>
-    <connection>scm:svn:https://source.sakaiproject.org/contrib/ufp/newsfeeds/trunk</connection>
-    <developerConnection>scm:svn:https://source.sakaiproject.org/contrib/ufp/newsfeeds/trunk</developerConnection>
-    <url>http://source.sakaiproject.org/viewsvn/ufp/newsfeeds/?root=contrib</url>
+    <connection>scm:svn:https://source.sakaiproject.org/contrib/ufp/sakai-feeds/branches/2.6.x</connection>
+    <developerConnection>scm:svn:https://source.sakaiproject.org/contrib/ufp/sakai-feeds/branches/2.6.x</developerConnection>
+    <url>http://source.sakaiproject.org/viewsvn/ufp/sakai-feeds/?root=contrib</url>
   </scm>
+  
+  
+  <!-- Distribution Management -->
+  <distributionManagement>
+    <downloadUrl>http://source.sakaiproject.org/maven2/</downloadUrl>
+    <snapshotRepository>
+      <uniqueVersion>false</uniqueVersion>
+      <id>sakai-maven-snapshots-scp</id>
+      <name>Sakai snapshot Repo</name>
+      <url>scp://source.sakaiproject.org/var/www/html/maven2-snapshots</url>
+      <layout>default</layout>
+    </snapshotRepository>
+    <repository>
+      <uniqueVersion>false</uniqueVersion>
+      <id>sakai-maven2-scp</id>
+      <name>Sakai maven2 repository</name>
+      <url>scp://source.sakaiproject.org/var/www/html/maven2</url>
+      <layout>default</layout>
+    </repository>
+    <site>
+      <id>sakai-site</id>
+      <name>Sakai release Site</name>
+      <url>${url.localsite}</url>
+    </site>
+  </distributionManagement>
 
   
   <!-- Project related dependencies -->
@@ -158,27 +216,6 @@
       <artifactId>sakai-feeds-impl</artifactId>
       <version>${project.version}</version>
     </dependency>
-
-    <!-- Sakai -->
-    <!-- Pre K1 Sakai deps -->
-    <!--    
-    <dependency>
-      <groupId>org.sakaiproject.entitybroker</groupId>
-      <artifactId>entitybroker-api</artifactId>
-      <version>${entitybroker.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.sakaiproject.entitybroker</groupId>
-      <artifactId>entitybroker-utils</artifactId>
-      <version>${entitybroker.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.sakaiproject</groupId>
-      <artifactId>sakai-util</artifactId>
-      <version>${sakai.version}</version>
-    </dependency>
-    -->
     
     <!-- Apache Commons -->
     <dependency>
@@ -190,11 +227,6 @@
       <groupId>commons-httpclient</groupId>
       <artifactId>commons-httpclient</artifactId>
       <version>${commons-httpclient.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>commons-httpclient</groupId>
-      <artifactId>commons-httpclient-contrib</artifactId>
-      <version>${commons-httpclient-contrib.version}</version>
     </dependency>
       
     <!-- Rome -->
@@ -274,20 +306,29 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <configuration>
-          <aggregate>true</aggregate>
-          <source>1.5</source>
-          <links>
-            <link>http://java.sun.com/j2se/1.5.0/docs/api</link>
-            <link>http://java.sun.com/products/servlet/2.3/javadoc/</link>
-          </links>
-          <breakiterator>true</breakiterator>
-          <verbose>false</verbose>
-          <maxmemory>512m</maxmemory>
-          <additionalJOption>
-            -J-Xms168m -J-Xmx512m -J-XX:PermSize=128m -J-XX:NewSize=64m
-          </additionalJOption>
-        </configuration>
+        <reportSets>
+          <reportSet>
+            <id>aggregate</id>
+            <configuration>
+              <aggregate>true</aggregate>
+              <source>1.5</source>
+              <encoding>UTF-8</encoding>
+              <links>
+                <link>http://java.sun.com/j2se/1.5.0/docs/api</link>
+                <link>http://java.sun.com/products/servlet/2.3/javadoc/</link>
+              </links>
+              <breakiterator>true</breakiterator>
+              <verbose>false</verbose>
+              <maxmemory>512m</maxmemory>
+              <additionalJOption>
+                -J-Xms168m -J-Xmx512m -J-XX:PermSize=128m -J-XX:NewSize=64m
+              </additionalJOption>
+            </configuration>
+            <reports>
+              <report>aggregate</report>
+            </reports>
+          </reportSet>
+        </reportSets>   
       </plugin>
       <!-- FindBugs: mvn findbugs:findbugs -->
       <plugin>
