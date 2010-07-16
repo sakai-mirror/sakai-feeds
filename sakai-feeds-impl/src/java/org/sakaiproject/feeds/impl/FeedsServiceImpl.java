@@ -1121,12 +1121,12 @@ public class FeedsServiceImpl extends Observable implements FeedsService {
 			if(internalFeedUrlPrefix != null)
 				return internalFeedUrlPrefix;
 		}
-		return m_serverConfigurationService.getServerUrl() + "/direct";
+		return null;//m_serverConfigurationService.getServerUrl() + "/direct";
 	}
 	
 	private boolean isInternalFeed(String feedUrl) {
 		String internalFeedUrlPrefix = getInternalFeedUrlPrefix();
-		if(feedUrl.startsWith(internalFeedUrlPrefix)){
+		if(internalFeedUrlPrefix != null && feedUrl.startsWith(internalFeedUrlPrefix)){
 			return true;
 		}else{
 			return false;

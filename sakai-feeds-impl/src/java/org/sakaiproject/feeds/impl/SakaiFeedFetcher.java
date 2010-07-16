@@ -310,17 +310,22 @@ public class SakaiFeedFetcher extends AbstractFeedFetcher {
 
 	private int executeHttpClientMethod(URL feedUrl, HttpClient client, HttpMethod method, AuthScope authScope, Credentials credentials) throws IOException, HttpException, FetcherException {
 		int statusCode = 0;
+		
+		// authentication
 		if(authScope != null && credentials != null){
 			client.getState().setCredentials(authScope, credentials);
 		}
+		
+		// cookies for this Sakai instance
 		method.getParams().setCookiePolicy(CookiePolicy.BROWSER_COMPATIBILITY);
 		Cookie[] cookies = client.getState().getCookies();
 		for(int i=0; i<cookies.length; i++){
-			if(cookies[i].getDomain().equals(feedUrl.getHost())){
+			if("JSESSIONID".equals(cookies[i].getName().toUpperCase())) {
 				method.addRequestHeader("Cookie", cookies[i].toString());
-				LOG.debug("Using cookie: "+cookies[i].getDomain()+", "+cookies[i].getName()+", "+cookies[i].getPath()+", "+cookies[i].getValue());
-			}
+				LOG.debug("Using cookie for internal Sakai access: "+cookies[i].getDomain()+", "+cookies[i].getName()+", "+cookies[i].getPath()+", "+cookies[i].getValue());
+			}		
 		}
+		
 		statusCode = client.executeMethod(method);
 		AuthState authState = method.getHostAuthState();
 
