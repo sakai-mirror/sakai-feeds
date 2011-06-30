@@ -11,7 +11,7 @@
   <name>Sakai News Feeds</name>
   <groupId>org.sakaiproject</groupId>
   <artifactId>sakai-feeds</artifactId>
-  <version>1.1.5-SNAPSHOT</version><!-- newsfeeds.version -->   
+  <version>1.1.6-SNAPSHOT</version><!-- newsfeeds.version -->   
   <description>News Feeds is a feed aggregator tool developed for Sakai.</description>
   <url>http://bugs.sakaiproject.org/confluence/display/NFS</url>
   <inceptionYear>2008</inceptionYear>
