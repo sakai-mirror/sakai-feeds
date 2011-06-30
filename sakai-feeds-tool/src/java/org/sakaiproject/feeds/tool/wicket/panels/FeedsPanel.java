@@ -55,7 +55,7 @@ public final class FeedsPanel extends Panel {
 		
 		// create the feed filters
 		final Component parent = this;
-		setModel(new CompoundPropertyModel(this));
+		setDefaultModel(new CompoundPropertyModel(this));
 		
 		WebMarkupContainer viewOptionsMarkup = new WebMarkupContainer("viewOptions");
 		final DropDownChoice viewFilter = new DropDownChoice("viewFilter", getViewFilterModes(), new IChoiceRenderer(){

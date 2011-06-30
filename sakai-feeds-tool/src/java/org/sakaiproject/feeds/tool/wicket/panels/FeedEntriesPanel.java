@@ -111,7 +111,7 @@ public class FeedEntriesPanel extends Panel {
 					private static final long	serialVersionUID	= 1L;
 					@Override
 					protected void onComponentTagBody(MarkupStream markupStream, ComponentTag openTag) {
-						String str = getModelObjectAsString();
+						String str = getDefaultModelObjectAsString();
 						str = removeOffensiveTags(str);
 						str += getLinkChangeJs(getMarkupId(), entry);
 						replaceComponentTagBody(markupStream, openTag, str);
@@ -125,7 +125,7 @@ public class FeedEntriesPanel extends Panel {
 					private static final long	serialVersionUID	= 1L;
 					@Override
 					protected void onComponentTagBody(MarkupStream markupStream, ComponentTag openTag) {
-						String str = getModelObjectAsString();
+						String str = getDefaultModelObjectAsString();
 						str = removeOffensiveTags(str);
 						str += getLinkChangeJs(getMarkupId(), entry);
 						replaceComponentTagBody(markupStream, openTag, str);
@@ -151,9 +151,9 @@ public class FeedEntriesPanel extends Panel {
 					private static final long	serialVersionUID	= 1L;
 					@Override
 					public void onClick(AjaxRequestTarget target) {
-						description.setModelObject("");
+						description.setDefaultModelObject("");
 						String content = Validator.stripAllNewlines(entry.getContent());
-						contents.setModelObject(content);
+						contents.setDefaultModelObject(content);
 						description.setVisible(false);
 						readMoreWrapper.setVisible(false);
 						readExternalWrapper.setVisible(false);
@@ -168,7 +168,7 @@ public class FeedEntriesPanel extends Panel {
 				if(entry.getDescription() == null){
 					readMoreWrapper.setVisible(false);
 					String content = Validator.stripAllNewlines(entry.getContent());
-					contents.setModelObject(content);
+					contents.setDefaultModelObject(content);
 					description.setVisible(false);
 					readMoreWrapper.setVisible(false);
 					//readExternalWrapper.setVisible(false);

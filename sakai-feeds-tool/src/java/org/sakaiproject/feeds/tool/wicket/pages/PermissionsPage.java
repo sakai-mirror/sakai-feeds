@@ -31,7 +31,7 @@ public class PermissionsPage extends BasePage {
 	private List<PermissionWrapper>	permissions;
 
 	public PermissionsPage() {
-		setModel(new CompoundPropertyModel(this));
+		setDefaultModel(new CompoundPropertyModel(this));
 
 		Form form = new Form("permissionsForm");
 

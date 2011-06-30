@@ -71,7 +71,7 @@ public class OptionsPage extends BasePage {
 		subscriptionsList = new LinkedList<FeedSubscription>(subscriptions);
 
 		Form form = new Form("options");
-		setModel(new CompoundPropertyModel(this));
+		setDefaultModel(new CompoundPropertyModel(this));
 		
 		// custom title options
 		boolean supportLocalizedPages = false;

@@ -1,5 +1,7 @@
 package org.sakaiproject.feeds.tool.wicket.panels;
 
+import java.io.Serializable;
+
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
@@ -14,7 +16,7 @@ public class CSSFeedbackPanel extends FeedbackPanel {
 		if(feedbackul != null){
 			feedbackul.add(new AttributeModifier("class", true, new Model() {
 				private static final long	serialVersionUID	= 1L;
-				public Object getObject() {
+				public Serializable getObject() {
 					if(anyErrorMessage()){
 						return "alertMessage";
 					}else if(anyMessage()){

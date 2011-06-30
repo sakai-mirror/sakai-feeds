@@ -65,15 +65,15 @@ public abstract class AuthenticationPanel extends Panel {
 	}
 
 	final void init() {
-		setModel(new CompoundPropertyModel(this));
+		setDefaultModel(new CompoundPropertyModel(this));
 
 		WebMarkupContainer divAuthPanel = new WebMarkupContainer("divAuthPanel");
 		
 		Label message = new Label("message", "");
 		if(feedUrl == null) {
-			message.setModel(new StringResourceModel("provide.auth.details", this, null));
+			message.setDefaultModel(new StringResourceModel("provide.auth.details", this, null));
 		}else{
-			message.setModel(new StringResourceModel("provide.auth.details2", this, new Model(this)));
+			message.setDefaultModel(new StringResourceModel("provide.auth.details2", this, new Model(this)));
 		}
 		divAuthPanel.add(message);
 		

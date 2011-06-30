@@ -115,7 +115,7 @@ public class SubscriptionsPage extends BasePage {
 		add(feedback);
 
 		Form options = new Form("subscriptions");
-		setModel(new CompoundPropertyModel(this));
+		setDefaultModel(new CompoundPropertyModel(this));
 
 		
 		// -- Feed subscriptions --
@@ -232,15 +232,15 @@ public class SubscriptionsPage extends BasePage {
 				IModel model = null;
 				Radio radio = new Radio("radio", item.getModel());
 				item.add(radio);
-				if(item.getModelObjectAsString().equals(String.valueOf(AggregateFeedOptions.TITLE_DISPLAY_DEFAULT))) {
+				if(item.getDefaultModelObjectAsString().equals(String.valueOf(AggregateFeedOptions.TITLE_DISPLAY_DEFAULT))) {
 					model = new Model(component);
 					radio.add(new AttributeModifier("onclick", true, new Model("$('.aggregateCustomTitleClass').attr('disabled','true'); setMainFrameHeightNoScroll(window.name);")));
-				}else if(item.getModelObjectAsString().equals(String.valueOf(AggregateFeedOptions.TITLE_DISPLAY_CUSTOM))) {
+				}else if(item.getDefaultModelObjectAsString().equals(String.valueOf(AggregateFeedOptions.TITLE_DISPLAY_CUSTOM))) {
 					radio.add(new AttributeModifier("onclick", true, new Model("$('.aggregateCustomTitleClass').removeAttr('disabled'); setMainFrameHeightNoScroll(window.name);")));
 				}else{
 					radio.add(new AttributeModifier("onclick", true, new Model("$('.aggregateCustomTitleClass').attr('disabled','true'); setMainFrameHeightNoScroll(window.name);")));
 				}
-				item.add(new Label("optionName", new StringResourceModel("aggregateOption."+item.getModelObjectAsString(), component, model)));
+				item.add(new Label("optionName", new StringResourceModel("aggregateOption."+item.getDefaultModelObjectAsString(), component, model)));
 			}
 		};
 		group.add(persons);
