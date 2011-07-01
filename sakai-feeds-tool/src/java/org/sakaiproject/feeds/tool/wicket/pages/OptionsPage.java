@@ -32,12 +32,12 @@ import org.sakaiproject.site.api.SitePage;
 import org.sakaiproject.site.api.SiteService;
 import org.sakaiproject.tool.api.Session;
 import org.sakaiproject.tool.api.ToolSession;
-import org.wicketstuff.dojo.markup.html.list.DojoOrderableListContainer;
-import org.wicketstuff.dojo.markup.html.list.DojoOrderableRepeatingView;
+//import org.wicketstuff.dojo.markup.html.list.DojoOrderableListContainer;
+//import org.wicketstuff.dojo.markup.html.list.DojoOrderableRepeatingView;
 
 
 public class OptionsPage extends BasePage {
-	private static final long	serialVersionUID	= 1L;
+	/*private static final long	serialVersionUID	= 1L;
 	
 	private boolean hasSiteUpd = false;
 	
@@ -198,6 +198,7 @@ public class OptionsPage extends BasePage {
 		form.add(cancel);
 		
 		add(form);
+		
 	}
 
 	@Override
@@ -297,5 +298,5 @@ public class OptionsPage extends BasePage {
 	
 	public void setCustomPageTitle(String title) {
 		titleOptions.setCustomPageTitle(title);
-	}
+	}*/
 }

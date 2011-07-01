@@ -76,17 +76,17 @@
       <groupId>org.apache.wicket</groupId>
       <artifactId>wicket-spring</artifactId>
     </dependency>
-    <!--<dependency>
-      <groupId>org.apache.wicket</groupId>
-      <artifactId>wicket-spring-annot</artifactId>
-    </dependency>-->
     <dependency>
       <groupId>org.apache.wicket</groupId>
       <artifactId>wicket-datetime</artifactId>
     </dependency>
     <dependency>
       <groupId>org.wicketstuff</groupId>
-      <artifactId>wicketstuff-dojo</artifactId>
+      <artifactId>dojo-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.wicketstuff</groupId>
+      <artifactId>dojo-resources-standard</artifactId>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>

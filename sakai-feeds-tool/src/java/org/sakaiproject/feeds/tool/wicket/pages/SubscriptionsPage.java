@@ -262,7 +262,7 @@ public class SubscriptionsPage extends BasePage {
 		options.setMultiPart(true);
 		CollapsiblePanel importExportPanel = new CollapsiblePanel("importExportPanel", new StringResourceModel("impexp.title", this, null).getString(), false);
 		options.add(importExportPanel);
-		final FileUploadField fileUploadField = new FileUploadField("fileImport");
+		final FileUploadField fileUploadField = new FileUploadField("fileImport", new Model<FileUpload>());
 		importExportPanel.add(fileUploadField);
 		int contentUploadMax = ServerConfigurationService.getInt("content.upload.max", 20);
 		options.setMaxSize(Bytes.megabytes(contentUploadMax));
